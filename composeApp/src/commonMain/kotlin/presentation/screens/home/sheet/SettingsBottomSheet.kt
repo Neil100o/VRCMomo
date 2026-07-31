@@ -72,6 +72,9 @@ private fun ColumnScope.CustomBlock() {
     val scope = rememberCoroutineScope()
     val localeStrings = strings
     var showBackgroundMonitoringDialog by remember { mutableStateOf(false) }
+    var batteryOptimizationAllowed by remember {
+        mutableStateOf(platform.isIgnoringBatteryOptimizations())
+    }
 
     val showInfo: (String) -> Unit = { message ->
         scope.launch { SharedFlowCentre.toastText.emit(ToastText.Info(message)) }
@@ -188,6 +191,60 @@ private fun ColumnScope.CustomBlock() {
                 onCheckedChange = changeBackgroundMonitoring,
                 enabled = platform.supportsBackgroundFriendMonitoring,
             )
+        }
+        if (platform.supportsBatteryOptimizationSettings &&
+            currentSettings.isBackgroundFriendMonitoringEnabled
+        ) {
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 12.dp),
+                thickness = 0.5.dp,
+            )
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                    ) {
+                        Text(
+                            text = localeStrings.backgroundFriendMonitoringBatteryTitle,
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                        Text(
+                            text = if (batteryOptimizationAllowed) {
+                                localeStrings.backgroundFriendMonitoringBatteryAllowed
+                            } else {
+                                localeStrings.backgroundFriendMonitoringBatteryRestricted
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (batteryOptimizationAllowed) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.error
+                            },
+                        )
+                    }
+                    TextButton(
+                        onClick = {
+                            platform.openBatteryOptimizationSettings()
+                            batteryOptimizationAllowed = platform.isIgnoringBatteryOptimizations()
+                        },
+                    ) {
+                        Text(localeStrings.backgroundFriendMonitoringBatteryAction)
+                    }
+                }
+                Text(
+                    text = localeStrings.backgroundFriendMonitoringBatteryHint,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
     }
 

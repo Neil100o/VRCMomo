@@ -31,6 +31,7 @@ internal fun BoopReceivedDialog(
         ?: item.message.takeIf { it.isNotBlank() }
         ?: item.senderUserId
     val title = strings.profileBoopReceived.replace("%s", senderName)
+    val emojiLabel = item.boopEmojiLabel
 
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -56,7 +57,7 @@ internal fun BoopReceivedDialog(
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
-                        text = strings.profileBoop,
+                        text = emojiLabel ?: strings.profileBoop,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

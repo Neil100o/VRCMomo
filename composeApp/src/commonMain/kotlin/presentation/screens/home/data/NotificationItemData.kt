@@ -1,6 +1,7 @@
 package io.github.vrcmteam.vrcm.presentation.screens.home.data
 
 import io.github.vrcmteam.vrcm.network.api.notification.data.NotificationData
+import io.github.vrcmteam.vrcm.network.api.notification.data.NotificationDataV2
 
 data class NotificationItemData(
     val id: String,
@@ -11,11 +12,34 @@ data class NotificationItemData(
     val senderUserId: String,
     val link: String?,
     val type: String,
-    val actions: List<ActionData>
+    val actions: List<ActionData>,
+    /** The selected emoji metadata for a received VRChat Boop, when supplied by the API. */
+    val boopEmojiId: String? = null,
+    val boopEmojiVersion: Int? = null,
+    val boopInventoryItemId: String? = null,
 ) {
     /** The notification sender used by sender-specific actions such as opening a profile or replying to a Boop. */
     val senderId: String?
         get() = senderUserId.trim().takeIf { it.isNotEmpty() }
+
+    /** A readable label for built-in Boop reactions. Custom inventory reactions remain custom. */
+    val boopEmojiLabel: String?
+        get() = boopEmojiId
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            ?.let { emojiId ->
+                if (emojiId.startsWith("default_")) {
+                    emojiId.removePrefix("default_")
+                        .split("_")
+                        .joinToString(" ") { word -> word.replaceFirstChar(Char::uppercase) }
+                } else {
+                    "Custom emoji"
+                }
+            }
+            ?: boopInventoryItemId
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { "Custom emoji" }
 
     /** The VRChat user targeted by a `user:usr_...` notification link. */
     val linkedUserId: String?
@@ -28,6 +52,21 @@ data class NotificationItemData(
         val data: String,
         val type: String,
         val icon: String = "",
+    )
+
+    constructor(n: NotificationDataV2) : this(
+        id = n.id,
+        imageUrl = "",
+        title = null,
+        message = n.message,
+        createdAt = n.createdAt,
+        senderUserId = n.senderUserId,
+        link = "user:${n.senderUserId}",
+        type = n.type,
+        actions = emptyList(),
+        boopEmojiId = n.boopDetail()?.emojiId,
+        boopEmojiVersion = n.boopDetail()?.emojiVersion,
+        boopInventoryItemId = n.boopDetail()?.inventoryItemId,
     )
 
     constructor(n: NotificationData) : this(
@@ -45,7 +84,10 @@ data class NotificationItemData(
                 type = responses.type,
                 icon = responses.icon,
             )
-        }
+        },
+        boopEmojiId = n.data.emojiId,
+        boopEmojiVersion = n.data.emojiVersion,
+        boopInventoryItemId = n.data.inventoryItemId,
     )
 
 }

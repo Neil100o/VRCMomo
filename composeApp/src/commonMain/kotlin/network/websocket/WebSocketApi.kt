@@ -25,10 +25,15 @@ class WebSocketApi(
     private var scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     init {
+        // StateFlow replays the active account to a foreground service that is created after
+        // authentication, unlike the one-shot `authed` event. This is essential after Android
+        // recreates only the background service process.
         scope.launch {
-            SharedFlowCentre.authed.collect { session ->
+            SharedFlowCentre.currentSession.collect { session ->
                 currentJob?.cancelAndJoin()
-                currentJob = launch { startWebSocket(session.token) }
+                currentJob = session?.let { authenticated ->
+                    launch { startWebSocket(authenticated.token) }
+                }
             }
         }
         scope.launch {

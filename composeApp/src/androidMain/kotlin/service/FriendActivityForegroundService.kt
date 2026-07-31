@@ -12,7 +12,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.context.GlobalContext
 
@@ -23,6 +25,7 @@ import org.koin.core.context.GlobalContext
  */
 class FriendActivityForegroundService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private var incomingBoopNotificationService: IncomingBoopNotificationService? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -31,15 +34,37 @@ class FriendActivityForegroundService : Service() {
         val koin = GlobalContext.get()
         // Install collectors before authentication is emitted when Android recreates only this service.
         koin.get<WebSocketApi>()
-        koin.get<FriendService>()
+        val friendService = koin.get<FriendService>()
         koin.get<SocialNotificationService>().start()
+        incomingBoopNotificationService = koin.get<IncomingBoopNotificationService>().also { it.start() }
         val authService = koin.get<AuthService>()
 
         serviceScope.launch {
-            val authenticated = authService
-                .reTryAuthCatching { authService.isAuthed() }
-                .getOrDefault(false)
-            if (!authenticated) stopSelf()
+            // A short network loss must not destroy the foreground service. Keep retrying session
+            // restoration while the user has explicitly enabled monitoring; WebSocketApi reconnects
+            // independently once currentSession becomes available.
+            if (authService.accountDtoOrNull() == null) {
+                stopSelf()
+                return@launch
+            }
+            while (isActive && SharedFlowCentre.currentSession.value == null) {
+                val authenticated = authService
+                    .reTryAuthCatching { authService.isAuthed() }
+                    .getOrDefault(false)
+                if (authenticated) break
+                delay(AUTH_RETRY_DELAY_MILLIS)
+            }
+        }
+        serviceScope.launch {
+            // WebSocket events are the fast path, but reconnecting does not replay transitions that
+            // happened while the phone had no network. A low-frequency full refresh repairs that
+            // gap and feeds the same friendState-based notification tracker.
+            while (isActive) {
+                delay(FRIEND_REFRESH_INTERVAL_MILLIS)
+                if (SharedFlowCentre.currentSession.value != null) {
+                    friendService.refreshFriendList()
+                }
+            }
         }
         serviceScope.launch {
             SharedFlowCentre.logout.collect {
@@ -51,6 +76,7 @@ class FriendActivityForegroundService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
 
     override fun onDestroy() {
+        incomingBoopNotificationService?.stop()
         serviceScope.cancel()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -79,5 +105,7 @@ class FriendActivityForegroundService : Service() {
 
     private companion object {
         const val NOTIFICATION_ID = 0x4D4F4D4F
+        const val AUTH_RETRY_DELAY_MILLIS = 30_000L
+        const val FRIEND_REFRESH_INTERVAL_MILLIS = 120_000L
     }
 }

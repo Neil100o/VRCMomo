@@ -129,30 +129,50 @@ class HomeScreenModel(
 
     private fun refreshNotifications() =
         screenModelScope.launch(Dispatchers.IO) {
-            authService.reTryAuthCatching { notificationApi.fetchNotifications() }
-                .onHomeFailure()
-                .onSuccess { data ->
-                    val friendPresentations = friendService.friendMap.mapValues { (_, friend) ->
-                        NotificationUserPresentation(
-                            imageUrl = friend.profileImageUrl,
-                            displayName = friend.displayName,
-                        )
-                    }
-                    val resolvedNotifications = boopNotificationResolver.resolve(
-                        notifications = data.map(::NotificationItemData),
-                        friends = friendPresentations,
-                    ) { userId ->
-                        usersApi.fetchUser(userId).let { user ->
-                            NotificationUserPresentation(
-                                imageUrl = user.profileImageUrl,
-                                displayName = user.displayName,
-                            )
-                        }
-                    }
-                    notificationStateMutex.withLock {
-                        updateNotificationState(resolvedNotifications)
-                    }
+            val legacyResult = authService.reTryAuthCatching { notificationApi.fetchNotifications() }
+            val v2Result = authService.reTryAuthCatching { notificationApi.fetchNotificationsV2() }
+            if (legacyResult.isFailure && v2Result.isFailure) {
+                legacyResult.onHomeFailure()
+                return@launch
+            }
+
+            val legacyItems = legacyResult.getOrDefault(emptyList()).map(::NotificationItemData)
+            val v2Items = v2Result.getOrDefault(emptyList())
+                .filter { it.type == NotificationType.Boop.value }
+                .map(::NotificationItemData)
+            val v2ById = v2Items.associateBy { it.id }
+            val mergedItems = legacyItems.map { legacy ->
+                val v2 = v2ById[legacy.id]
+                if (v2 == null) legacy else legacy.copy(
+                    boopEmojiId = v2.boopEmojiId,
+                    boopEmojiVersion = v2.boopEmojiVersion,
+                    boopInventoryItemId = v2.boopInventoryItemId,
+                )
+            }.let { existing ->
+                val existingIds = existing.mapTo(mutableSetOf()) { it.id }
+                existing + v2Items.filterNot { it.id in existingIds }
+            }
+
+            val friendPresentations = friendService.friendMap.mapValues { (_, friend) ->
+                NotificationUserPresentation(
+                    imageUrl = friend.profileImageUrl,
+                    displayName = friend.displayName,
+                )
+            }
+            val resolvedNotifications = boopNotificationResolver.resolve(
+                notifications = mergedItems,
+                friends = friendPresentations,
+            ) { userId ->
+                usersApi.fetchUser(userId).let { user ->
+                    NotificationUserPresentation(
+                        imageUrl = user.profileImageUrl,
+                        displayName = user.displayName,
+                    )
                 }
+            }
+            notificationStateMutex.withLock {
+                updateNotificationState(resolvedNotifications)
+            }
         }
 
     private fun updateNotificationState(items: List<NotificationItemData>) {

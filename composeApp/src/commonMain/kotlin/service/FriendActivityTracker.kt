@@ -43,13 +43,13 @@ internal class FriendActivityTracker(
                     lastActivityAtMillis = latest(next.lastActivityAtMillis, friend.lastActivityAtMillis),
                 )
             } else {
-                val wasOffline = isOffline(previousLocation, previousStatus)
-                val isOffline = isOffline(friend.location, friend.status)
+                val wasInGame = isInGameLocation(previousLocation)
+                val isInGame = isInGameLocation(friend.location)
                 val presenceChanged = previousLocation != friend.location || previousStatus != friend.status
                 val activityAt = if (presenceChanged) nowMillis else null
                 next = next.copy(
-                    lastOnlineAtMillis = if (wasOffline && !isOffline) nowMillis else next.lastOnlineAtMillis,
-                    lastOfflineAtMillis = if (!wasOffline && isOffline) nowMillis else next.lastOfflineAtMillis,
+                    lastOnlineAtMillis = if (!wasInGame && isInGame) nowMillis else next.lastOnlineAtMillis,
+                    lastOfflineAtMillis = if (wasInGame && !isInGame) nowMillis else next.lastOfflineAtMillis,
                     lastActivityAtMillis = latest(
                         next.lastActivityAtMillis,
                         friend.lastActivityAtMillis,
@@ -110,10 +110,6 @@ internal class FriendActivityTracker(
         }
         return stats
     }
-
-    private fun isOffline(location: String?, status: String?): Boolean =
-        location == "offline" || status.equals("offline", ignoreCase = true)
-
     private fun String?.normalizedInstanceId(): String? =
         this?.trim()?.takeIf { it.startsWith("wrld_") && ':' in it }
 

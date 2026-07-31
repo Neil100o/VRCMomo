@@ -92,6 +92,27 @@ class FriendActivityTrackerTest {
         assertNull(stats.activeTogetherSinceMillis)
     }
 
+
+    @Test
+    fun `website activity ends a game presence session even when status is active`() {
+        val tracker = FriendActivityTracker()
+        tracker.observeFriends(
+            friends = listOf(observation(location = "offline", status = "active")),
+            nowMillis = 1_000,
+        )
+        tracker.observeFriends(
+            friends = listOf(observation(location = "private", status = "active")),
+            nowMillis = 2_000,
+        )
+        tracker.observeFriends(
+            friends = listOf(observation(location = "offline", status = "active")),
+            nowMillis = 3_000,
+        )
+
+        val stats = tracker.snapshot.getValue("usr_friend")
+        assertEquals(2_000, stats.lastOnlineAtMillis)
+        assertEquals(3_000, stats.lastOfflineAtMillis)
+    }
     private fun observation(
         location: String,
         status: String,

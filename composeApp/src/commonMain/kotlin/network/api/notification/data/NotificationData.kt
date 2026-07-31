@@ -34,7 +34,11 @@ data class NotificationData(
 ){
     @Serializable
     data class Data(
-        val announcementTitle: String?,
-        val groupName: String?,
+        val announcementTitle: String? = null,
+        val groupName: String? = null,
+        /** Metadata attached to Boop notifications by the VRChat API. */
+        val emojiId: String? = null,
+        val emojiVersion: Int? = null,
+        val inventoryItemId: String? = null,
     )
 }

@@ -22,6 +22,16 @@ interface AppPlatform: KoinComponent {
     /** Start or stop the opt-in background monitor. */
     fun setBackgroundFriendMonitoringEnabled(enabled: Boolean): BackgroundFriendMonitoringResult =
         BackgroundFriendMonitoringResult.Unsupported
+
+    /** Android-only shortcut for reviewing battery optimization restrictions. */
+    val supportsBatteryOptimizationSettings: Boolean
+        get() = false
+
+    /** Non-Android platforms are treated as unrestricted because the setting is not shown there. */
+    fun isIgnoringBatteryOptimizations(): Boolean = true
+
+    /** Open the platform battery optimization page after an explicit user action. */
+    fun openBatteryOptimizationSettings() = Unit
 }
 
 enum class BackgroundFriendMonitoringResult {

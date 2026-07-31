@@ -299,6 +299,11 @@ sealed class LocaleStrings {
     open val backgroundFriendMonitoringUnsupported: String = "Background friend monitoring is currently available on Android only."
     open val backgroundFriendMonitoringStopped: String = "Background friend monitoring stopped"
     open val backgroundFriendMonitoringStarted: String = "Background friend monitoring enabled"
+    open val backgroundFriendMonitoringBatteryTitle: String = "Battery optimization"
+    open val backgroundFriendMonitoringBatteryAllowed: String = "Unrestricted"
+    open val backgroundFriendMonitoringBatteryRestricted: String = "May be restricted"
+    open val backgroundFriendMonitoringBatteryAction: String = "Review battery settings"
+    open val backgroundFriendMonitoringBatteryHint: String = "Allowing unrestricted battery use can improve background reliability, but force-stop, vendor task managers, restart, or network loss can still interrupt monitoring."
 
     open val profileInviteToMyInstance: String = "Invite to My Instance"
     open val profileInviteSent: String = "Invite sent"
