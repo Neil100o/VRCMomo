@@ -64,4 +64,25 @@ class LocaleActionMessagesTest {
             assertTrue(locale.printEditorReadFailed.contains("%s"))
         }
     }
+
+    @Test
+    fun backgroundMonitoringBatteryMessagesAreLocalized() {
+        val locales = listOf(
+            LocaleStringsEn,
+            LocaleStringsJa,
+            LocaleStringsZhHans,
+            LocaleStringsZhHant,
+        )
+
+        locales.forEach { locale ->
+            val messages = listOf(
+                locale.backgroundFriendMonitoringBatteryTitle,
+                locale.backgroundFriendMonitoringBatteryAllowed,
+                locale.backgroundFriendMonitoringBatteryRestricted,
+                locale.backgroundFriendMonitoringBatteryAction,
+                locale.backgroundFriendMonitoringBatteryHint,
+            )
+            assertTrue(messages.all { it.isNotBlank() && !it.contains("????") })
+        }
+    }
 }

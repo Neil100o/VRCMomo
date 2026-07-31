@@ -2,6 +2,7 @@ package io.github.vrcmteam.vrcm.service
 
 import io.github.vrcmteam.vrcm.core.shared.AppConst
 import io.github.vrcmteam.vrcm.network.api.github.GitHubApi
+import io.github.vrcmteam.vrcm.network.supports.VRCApiException
 import io.github.vrcmteam.vrcm.service.data.VersionDto
 import io.github.vrcmteam.vrcm.storage.SettingsDao
 
@@ -33,7 +34,23 @@ class VersionService(
                     }
                 }
 
-                else -> Result.failure(it.exceptionOrNull()!!)
+                else -> {
+                    val error = it.exceptionOrNull()!!
+                    if (error is VRCApiException && error.code == 404) {
+                        // GitHub returns 404 when the repository has no published Release yet.
+                        // That is a normal "no update available" state, not an auth failure.
+                        Result.success(
+                            VersionDto(
+                                tagName = AppConst.APP_VERSION,
+                                htmlUrl = AppConst.APP_GITHUB_URL,
+                                body = "",
+                                hasNewVersion = false,
+                            )
+                        )
+                    } else {
+                        Result.failure(error)
+                    }
+                }
             }
         }
 
