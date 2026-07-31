@@ -139,6 +139,20 @@
 
 <div align="center">
 
+## 🙏 プロジェクトの出典と謝辞
+
+</div>
+
+VRCMomo は、VRCM Team とその貢献者が開発した [VRCM](https://github.com/vrcm-team/VRCM) を基にした fork および独立した継続プロジェクトです。
+
+Kotlin Multiplatform / Compose Multiplatform の基盤、Android / iOS の構成、認証とアカウント管理、VRChat API とネットワーク層、フレンドとワールドの管理、お気に入り、グループ、通知、既存 UI コンポーネント、VRChat+ Gallery、フレンド関係ネットワークと共通フレンドのページは、主に上流の VRCM に由来します。
+
+VRCMomo では、新しいブランド、テーマとナビゲーションの変更、Boop と通知の改善、Gallery の修正と表示調整、iOS のブランド対応、リリースパッケージングなどを追加・保守しています。上流の機能をここで適応・保守する場合があっても、VRCMomo がゼロから実装したものとは解釈しないでください。
+
+VRCM Team とすべての上流貢献者に感謝します。元の履歴と貢献の帰属については、[上流リポジトリ](https://github.com/vrcm-team/VRCM)を参照してください。
+
+<div align="center">
+
 ## ⚠️ 免責事項
 
 </div>

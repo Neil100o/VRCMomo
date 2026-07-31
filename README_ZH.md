@@ -139,6 +139,20 @@
 
 <div align="center">
 
+## 🙏 项目来源与致谢
+
+</div>
+
+VRCMomo 是基于 [VRCM](https://github.com/vrcm-team/VRCM) 开发的 fork 和独立延续项目。VRCM 最初由 VRCM Team 及其贡献者开发。
+
+下列基础工作主要来源于上游 VRCM：Kotlin Multiplatform 与 Compose Multiplatform 基础工程、Android / iOS 项目结构、登录认证与账户管理、VRChat API 和网络层、好友与世界管理、收藏、群组、通知、已有 UI 组件、VRChat+ Gallery、好友关系网与共同好友页面。
+
+VRCMomo 在此基础上加入并维护了新的品牌、主题与导航调整、Boop 与通知改进、Gallery 修复与展示调整、iOS 品牌适配、发行打包等更改。上游已有功能可能会在此继续适配和维护，但这些不应被视为 VRCMomo 从零开始实现的功能。
+
+感谢 VRCM Team 以及所有上游贡献者的原始工作。完整历史和贡献归属，请以[上游仓库](https://github.com/vrcm-team/VRCM)为准。
+
+<div align="center">
+
 ## ⚠️ 免责声明
 
 </div>

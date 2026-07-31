@@ -151,6 +151,27 @@ A feature-rich cross-platform VRChat friend management application that lets you
 
 <div align="center">
 
+## 🙏 Attribution and Project Origin
+
+</div>
+
+VRCMomo is a fork and independent continuation of [VRCM](https://github.com/vrcm-team/VRCM), originally developed by the VRCM Team and its contributors.
+
+The following parts of this project are primarily derived from the upstream VRCM project:
+
+- The Kotlin Multiplatform and Compose Multiplatform application foundation
+- Android and iOS project structure, authentication, and account management
+- The foundational VRChat API/networking layer
+- Friend lists, friend status/location, user profiles, and world/user search
+- Favorites, groups, notifications, and related existing UI components
+- The VRChat+ Gallery and friend relationship / mutual-friend pages
+
+VRCMomo's own work is focused on the new branding and app identity, theme and navigation changes, Boop support and related notification improvements, Gallery fixes and presentation changes, iOS branding, release packaging, and other changes documented in this repository's commit history. Existing upstream features may also be adapted or maintained here; they should not be interpreted as being reimplemented from scratch by VRCMomo.
+
+We are grateful to the VRCM Team and all upstream contributors. Please refer to the [upstream repository](https://github.com/vrcm-team/VRCM) for the original project history and contribution attribution.
+
+<div align="center">
+
 ## 📄 License
 
 </div>
