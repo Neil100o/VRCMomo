@@ -10,6 +10,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -250,7 +251,7 @@ private inline fun HomeBottomBar(
                 .height(64.dp)
                 .run {
                     if (hazeState != null) {
-                        clip(CircleShape)
+                        clip(RoundedCornerShape(28.dp))
                             .hazeEffect(
                                 state = hazeState,
                                 style = style(
@@ -259,17 +260,18 @@ private inline fun HomeBottomBar(
                             )
                     } else {
                         shadow(
-                            elevation = 2.dp,
-                            shape = CircleShape,
+                            elevation = 3.dp,
+                            shape = RoundedCornerShape(28.dp),
                         )
                     }
                 },
+            shape = RoundedCornerShape(28.dp),
             color = if (hazeState != null) Color.Transparent else backgroundColor,
         ) {
             Row(
-                modifier = Modifier
-                    .padding(12.dp),
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 pagerNavigationItems()
             }
@@ -284,18 +286,41 @@ private fun RowScope.PagerNavigationItem(
     selected: Boolean,
     onClick: () -> Unit,
 ) {
-    Box(
+    Surface(
         modifier = Modifier
             .clip(CircleShape)
-            .simpleClickable(onClick)
+            .simpleClickable(onClick),
+        shape = CircleShape,
+        color = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+        contentColor = if (selected) {
+            MaterialTheme.colorScheme.onPrimaryContainer
+        } else {
+            MaterialTheme.colorScheme.onSurfaceVariant
+        },
     ) {
-        Icon(
-            modifier = Modifier
-                .size(40.dp),
-            painter = provider.icon!!,
-            contentDescription = provider.title,
-            tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        Row(
+            modifier = Modifier.padding(
+                start = if (selected) 12.dp else 10.dp,
+                end = if (selected) 14.dp else 10.dp,
+                top = 10.dp,
+                bottom = 10.dp,
+            ),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Icon(
+                modifier = Modifier.size(24.dp),
+                painter = provider.icon!!,
+                contentDescription = provider.title,
+            )
+            AnimatedVisibility(selected) {
+                Text(
+                    text = provider.title,
+                    style = MaterialTheme.typography.labelLarge,
+                    maxLines = 1,
+                )
+            }
+        }
     }
 }
 

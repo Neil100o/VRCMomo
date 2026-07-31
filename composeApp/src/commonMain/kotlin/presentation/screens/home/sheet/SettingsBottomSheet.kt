@@ -107,7 +107,9 @@ private inline fun ColumnScope.CustomBlock() {
             }
         }
         HorizontalDivider(modifier = Modifier.padding(horizontal = 12.dp), thickness = 0.5.dp)
-        val themeColors: List<ThemeColor> = with(currentKoinScope()) { remember(::getAll) }
+        val themeColors: List<ThemeColor> = with(currentKoinScope()) {
+            remember { getAll<ThemeColor>().filter { it.name != ThemeColor.Default.name } }
+        }
         SettingsItem("${strings.stettingThemeColor}:") {
             themeColors.forEach {
                 TextButton(

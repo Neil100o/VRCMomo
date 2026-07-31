@@ -12,6 +12,7 @@ import androidx.compose.ui.graphics.Color
 import io.github.vrcmteam.vrcm.presentation.settings.data.SettingsVo
 import io.github.vrcmteam.vrcm.presentation.settings.locale.LanguageTag
 import io.github.vrcmteam.vrcm.presentation.settings.theme.ThemeColor
+import io.github.vrcmteam.vrcm.presentation.theme.momo.MomoThemeColor
 import org.koin.compose.koinInject
 
 @Composable
@@ -54,7 +55,7 @@ val LocalSettingsState: ProvidableCompositionLocal<MutableState<SettingsVo>> =
         mutableStateOf(
             SettingsVo(
                 isDarkTheme = null,
-                themeColor = ThemeColor.Default,
+                themeColor = MomoThemeColor,
                 languageTag = LanguageTag.Default
             )
         )
