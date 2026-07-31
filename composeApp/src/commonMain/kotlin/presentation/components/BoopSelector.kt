@@ -12,15 +12,28 @@ import androidx.compose.ui.unit.dp
 import io.github.vrcmteam.vrcm.network.api.users.data.BoopData
 
 /**
- * Simple Boop emoji picker.
+ * VRChat default Boop emoji constants.
  *
- * Default emoji constants can be expanded later when more VRChat emoji
- * inventory support is added.
+ * emojiId accepts string constants for default emojis or FileIDs for custom
+ * inventory emojis.
  */
 private val defaultBoops = listOf(
-    "🐾" to "boop",
-    "❤️" to "heart",
-    "😂" to "laugh",
+    "🎁" to "Gift",
+    "🎁" to "Gifts",
+    "💍" to "Life Ring",
+    "🌿" to "Mistletoe",
+    "💰" to "Money",
+    "🕶️" to "Neon Shades",
+    "🧴" to "Sun Lotion",
+    "👻" to "Boo",
+    "💔" to "Broken Heart",
+    "❗" to "Exclamation",
+    "▶️" to "Go",
+    "❤️" to "Heart",
+    "🎵" to "Music Note",
+    "❓" to "Question",
+    "🛑" to "Stop",
+    "💤" to "Zzz",
 )
 
 @Composable
