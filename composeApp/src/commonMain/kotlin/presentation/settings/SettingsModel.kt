@@ -16,7 +16,8 @@ class SettingsModel(
             SettingsData(
                 isDarkTheme = it.isDarkTheme,
                 themeColor = it.themeColor.name,
-                languageTag = it.languageTag.tag
+                languageTag = it.languageTag.tag,
+                isBackgroundFriendMonitoringEnabled = it.isBackgroundFriendMonitoringEnabled,
             )
         }
     }
@@ -35,6 +36,7 @@ class SettingsModel(
                 isDarkTheme = settings.isDarkTheme,
                 themeColor = themeColor,
                 languageTag = languageTag,
+                isBackgroundFriendMonitoringEnabled = settings.isBackgroundFriendMonitoringEnabled,
             )
         }
 }

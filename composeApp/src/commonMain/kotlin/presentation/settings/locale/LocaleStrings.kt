@@ -288,6 +288,18 @@ sealed class LocaleStrings {
     open val friendActivityDurationHour: String = "h"
     open val friendActivityDurationMinute: String = "m"
 
+    // Optional Android foreground monitoring. It is never enabled by default.
+    open val backgroundFriendMonitoringTitle: String = "Background friend monitoring"
+    open val backgroundFriendMonitoringDescription: String = "Keep recording observed friend activity while VRCMomo is in the background. This uses a persistent notification, battery and network data, and Android may still pause it."
+    open val backgroundFriendMonitoringDialogTitle: String = "Enable background friend monitoring?"
+    open val backgroundFriendMonitoringDialogMessage: String = "VRCMomo will keep a visible notification while it observes friend activity. Android power saving, force-stop, device restart, revoked notification permission, or network loss can still pause monitoring. Open VRCMomo once after restarting the device. Only data actually observed after enabling will be recorded."
+    open val backgroundFriendMonitoringConfirm: String = "Enable"
+    open val backgroundFriendMonitoringCancel: String = "Not now"
+    open val backgroundFriendMonitoringPermissionRequired: String = "Notification permission is required for background monitoring. Please allow notifications, then enable this switch again."
+    open val backgroundFriendMonitoringUnsupported: String = "Background friend monitoring is currently available on Android only."
+    open val backgroundFriendMonitoringStopped: String = "Background friend monitoring stopped"
+    open val backgroundFriendMonitoringStarted: String = "Background friend monitoring enabled"
+
     open val profileInviteToMyInstance: String = "Invite to My Instance"
     open val profileInviteSent: String = "Invite sent"
     open val profileInviteNotInInstance: String = "You are not in an instance"

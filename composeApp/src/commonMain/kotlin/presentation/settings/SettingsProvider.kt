@@ -56,7 +56,8 @@ val LocalSettingsState: ProvidableCompositionLocal<MutableState<SettingsVo>> =
             SettingsVo(
                 isDarkTheme = null,
                 themeColor = MomoThemeColor,
-                languageTag = LanguageTag.Default
+                languageTag = LanguageTag.Default,
+                isBackgroundFriendMonitoringEnabled = false,
             )
         )
     }

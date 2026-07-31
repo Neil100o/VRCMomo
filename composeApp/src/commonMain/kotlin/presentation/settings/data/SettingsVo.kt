@@ -7,4 +7,5 @@ data class SettingsVo(
     val isDarkTheme: Boolean?,
     val languageTag: LanguageTag,
     val themeColor: ThemeColor,
+    val isBackgroundFriendMonitoringEnabled: Boolean = false,
 )

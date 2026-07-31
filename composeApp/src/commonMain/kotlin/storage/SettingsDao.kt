@@ -12,7 +12,11 @@ class SettingsDao(
             return SettingsData(
                 isDarkTheme = settingsSettings.getBooleanOrNull(DaoKeys.Settings.IS_DARK_THEME_KEY),
                 themeColor = settingsSettings.getStringOrNull(DaoKeys.Settings.THEME_COLOR_KEY),
-                languageTag = settingsSettings.getStringOrNull(DaoKeys.Settings.LANGUAGE_TAG_KEY)
+                languageTag = settingsSettings.getStringOrNull(DaoKeys.Settings.LANGUAGE_TAG_KEY),
+                isBackgroundFriendMonitoringEnabled = settingsSettings.getBoolean(
+                    DaoKeys.Settings.BACKGROUND_FRIEND_MONITORING_ENABLED_KEY,
+                    false,
+                )
             )
         }
         set(value) {
@@ -27,6 +31,11 @@ class SettingsDao(
             value.languageTag?.let {
                 settingsSettings.putString(DaoKeys.Settings.LANGUAGE_TAG_KEY, it)
             }
+
+            settingsSettings.putBoolean(
+                DaoKeys.Settings.BACKGROUND_FRIEND_MONITORING_ENABLED_KEY,
+                value.isBackgroundFriendMonitoringEnabled,
+            )
         }
 
     var rememberVersion: String?

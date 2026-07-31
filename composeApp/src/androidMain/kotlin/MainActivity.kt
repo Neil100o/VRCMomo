@@ -13,14 +13,18 @@ import androidx.activity.enableEdgeToEdge
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge(
-            // 设置底部导航栏透明
-            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
         )
         super.onCreate(savedInstanceState)
-        requestNotificationPermission()
+        currentActivity = this
         setContent {
             App()
         }
+    }
+
+    override fun onDestroy() {
+        if (currentActivity === this) currentActivity = null
+        super.onDestroy()
     }
 
     private fun requestNotificationPermission() {
@@ -32,7 +36,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private companion object {
-        const val REQUEST_NOTIFICATIONS = 1
+    companion object {
+        private const val REQUEST_NOTIFICATIONS = 1
+        private var currentActivity: MainActivity? = null
+
+        fun requestNotificationPermissionFromCurrentActivity() {
+            currentActivity?.requestNotificationPermission()
+        }
     }
 }

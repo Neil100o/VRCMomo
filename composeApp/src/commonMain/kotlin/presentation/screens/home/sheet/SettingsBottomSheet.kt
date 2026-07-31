@@ -11,6 +11,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
 import io.github.vrcmteam.vrcm.AppPlatform
+import io.github.vrcmteam.vrcm.BackgroundFriendMonitoringResult
 import io.github.vrcmteam.vrcm.core.extensions.bytesToMb
 import io.github.vrcmteam.vrcm.core.shared.AppConst
 import io.github.vrcmteam.vrcm.core.shared.SharedFlowCentre
@@ -65,8 +66,30 @@ fun SettingsBottomSheet(
 
 
 @Composable
-private inline fun ColumnScope.CustomBlock() {
+private fun ColumnScope.CustomBlock() {
     var currentSettings by LocalSettingsState.current
+    val platform = koinInject<AppPlatform>()
+    val scope = rememberCoroutineScope()
+    val localeStrings = strings
+    var showBackgroundMonitoringDialog by remember { mutableStateOf(false) }
+
+    val showInfo: (String) -> Unit = { message ->
+        scope.launch { SharedFlowCentre.toastText.emit(ToastText.Info(message)) }
+    }
+    val changeBackgroundMonitoring: (Boolean) -> Unit = { enabled ->
+        if (enabled) {
+            if (!platform.supportsBackgroundFriendMonitoring) {
+                showInfo(localeStrings.backgroundFriendMonitoringUnsupported)
+            } else {
+                showBackgroundMonitoringDialog = true
+            }
+        } else {
+            platform.setBackgroundFriendMonitoringEnabled(false)
+            currentSettings = currentSettings.copy(isBackgroundFriendMonitoringEnabled = false)
+            showInfo(localeStrings.backgroundFriendMonitoringStopped)
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxWidth()
             .padding(12.dp),
@@ -130,8 +153,86 @@ private inline fun ColumnScope.CustomBlock() {
                 }
             }
         }
+        HorizontalDivider(modifier = Modifier.padding(horizontal = 12.dp), thickness = 0.5.dp)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    changeBackgroundMonitoring(!currentSettings.isBackgroundFriendMonitoringEnabled)
+                }
+                .padding(vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    text = localeStrings.backgroundFriendMonitoringTitle,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = if (platform.supportsBackgroundFriendMonitoring) {
+                        localeStrings.backgroundFriendMonitoringDescription
+                    } else {
+                        localeStrings.backgroundFriendMonitoringUnsupported
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(
+                checked = currentSettings.isBackgroundFriendMonitoringEnabled,
+                onCheckedChange = changeBackgroundMonitoring,
+                enabled = platform.supportsBackgroundFriendMonitoring,
+            )
+        }
     }
 
+    if (showBackgroundMonitoringDialog) {
+        AlertDialog(
+            onDismissRequest = { showBackgroundMonitoringDialog = false },
+            title = { Text(localeStrings.backgroundFriendMonitoringDialogTitle) },
+            text = { Text(localeStrings.backgroundFriendMonitoringDialogMessage) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showBackgroundMonitoringDialog = false
+                        if (!platform.hasBackgroundFriendMonitoringPermission()) {
+                            platform.requestBackgroundFriendMonitoringPermission()
+                            showInfo(localeStrings.backgroundFriendMonitoringPermissionRequired)
+                            return@TextButton
+                        }
+                        when (platform.setBackgroundFriendMonitoringEnabled(true)) {
+                            BackgroundFriendMonitoringResult.Started -> {
+                                currentSettings = currentSettings.copy(
+                                    isBackgroundFriendMonitoringEnabled = true,
+                                )
+                                showInfo(localeStrings.backgroundFriendMonitoringStarted)
+                            }
+                            BackgroundFriendMonitoringResult.PermissionRequired -> {
+                                platform.requestBackgroundFriendMonitoringPermission()
+                                showInfo(localeStrings.backgroundFriendMonitoringPermissionRequired)
+                            }
+                            BackgroundFriendMonitoringResult.Unsupported -> {
+                                showInfo(localeStrings.backgroundFriendMonitoringUnsupported)
+                            }
+                            BackgroundFriendMonitoringResult.Stopped -> Unit
+                        }
+                    },
+                ) {
+                    Text(localeStrings.backgroundFriendMonitoringConfirm)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showBackgroundMonitoringDialog = false }) {
+                    Text(localeStrings.backgroundFriendMonitoringCancel)
+                }
+            },
+        )
+    }
 }
 
 @Composable
@@ -237,12 +338,16 @@ private fun AboutBlock() {
 }
 
 @Composable
-private inline fun LogoutButton(crossinline onDismissRequest: () -> Unit) {
+private fun LogoutButton(onDismissRequest: () -> Unit) {
     val authService = koinInject<AuthService>()
+    val platform = koinInject<AppPlatform>()
+    var currentSettings by LocalSettingsState.current
     val logoutCall = {
-            onDismissRequest()
-            authService.logout()
-        }
+        platform.setBackgroundFriendMonitoringEnabled(false)
+        currentSettings = currentSettings.copy(isBackgroundFriendMonitoringEnabled = false)
+        onDismissRequest()
+        authService.logout()
+    }
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center

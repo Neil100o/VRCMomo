@@ -1,4 +1,4 @@
-package io.github.vrcmteam.vrcm.presentation.notifications
+﻿package io.github.vrcmteam.vrcm.presentation.notifications
 
 import android.Manifest
 import android.app.Notification
@@ -17,7 +17,7 @@ class AndroidPlatformNotificationService(context: Context) : PlatformNotificatio
     private val notificationManager = appContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     init {
-        ensureChannel()
+        ensureSocialChannel()
     }
 
     override fun requestPermission() = Unit
@@ -30,48 +30,79 @@ class AndroidPlatformNotificationService(context: Context) : PlatformNotificatio
             return
         }
 
-        ensureChannel()
-        val intent = Intent(appContext, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-        }
-        val pendingIntent = PendingIntent.getActivity(
-            appContext,
-            notification.id.hashCode(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-        )
-        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Notification.Builder(appContext, CHANNEL_ID)
-        } else {
-            Notification.Builder(appContext)
-        }
+        ensureSocialChannel()
         notificationManager.notify(
             notification.id.hashCode(),
-            builder
-                .setSmallIcon(R.mipmap.logo)
+            newBuilder(SOCIAL_CHANNEL_ID, notification.id.hashCode())
                 .setContentTitle(notification.title)
                 .setContentText(notification.message)
-                .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
                 .setCategory(Notification.CATEGORY_SOCIAL)
                 .build(),
         )
     }
 
-    private fun ensureChannel() {
+    fun buildBackgroundMonitoringNotification(): Notification {
+        ensureBackgroundMonitoringChannel()
+        return newBuilder(BACKGROUND_MONITORING_CHANNEL_ID, BACKGROUND_NOTIFICATION_REQUEST_CODE)
+            .setContentTitle(appContext.getString(R.string.background_monitoring_notification_title))
+            .setContentText(appContext.getString(R.string.background_monitoring_notification_message))
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setCategory(Notification.CATEGORY_SERVICE)
+            .build()
+    }
+
+    private fun newBuilder(channelId: String, requestCode: Int): Notification.Builder {
+        val intent = Intent(appContext, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            appContext,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Notification.Builder(appContext, channelId)
+        } else {
+            Notification.Builder(appContext)
+        }
+        return builder
+            .setSmallIcon(R.drawable.ic_stat_vrcmomo)
+            .setContentIntent(pendingIntent)
+    }
+
+    private fun ensureSocialChannel() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
         notificationManager.createNotificationChannel(
             NotificationChannel(
-                CHANNEL_ID,
-                "VRCMomo \u793e\u4ea4\u901a\u77e5",
+                SOCIAL_CHANNEL_ID,
+                appContext.getString(R.string.social_notification_channel_name),
                 NotificationManager.IMPORTANCE_DEFAULT,
             ).apply {
-                description = "Boop \u548c\u6536\u85cf\u597d\u53cb\u72b6\u6001\u63d0\u9192"
+                description = appContext.getString(R.string.social_notification_channel_description)
+            },
+        )
+    }
+
+    private fun ensureBackgroundMonitoringChannel() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                BACKGROUND_MONITORING_CHANNEL_ID,
+                appContext.getString(R.string.background_monitoring_channel_name),
+                NotificationManager.IMPORTANCE_LOW,
+            ).apply {
+                description = appContext.getString(R.string.background_monitoring_channel_description)
+                setShowBadge(false)
             },
         )
     }
 
     private companion object {
-        const val CHANNEL_ID = "vrcmomo_social"
+        const val SOCIAL_CHANNEL_ID = "vrcmomo_social"
+        const val BACKGROUND_MONITORING_CHANNEL_ID = "vrcmomo_background_monitoring"
+        const val BACKGROUND_NOTIFICATION_REQUEST_CODE = 0x4D4F
     }
 }

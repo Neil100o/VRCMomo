@@ -6,5 +6,6 @@ import kotlinx.serialization.Serializable
 data class SettingsData(
     val isDarkTheme: Boolean?,
     val themeColor: String?,
-    val languageTag: String?
+    val languageTag: String?,
+    val isBackgroundFriendMonitoringEnabled: Boolean = false,
 )
