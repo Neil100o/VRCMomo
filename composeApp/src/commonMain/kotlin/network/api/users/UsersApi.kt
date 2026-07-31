@@ -7,9 +7,10 @@ import io.github.vrcmteam.vrcm.network.api.users.data.SearchUserData
 import io.github.vrcmteam.vrcm.network.api.users.data.LimitedUserGroup
 import io.github.vrcmteam.vrcm.network.api.users.data.MutualFriendData
 import io.github.vrcmteam.vrcm.network.api.users.data.UserData
-import io.github.vrcmteam.vrcm.network.extensions.checkSuccess
 import io.github.vrcmteam.vrcm.network.api.users.data.CurrentUpdateUserData
 import io.github.vrcmteam.vrcm.network.api.users.data.UpdateUserInfoData
+import io.github.vrcmteam.vrcm.network.api.users.data.BoopData
+import io.github.vrcmteam.vrcm.network.extensions.checkSuccess
 import io.ktor.client.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
@@ -70,10 +71,13 @@ class UsersApi(private val client: HttpClient) {
             contentType(ContentType.Application.Json)
         }.checkSuccess { bodyAsText() }
 
-    suspend fun boop(userId: String): VRChatResponse =
+    suspend fun boop(
+        userId: String,
+        boopData: BoopData = BoopData(),
+    ): VRChatResponse =
         client.post("$USERS_API_PREFIX/$userId/boop") {
             contentType(ContentType.Application.Json)
-            setBody(emptyMap<String, String>())
+            setBody(boopData)
         }.checkSuccess()
 
 }
