@@ -40,7 +40,7 @@ object FriendLocationPager : Pager {
         get() = 0
     override val title: String
         @Composable
-        get() = "Location"
+        get() = strings.homePagerNow
 
     override val icon: Painter
         @Composable get() = rememberVectorPainter(image = AppIcons.Explore)

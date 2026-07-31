@@ -1,16 +1,29 @@
 package io.github.vrcmteam.vrcm.presentation.screens.home.pager
 
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.koin.koinScreenModel
 import io.github.vrcmteam.vrcm.network.api.attributes.FavoriteType
 import io.github.vrcmteam.vrcm.presentation.compoments.SearchTabType
 import io.github.vrcmteam.vrcm.presentation.compoments.StandardSearchList
+import io.github.vrcmteam.vrcm.presentation.extensions.currentNavigator
+import io.github.vrcmteam.vrcm.presentation.extensions.simpleClickable
 import io.github.vrcmteam.vrcm.presentation.screens.home.compoments.GroupOptionsUI
+import io.github.vrcmteam.vrcm.presentation.screens.user.FriendNetworkScreen
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
+import io.github.vrcmteam.vrcm.presentation.supports.AppIcons
 import io.github.vrcmteam.vrcm.presentation.supports.Pager
 import org.jetbrains.compose.resources.painterResource
 import vrcm.composeapp.generated.resources.Res
@@ -22,7 +35,7 @@ object FriendListPager : Pager {
         get() = 1
     override val title: String
         @Composable
-        get() = "Favorite"
+        get() = strings.homePagerFriends
 
     override val icon: Painter
         @Composable get() = painterResource(Res.drawable.star)
@@ -73,6 +86,11 @@ object FriendListPager : Pager {
             onTabSelected = friendListPagerModel::setSelectedTabIndex,
             isRefreshing = isRefreshing,
             doRefresh = friendListPagerModel::refreshCurrentTabCacheData,
+            headerContent = {
+                if (selectedTabIndex == SearchTabType.USER.index) {
+                    RelationshipHubCard()
+                }
+            },
             userList = filteredFriends,
             worldList = filteredWorlds,
             avatarList = filteredAvatars,
@@ -134,5 +152,61 @@ object FriendListPager : Pager {
                 }
             }
         )
+    }
+}
+
+
+@Composable
+private fun RelationshipHubCard() {
+    val navigator = currentNavigator
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .simpleClickable {
+                if (navigator.size <= 1) {
+                    navigator.push(FriendNetworkScreen)
+                }
+            },
+        shape = MaterialTheme.shapes.large,
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        tonalElevation = 1.dp,
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Surface(
+                modifier = Modifier.size(40.dp),
+                shape = MaterialTheme.shapes.medium,
+                color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.12f),
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+            ) {
+                Icon(
+                    modifier = Modifier.padding(9.dp),
+                    painter = rememberVectorPainter(AppIcons.Groups),
+                    contentDescription = null,
+                )
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = strings.relationshipHubTitle,
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                Text(
+                    text = strings.relationshipHubDescription,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.78f),
+                )
+            }
+            Text(
+                text = strings.relationshipHubAction,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+            )
+        }
     }
 }

@@ -15,11 +15,11 @@ import kotlinx.coroutines.launch
 
 object SearchListPager : Pager {
     override val index: Int
-        get() = 2
+        get() = 3
 
     override val title: String
         @Composable
-        get() = strings.fiendListPagerSearch
+        get() = strings.homePagerExplore
 
     override val icon: Painter
         @Composable

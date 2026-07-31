@@ -40,6 +40,7 @@ import io.github.vrcmteam.vrcm.presentation.screens.home.dialog.NotificationDial
 import io.github.vrcmteam.vrcm.presentation.screens.home.dialog.UserStatusDialog
 import io.github.vrcmteam.vrcm.presentation.screens.home.pager.FriendListPager
 import io.github.vrcmteam.vrcm.presentation.screens.home.pager.FriendLocationPager
+import io.github.vrcmteam.vrcm.presentation.screens.home.pager.MomentsPager
 import io.github.vrcmteam.vrcm.presentation.screens.home.pager.SearchListPager
 import io.github.vrcmteam.vrcm.presentation.screens.home.sheet.SettingsBottomSheet
 import io.github.vrcmteam.vrcm.presentation.screens.user.UserProfileScreen
@@ -54,6 +55,7 @@ object HomeScreen : Screen {
     private val pagerList = listOf(
         FriendLocationPager,
         FriendListPager,
+        MomentsPager,
         SearchListPager,
     )
 
