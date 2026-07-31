@@ -33,7 +33,7 @@ class NotificationApi(
 
 
     suspend fun fetchNotificationsV2(
-        type: String = NotificationType.All.value,
+        type: String? = null,
         // the only type you can see hidden content on is friendRequest
         hidden: Boolean = false,
         n: Int = 100,
@@ -41,11 +41,23 @@ class NotificationApi(
     ): List<NotificationDataV2> =
         client.get {
             url { path(AUTH_API_PREFIX, USER_API_PREFIX, NOTIFICATIONS_API_PREFIX) }
-            parameter("type", type)
+            type?.let { parameter("type", it) }
             parameter("hidden", hidden)
             parameter("n", n)
             parameter("offset", offset)
         }.checkSuccess()
+
+    /**
+     * The server no longer applies `type` as a result filter. Filter locally so unrelated
+     * notification types cannot hide incoming friend requests. The parameter is kept only for
+     * the documented hidden-notification permission check.
+     */
+    suspend fun fetchFriendRequestNotifications(hidden: Boolean = false): List<NotificationDataV2> =
+        fetchNotificationsV2(
+            type = NotificationType.FriendRequest.value.takeIf { hidden },
+            hidden = hidden,
+        )
+            .filter { it.type == NotificationType.FriendRequest.value }
 
 
 

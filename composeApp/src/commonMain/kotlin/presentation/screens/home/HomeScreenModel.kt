@@ -13,6 +13,7 @@ import io.github.vrcmteam.vrcm.network.api.notification.NotificationApi
 import io.github.vrcmteam.vrcm.network.api.users.UsersApi
 import io.github.vrcmteam.vrcm.network.api.users.data.UpdateUserInfoData
 import io.github.vrcmteam.vrcm.network.supports.VRCApiException
+import io.github.vrcmteam.vrcm.network.websocket.data.type.NotificationEvents
 import io.github.vrcmteam.vrcm.presentation.compoments.ToastText
 import io.github.vrcmteam.vrcm.presentation.extensions.onApiFailure
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.BoopNotificationResolver
@@ -26,6 +27,7 @@ import io.github.vrcmteam.vrcm.service.FriendService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 import org.koin.core.logger.Logger
 
 
@@ -39,6 +41,7 @@ class HomeScreenModel(
 ) : ScreenModel {
 
     private val boopNotificationResolver = BoopNotificationResolver()
+    private var initialized = false
 
     private val _currentUser = mutableStateOf<CurrentUserData?>(null)
 
@@ -57,11 +60,20 @@ class HomeScreenModel(
     val friendRequestNotifications by _friendRequestNotifications
 
     fun init() {
+        if (initialized) return
+        initialized = true
         friendService.preloadFriendList()
         friendLocationPagerModel.preloadFriendLocations()
         refreshCurrentUser()
         refreshFriendRequestNotification()
         refreshNotifications()
+        screenModelScope.launch {
+            SharedFlowCentre.webSocket.collect { event ->
+                if (event.event.type == NotificationEvents.Notification.typeName) {
+                    refreshAllNotification()
+                }
+            }
+        }
     }
 
     fun refreshAllNotification() {
@@ -71,7 +83,7 @@ class HomeScreenModel(
 
     private fun refreshFriendRequestNotification() =
         screenModelScope.launch(Dispatchers.IO) {
-            authService.reTryAuthCatching { notificationApi.fetchNotificationsV2(NotificationType.FriendRequest.value) }
+            authService.reTryAuthCatching { notificationApi.fetchFriendRequestNotifications() }
                 .onHomeFailure()
                 .onSuccess {
                     runCatching {
@@ -85,7 +97,7 @@ class HomeScreenModel(
                                 createdAt = data.createdAt,
                                 senderUserId = data.senderUserId,
                                 link = "user:${data.senderUserId}",
-                                type = data.type.value,
+                                type = data.type,
                                 actions = listOf(
                                     NotificationItemData.ActionData(
                                         data = "",

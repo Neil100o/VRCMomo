@@ -105,22 +105,33 @@ private fun LazyItemScope.NotificationItem(
     var isExpand by remember { mutableStateOf(false) }
     var respondedAction by remember { mutableStateOf<NotificationItemData.ActionData?>(null) }
     val isFriendRequest = item.type == NotificationType.FriendRequest.value
+    val actions = if (isFriendRequest) {
+        item.actions.sortedBy { it.type != "Accept" }
+    } else {
+        item.actions
+    }
     val senderId = item.senderId.orEmpty()
     val linkedUserId = item.linkedUserId.orEmpty()
     val contentText = if (isFriendRequest) "${item.message} ${strings.notificationFriendRequest}" else item.message
     val navigator = LocalNavigator.currentOrThrow
-    Box(
+    Card(
         modifier = Modifier.fillMaxWidth().animateItem()
-            .clip(MaterialTheme.shapes.large)
-            .background(MaterialTheme.colorScheme.surface)
+            .clip(MaterialTheme.shapes.large),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isFriendRequest) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.surface
+            },
+        ),
     ) {
         Column(
-            modifier = Modifier.fillMaxWidth().padding(6.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             Row(
-                modifier = Modifier.height(80.dp).fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                modifier = Modifier.height(72.dp).fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 AImage(
                     modifier = Modifier
@@ -134,12 +145,12 @@ private fun LazyItemScope.NotificationItem(
                                 )
                             }.sharedBoundsBy("${senderId}UserIcon")
                         }
-                        .size(120.dp, 80.dp)
+                        .size(72.dp)
                         .background(MaterialTheme.colorScheme.surfaceContainerHighest, MaterialTheme.shapes.medium)
                         .clip(MaterialTheme.shapes.medium),
                     imageData = item.imageUrl
                 )
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     TooltipBox(
                         positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
                         tooltip = {
@@ -153,17 +164,19 @@ private fun LazyItemScope.NotificationItem(
                             modifier = Modifier.fillMaxWidth(),
                             text = item.title ?: item.message,
                             style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.primary,
+                            color = if (isFriendRequest) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.primary,
                             overflow = TextOverflow.Ellipsis,
                             maxLines = 2,
                         )
                     }
                     Spacer(Modifier.weight(1f))
-                    Text(
-                        text = item.type,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (isFriendRequest) {
+                        Text(
+                            text = strings.profileSendFriendRequest,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                     Text(
                         text = remember {
                             @OptIn(ExperimentalTime::class)
@@ -175,36 +188,44 @@ private fun LazyItemScope.NotificationItem(
                 }
             }
             Row(
-                modifier = Modifier.fillMaxWidth().height(32.dp),
+                modifier = Modifier.fillMaxWidth().height(40.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Spacer(modifier = Modifier.weight(1f))
-                item.actions.forEach { action ->
-                    FilledTonalButton(
-                        modifier = Modifier.animateContentSize(),
-                        enabled = respondedAction != action,
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                        ),
-                        onClick = {
-                            if (action.type.equals("link", ignoreCase = true) && linkedUserId.isNotEmpty()) {
-                                navigator push UserProfileScreen(
-                                    userProfileVO = UserProfileVo(
-                                        id = linkedUserId,
-                                        profileImageUrl = item.imageUrl
-                                    )
+                actions.forEach { action ->
+                    val actionLabel = if (isFriendRequest && action.type.equals("Hide", ignoreCase = true)) {
+                        strings.cancel
+                    } else {
+                        action.type.capitalizeFirst()
+                    }
+                    val onClickAction = {
+                        if (action.type.equals("link", ignoreCase = true) && linkedUserId.isNotEmpty()) {
+                            navigator push UserProfileScreen(
+                                userProfileVO = UserProfileVo(
+                                    id = linkedUserId,
+                                    profileImageUrl = item.imageUrl
                                 )
-                            } else {
-                                respondedAction = action
-                                onResponse(item, action)
-                            }
+                            )
+                        } else {
+                            respondedAction = action
+                            onResponse(item, action)
                         }
-                    ) {
-                        Text(
-                            text = action.type.capitalizeFirst(),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onTertiaryContainer
-                        )
+                    }
+                    if (isFriendRequest && action.type.equals("Accept", ignoreCase = true)) {
+                        Button(
+                            modifier = Modifier.weight(1f).animateContentSize(),
+                            enabled = respondedAction != action,
+                            onClick = onClickAction,
+                        ) {
+                            Text(actionLabel, style = MaterialTheme.typography.labelLarge)
+                        }
+                    } else {
+                        OutlinedButton(
+                            modifier = Modifier.animateContentSize(),
+                            enabled = respondedAction != action,
+                            onClick = onClickAction,
+                        ) {
+                            Text(actionLabel, style = MaterialTheme.typography.labelMedium)
+                        }
                     }
                 }
                 IconButton(

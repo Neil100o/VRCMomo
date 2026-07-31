@@ -9,7 +9,6 @@ import io.github.vrcmteam.vrcm.core.extensions.pretty
 import io.github.vrcmteam.vrcm.core.shared.SharedFlowCentre
 import io.github.vrcmteam.vrcm.network.api.attributes.BlueprintType
 import io.github.vrcmteam.vrcm.network.api.attributes.LocationType
-import io.github.vrcmteam.vrcm.network.api.attributes.NotificationType
 import io.github.vrcmteam.vrcm.network.api.attributes.UserState
 import io.github.vrcmteam.vrcm.network.api.attributes.UserStatus
 import io.github.vrcmteam.vrcm.network.api.avatars.AvatarsApi
@@ -411,13 +410,10 @@ class UserProfileScreenModel(
         // 看看要不要加载大于 100 条的通知
         // 先看没有hidden的, 如果没有再看hidden的 TODO:是不是要单独抽成一个独立方法
         return@friendAction authService.reTryAuthCatching {
-            (notificationApi.fetchNotificationsV2(
-                type = NotificationType.FriendRequest.value,
-            ).firstOrNull { it.senderUserId == userId }
-                ?: notificationApi.fetchNotificationsV2(
-                    type = NotificationType.FriendRequest.value,
-                    hidden = true
-                ).firstOrNull { it.senderUserId == userId })
+            (notificationApi.fetchFriendRequestNotifications()
+                .firstOrNull { it.senderUserId == userId }
+                ?: notificationApi.fetchFriendRequestNotifications(hidden = true)
+                    .firstOrNull { it.senderUserId == userId })
                 ?.let {
                     notificationApi.acceptFriendRequest(it.id).isSuccess
                 } ?: error("Not found notification")

@@ -1,6 +1,5 @@
 package io.github.vrcmteam.vrcm.network.api.notification.data
 
-import io.github.vrcmteam.vrcm.network.api.attributes.NotificationType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -14,5 +13,9 @@ data class NotificationDataV2(
     val seen: Boolean,
     val senderUserId: String,
     val receiverUserId: String?,
-    val type: NotificationType,
+    /**
+     * Notification types are server-extensible.  In particular, the notifications endpoint now
+     * returns all notification kinds even when an older client sends a `type` query parameter.
+     */
+    val type: String,
 )
