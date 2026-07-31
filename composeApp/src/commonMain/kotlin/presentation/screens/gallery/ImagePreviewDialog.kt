@@ -54,6 +54,7 @@ class ImagePreviewDialog(
     private val fileName: String,
     private val fileExtension: String,
     private val directImageUrl: String? = null,
+    private val fileVersion: Int? = null,
 ) : SharedDialog {
 
     @Composable
@@ -71,7 +72,7 @@ class ImagePreviewDialog(
 
         ) {
             // 如果提供了直接URL（如拍立得），直接使用；否则从fileId构造
-            val imageUrl = directImageUrl ?: FileApi.convertFileUrl(fileId, 2048)
+            val imageUrl = directImageUrl ?: FileApi.imageUrl(fileId, fileVersion ?: 1, 2048)
             // 为了防止ZoomableImage拦截背景点击事件，单独放在一个Box中
             Box(
                 modifier = Modifier

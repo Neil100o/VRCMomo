@@ -459,11 +459,9 @@ sealed class GalleryTabPager(private val tagType: FileTagType) {
         ) {
             // 获取最新版本的图片URL
             val latestVersion = file.versions.maxByOrNull { it.version }
-            val imageUrl = if (latestVersion != null) {
-                FileApi.convertFileUrl(file.id, 256)
-            } else {
-                ""
-            }
+            val imageUrl = latestVersion?.let { version ->
+                FileApi.imageUrl(file.id, version.version, 256)
+            }.orEmpty()
             AnimatedVisibility(dialogContent == null || (dialogContent as ImagePreviewDialog).fileId != file.id) {
                 CoilImage(
                     imageModel = { imageUrl },
@@ -485,7 +483,14 @@ sealed class GalleryTabPager(private val tagType: FileTagType) {
                                 if (galleryScreenModel.hasSelection(tagType)) {
                                     galleryScreenModel.toggleSelection(tagType, file.id)
                                 } else {
-                                    setDialogContent(ImagePreviewDialog(file.id, file.name, file.extension))
+                                    setDialogContent(
+                                        ImagePreviewDialog(
+                                            fileId = file.id,
+                                            fileName = file.name,
+                                            fileExtension = file.extension,
+                                            fileVersion = latestVersion?.version,
+                                        )
+                                    )
                                 }
                             },
                             onLongClick = { galleryScreenModel.toggleSelection(tagType, file.id) },
