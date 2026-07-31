@@ -15,4 +15,7 @@ enum class NotificationType(val value: String) {
     @SerialName("invite")
     Invite("invite"),
 
+    @SerialName("boop")
+    Boop("boop"),
+
 }
