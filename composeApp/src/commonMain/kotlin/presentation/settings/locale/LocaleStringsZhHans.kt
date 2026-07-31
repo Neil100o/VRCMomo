@@ -245,7 +245,7 @@ internal object LocaleStringsZhHans : LocaleStrings() {
     override val userMutualGroups = "共同群组"
     override val profileBoop = "戳一下"
     override val profileBoopSuccess = "已戳一下"
-    override val profileBoopAlreadySent = "已经戳过了"
+    override val profileBoopAlreadySent = "???????????????????"
     override val profileBoopChooseEmoji = "选择戳戳表情"
     override val profileBoopDefaultEmoji = "默认"
     override val profileBoopReceived = "%s 戳了你一下"

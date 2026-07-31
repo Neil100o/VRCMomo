@@ -11,8 +11,8 @@ import io.github.vrcmteam.vrcm.network.api.attributes.UserStatus
 import io.github.vrcmteam.vrcm.network.api.auth.data.CurrentUserData
 import io.github.vrcmteam.vrcm.network.api.notification.NotificationApi
 import io.github.vrcmteam.vrcm.network.api.users.UsersApi
+import io.github.vrcmteam.vrcm.network.api.users.isBoopAlreadySentError
 import io.github.vrcmteam.vrcm.network.api.users.data.UpdateUserInfoData
-import io.github.vrcmteam.vrcm.network.supports.VRCApiException
 import io.github.vrcmteam.vrcm.network.websocket.data.type.NotificationEvents
 import io.github.vrcmteam.vrcm.presentation.compoments.ToastText
 import io.github.vrcmteam.vrcm.presentation.extensions.onApiFailure
@@ -231,7 +231,7 @@ class HomeScreenModel(
                     SharedFlowCentre.toastText.emit(ToastText.Success(successMessage))
                 }
                 .onFailure { error ->
-                    if (error is VRCApiException && error.code == 429) {
+                    if (error.isBoopAlreadySentError()) {
                         SharedFlowCentre.toastText.emit(ToastText.Info(alreadySentMessage))
                     } else {
                         Result.failure<Unit>(error).onHomeFailure()

@@ -216,6 +216,7 @@ data class UserProfileScreen(
         // 编辑备注弹窗
         val noteSavedMsg = strings.userNoteSaved
         val boopSuccessMessage = strings.profileBoopSuccess
+        val boopAlreadySentMessage = strings.profileBoopAlreadySent
         EditNoteDialog(
             isVisible = openEditNoteDialog,
             initialNote = currentUser.note,
@@ -233,6 +234,7 @@ data class UserProfileScreen(
                         userId = currentUser.id,
                         boopData = boopData,
                         successMessage = boopSuccessMessage,
+                        alreadySentMessage = boopAlreadySentMessage,
                     )
                     showBoopSelector = false
                 },

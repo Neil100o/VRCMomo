@@ -31,6 +31,7 @@ import io.github.vrcmteam.vrcm.network.api.worlds.data.WorldData
 import io.github.vrcmteam.vrcm.presentation.compoments.ToastText
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.FriendLocation
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.HomeInstanceVo
+import io.github.vrcmteam.vrcm.network.api.users.isBoopAlreadySentError
 import io.github.vrcmteam.vrcm.presentation.screens.home.pager.FriendLocationPagerModel
 import io.github.vrcmteam.vrcm.presentation.screens.user.data.UserProfileVo
 import io.github.vrcmteam.vrcm.service.AuthService
@@ -248,6 +249,7 @@ class UserProfileScreenModel(
 
     private val loadCoordinator = UserProfileLoadCoordinator()
     private val cacheMutex = Mutex()
+    private val boopMutex = Mutex()
     private var cachedUserData: UserData? = null
     private val cacheOwnerUserId = authService.accountDto().userId
 
@@ -597,14 +599,26 @@ class UserProfileScreenModel(
         userId: String,
         boopData: BoopData = BoopData(),
         successMessage: String,
+        alreadySentMessage: String,
     ) {
         screenModelScope.launch(Dispatchers.IO) {
-            authService.reTryAuthCatching {
-                usersApi.boop(userId, boopData)
-            }.onSuccess {
-                SharedFlowCentre.toastText.emit(ToastText.Success(successMessage))
-            }.onFailure {
-                handleError(it)
+            // A selector click can be delivered more than once while its dialog is closing.
+            // Do not turn one intentional Boop into multiple mutation requests.
+            if (!boopMutex.tryLock()) return@launch
+            try {
+                authService.reTryAuthCatching {
+                    usersApi.boop(userId, boopData)
+                }.onSuccess {
+                    SharedFlowCentre.toastText.emit(ToastText.Success(successMessage))
+                }.onFailure { error ->
+                    if (error.isBoopAlreadySentError()) {
+                        SharedFlowCentre.toastText.emit(ToastText.Info(alreadySentMessage))
+                    } else {
+                        handleError(error)
+                    }
+                }
+            } finally {
+                boopMutex.unlock()
             }
         }
     }
