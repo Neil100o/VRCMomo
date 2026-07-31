@@ -15,6 +15,7 @@ import io.github.vrcmteam.vrcm.network.api.avatars.AvatarsApi
 import io.github.vrcmteam.vrcm.network.api.avatars.data.AvatarData
 import io.github.vrcmteam.vrcm.network.api.favorite.FavoriteApi
 import io.github.vrcmteam.vrcm.network.api.attributes.FavoriteType
+import io.github.vrcmteam.vrcm.network.api.users.data.BoopData
 import io.github.vrcmteam.vrcm.network.api.friends.date.FriendData
 import io.github.vrcmteam.vrcm.network.api.groups.GroupsApi
 import io.github.vrcmteam.vrcm.network.api.instances.InstancesApi
@@ -315,7 +316,7 @@ class UserProfileScreenModel(
                     }.onFailure {
                         handleError(it)
                     }.onSuccess { response ->
-                        // 防止body序列化异常
+                        // 防止body序列化异�?
                         runCatching { response.body<UserData>() }
                             .onSuccess {
                                 val profile = UserProfileVo(it)
@@ -407,8 +408,8 @@ class UserProfileScreenModel(
     }
 
     suspend fun acceptFriendRequest(userId: String, message: String) = friendAction(message) {
-        // 看看要不要加载大于 100 条的通知
-        // 先看没有hidden的, 如果没有再看hidden的 TODO:是不是要单独抽成一个独立方法
+        // 看看要不要加载大�?100 条的通知
+        // 先看没有hidden�? 如果没有再看hidden�?TODO:是不是要单独抽成一个独立方�?
         return@friendAction authService.reTryAuthCatching {
             (notificationApi.fetchFriendRequestNotifications()
                 .firstOrNull { it.senderUserId == userId }
@@ -455,7 +456,7 @@ class UserProfileScreenModel(
     }
 
     /**
-     * 加载用户创建的世界列表
+     * 加载用户创建的世界列�?
      * 先用搜索API快速展示卡片，再懒加载description
      */
     fun loadCreatedWorlds(userId: String) {
@@ -498,8 +499,8 @@ class UserProfileScreenModel(
     }
 
     /**
-     * 加载用户创建的模型列表
-     * 注意：VRChat API 仅支持 user=me 查询自己的模型，不支持查询他人模型
+     * 加载用户创建的模型列�?
+     * 注意：VRChat API 仅支�?user=me 查询自己的模型，不支持查询他人模�?
      */
     fun loadCreatedAvatars() {
         if (_isLoadingAvatars.value) return
@@ -592,10 +593,14 @@ class UserProfileScreenModel(
         }
     }
 
-    fun boop(userId: String, successMessage: String) {
+    fun boop(
+        userId: String,
+        boopData: BoopData = BoopData(),
+        successMessage: String,
+    ) {
         screenModelScope.launch(Dispatchers.IO) {
             authService.reTryAuthCatching {
-                usersApi.boop(userId)
+                usersApi.boop(userId, boopData)
             }.onSuccess {
                 SharedFlowCentre.toastText.emit(ToastText.Success(successMessage))
             }.onFailure {
@@ -626,7 +631,7 @@ class UserProfileScreenModel(
 
     fun computeFriendLocation(location: String) {
         val type = LocationType.fromValue(location)
-        // 防止从用户详情页跳到世界页再点进非好友主页时 friendLocation 不刷新(按理来说看不到非好友位置)
+        // 防止从用户详情页跳到世界页再点进非好友主页时 friendLocation 不刷�?按理来说看不到非好友位置)
         if (type == LocationType.Offline) {
             _friendLocation.value = null
             return
@@ -647,10 +652,10 @@ class UserProfileScreenModel(
     }
 
     /**
-     * 获取房间实例的拥有者名称
+     * 获取房间实例的拥有者名�?
      *
      * @param instance 房间实例
-     * @param instantsVo 房间实例的视图对象
+     * @param instantsVo 房间实例的视图对�?
      */
     private suspend fun fetchAndSetOwner(
         ownerId: String?,

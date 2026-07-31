@@ -108,6 +108,7 @@ data class UserProfileScreen(
         var openEditNoteDialog by remember { mutableStateOf(false) }
         // Control showing favorite group management for Friend type
         var showFriendFavoriteSheet by remember { mutableStateOf(false) }
+        var showBoopSelector by remember { mutableStateOf(false) }
 
         // 保存/恢复滚动位置
         val outerScrollState = rememberScrollState()
@@ -176,7 +177,8 @@ data class UserProfileScreen(
                 openAlertDialog = { openAlertDialog = true },
                 openEditProfileDialog = { openEditProfileDialog = true },
                 onManageFriendFavorite = { showFriendFavoriteSheet = true },
-                openEditNoteDialog = { openEditNoteDialog = true }
+                openEditNoteDialog = { openEditNoteDialog = true },
+                openBoopSelector = { showBoopSelector = true },
             )
         }
         // Friend FavoriteType group management bottom sheet
@@ -213,6 +215,7 @@ data class UserProfileScreen(
         )
         // 编辑备注弹窗
         val noteSavedMsg = strings.userNoteSaved
+        val boopSuccessMessage = strings.profileBoopSuccess
         EditNoteDialog(
             isVisible = openEditNoteDialog,
             initialNote = currentUser.note,
@@ -222,6 +225,19 @@ data class UserProfileScreen(
                 openEditNoteDialog = false
             }
         )
+        if (showBoopSelector) {
+            BoopSelectorDialog(
+                onDismissRequest = { showBoopSelector = false },
+                onSelect = { boopData ->
+                    userProfileScreenModel.boop(
+                        userId = currentUser.id,
+                        boopData = boopData,
+                        successMessage = boopSuccessMessage,
+                    )
+                    showBoopSelector = false
+                },
+            )
+        }
     }
 
 }
@@ -236,6 +252,7 @@ private fun ColumnScope.SheetItems(
     openEditProfileDialog: () -> Unit,
     onManageFriendFavorite: () -> Unit,
     openEditNoteDialog: () -> Unit,
+    openBoopSelector: () -> Unit,
 ) {
     val navigator = LocalNavigator.currentOrThrow
     val localeStrings = strings
@@ -285,10 +302,7 @@ private fun ColumnScope.SheetItems(
             SheetButtonItem(text = localeStrings.profileBoop, onClick = {
                 scope.launch { hideSheet() }.invokeOnCompletion {
                     onHideCompletion()
-                    userProfileScreenModel.boop(
-                        userId = currentUser.id,
-                        successMessage = localeStrings.profileBoopSuccess,
-                    )
+                    openBoopSelector()
                 }
             })
             SheetButtonItem(text = localeStrings.profileInviteToMyInstance, onClick = {

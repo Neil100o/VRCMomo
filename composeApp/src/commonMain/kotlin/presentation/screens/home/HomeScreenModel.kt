@@ -28,6 +28,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.koin.core.logger.Logger
 
 
@@ -58,6 +60,14 @@ class HomeScreenModel(
 
     private val _friendRequestNotifications = mutableStateOf<List<NotificationItemData>>(emptyList())
     val friendRequestNotifications by _friendRequestNotifications
+
+    private val notificationStateMutex = Mutex()
+    private val knownNotificationIds = mutableSetOf<String>()
+    private val pendingReceivedBoops = mutableListOf<NotificationItemData>()
+    private var notificationSnapshotInitialized = false
+
+    private val _receivedBoop = mutableStateOf<NotificationItemData?>(null)
+    val receivedBoop by _receivedBoop
 
     fun init() {
         if (initialized) return
@@ -125,7 +135,7 @@ class HomeScreenModel(
                             displayName = friend.displayName,
                         )
                     }
-                    _notifications.value = boopNotificationResolver.resolve(
+                    val resolvedNotifications = boopNotificationResolver.resolve(
                         notifications = data.map(::NotificationItemData),
                         friends = friendPresentations,
                     ) { userId ->
@@ -136,8 +146,41 @@ class HomeScreenModel(
                             )
                         }
                     }
+                    notificationStateMutex.withLock {
+                        updateNotificationState(resolvedNotifications)
+                    }
                 }
         }
+
+    private fun updateNotificationState(items: List<NotificationItemData>) {
+        if (!notificationSnapshotInitialized) {
+            knownNotificationIds += items.map { it.id }
+            notificationSnapshotInitialized = true
+        } else {
+            items.asSequence()
+                .filter { it.type == NotificationType.Boop.value }
+                .filter { knownNotificationIds.add(it.id) }
+                .sortedBy { it.createdAt }
+                .forEach(pendingReceivedBoops::add)
+            showNextReceivedBoopIfNeeded()
+        }
+        _notifications.value = items
+    }
+
+    private fun showNextReceivedBoopIfNeeded() {
+        if (_receivedBoop.value == null && pendingReceivedBoops.isNotEmpty()) {
+            _receivedBoop.value = pendingReceivedBoops.removeAt(0)
+        }
+    }
+
+    fun dismissReceivedBoop() {
+        screenModelScope.launch {
+            notificationStateMutex.withLock {
+                _receivedBoop.value = null
+                showNextReceivedBoopIfNeeded()
+            }
+        }
+    }
 
     fun responseAllNotification(
         item: NotificationItemData,

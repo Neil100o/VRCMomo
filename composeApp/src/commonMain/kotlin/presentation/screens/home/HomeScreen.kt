@@ -34,6 +34,7 @@ import io.github.vrcmteam.vrcm.presentation.animations.IconBoundsTransform
 import io.github.vrcmteam.vrcm.presentation.compoments.*
 import io.github.vrcmteam.vrcm.presentation.extensions.*
 import io.github.vrcmteam.vrcm.presentation.screens.auth.AuthAnimeScreen
+import io.github.vrcmteam.vrcm.presentation.screens.home.dialog.BoopReceivedDialog
 import io.github.vrcmteam.vrcm.presentation.screens.home.dialog.NotificationDialog
 import io.github.vrcmteam.vrcm.presentation.screens.home.dialog.UserStatusDialog
 import io.github.vrcmteam.vrcm.presentation.screens.home.pager.FriendListPager
@@ -93,6 +94,13 @@ object HomeScreen : Screen {
                     }
                 }
             }
+        }
+
+        homeScreenModel.receivedBoop?.let { boop ->
+            BoopReceivedDialog(
+                item = boop,
+                onDismissRequest = homeScreenModel::dismissReceivedBoop,
+            )
         }
 
     }

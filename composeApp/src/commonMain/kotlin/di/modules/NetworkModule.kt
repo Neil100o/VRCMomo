@@ -2,7 +2,6 @@ package io.github.vrcmteam.vrcm.di.modules
 
 import io.github.vrcmteam.vrcm.network.api.avatars.AvatarsApi
 import io.github.vrcmteam.vrcm.network.api.auth.AuthApi
-import io.github.vrcmteam.vrcm.network.api.boop.BoopApi
 import io.github.vrcmteam.vrcm.network.api.favorite.FavoriteApi
 import io.github.vrcmteam.vrcm.network.api.files.FileApi
 import io.github.vrcmteam.vrcm.network.api.friends.FriendsApi
@@ -40,7 +39,6 @@ internal val networkModule = module(true) {
     singleOf(::GitHubApi)
     singleOf(::GroupsApi)
     singleOf(::PrintsApi)
-    singleOf(::BoopApi)
     single<HttpClient> { apiClientDefinition(it) }
     single { createNetworkJson() }
 }

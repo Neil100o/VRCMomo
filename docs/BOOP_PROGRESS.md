@@ -23,11 +23,12 @@ Finding:
 ```kotlin
 userProfileScreenModel.boop(
     userId = currentUser.id,
+    boopData = selectedEmoji,
     successMessage = localeStrings.profileBoopSuccess,
 )
 ```
 
-Status: UI exists, backend implementation missing.
+Status: UI exists and opens the emoji selector before sending.
 
 ---
 
@@ -44,12 +45,8 @@ Finding:
   - `deleteFriendRequest`
   - `unfriend`
   - `acceptFriendRequest`
-- Does not currently contain a working `boop()` implementation.
-
-Needed changes:
-
-- Inject Boop API.
-- Implement `boop(userId, successMessage)`.
+- Contains a working `boop(userId, boopData, successMessage)` implementation.
+- Sends the request through `UsersApi.boop(...)`.
 
 ---
 
@@ -90,20 +87,25 @@ Current responsibility:
 
 Still needed:
 
-- Parse emoji information.
-- Trigger popup/overlay display.
+- Parse emoji information from the notification payload.
+
+The home model now keeps an initial notification snapshot, so opening the app does not replay historical Boops. Later WebSocket-triggered refreshes enqueue newly received Boops for an in-app dialog.
 
 ---
 
-## Missing implementation
+## Current implementation
 
-- [ ] Implement Boop API client.
-- [ ] Add Boop request data model.
-- [ ] Inject Boop API into `UserProfileScreenModel`.
-- [ ] Implement `UserProfileScreenModel.boop()`.
-- [ ] Verify official endpoint: `POST /users/{userId}/boop`.
+- [x] Implement Boop API client (`network/api/boop/BoopApi.kt`).
+- [x] Add Boop request data model (`network/api/boop/data/SendBoopData.kt`).
+- [x] Verify and use the official endpoint: `POST /api/1/users/{userId}/boop`.
+- [x] Add the Boop emoji selector to the user profile action sheet.
+- [x] Pass `emojiId`, `emojiVersion`, and `inventoryItemId` through the request model.
+- [x] Add a foreground in-app dialog for newly received Boops.
+
+## Remaining work
+
+- [ ] Confirm the exact default emoji string constants against a captured official request.
 - [ ] Parse emoji information from received boop notifications.
-- [ ] Add in-app popup for received boops.
 - [ ] Add Android/iOS notification support for background boops.
 
 ## Design direction
@@ -114,10 +116,10 @@ First milestone:
 
 Second milestone:
 
-`Received Boop -> App overlay popup`
+`Received Boop -> App overlay popup` (foreground implementation complete)
 
 Third milestone:
 
-`Emoji picker -> custom/VRC+ emoji support`
+`VRC+ inventory emoji selection -> custom emoji support`
 
 Keep this file updated with discovered paths, APIs and implementation notes so future development sessions can resume without rediscovering the architecture.
