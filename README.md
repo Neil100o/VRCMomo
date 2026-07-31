@@ -1,6 +1,6 @@
 <div align="center">
 
-# <img src="image/Logo.png" width="50" height="50"  alt="logo"/> VRCM
+# <img src="image/Logo.png" width="50" height="50"  alt="logo"/> VRCMomo
 
 <!-- Language Selection -->
 **🌐 Languages / 语言 / 言語:**  
@@ -8,8 +8,8 @@
 
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub release](https://img.shields.io/github/release/vrcm-team/VRCM.svg)](https://github.com/vrcm-team/VRCM/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/vrcm-team/VRCM/total?color=6451f1)](https://github.com/vrcm-team/VRCM/releases/latest)
+[![GitHub release](https://img.shields.io/github/release/Neil100o/VRCMoskavis.svg)](https://github.com/Neil100o/VRCMoskavis/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Neil100o/VRCMoskavis/total?color=6451f1)](https://github.com/Neil100o/VRCMoskavis/releases/latest)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-blue.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.10.3-blue)](https://www.jetbrains.com/lp/compose-multiplatform/)
 
@@ -143,10 +143,10 @@ A feature-rich cross-platform VRChat friend management application that lets you
 
 </div>
 
-- VRCM is not affiliated with VRChat Inc and does not represent the views or opinions of VRChat Inc
-- VRCM does not store or collect any data outside of your device
+- VRCMomo is not affiliated with VRChat Inc and does not represent the views or opinions of VRChat Inc
+- VRCMomo does not store or collect any data outside of your device
 - The application author is not responsible for any damage caused by this application
-- VRCM does not modify or tamper with the game and does not violate [VRChat Terms of Service](https://hello.vrchat.com/legal)
+- VRCMomo does not modify or tamper with the game and does not violate [VRChat Terms of Service](https://hello.vrchat.com/legal)
 - Please use this application responsibly and comply with relevant laws, regulations, and platform rules
 
 <div align="center">
@@ -171,6 +171,6 @@ Contributions of code, bug reports, or feature suggestions are welcome! Please c
 
 **If this project is helpful to you, please give us a ⭐**
 
-[Download Latest Release](https://github.com/vrcm-team/VRCM/releases/latest) • [Report Issues](https://github.com/vrcm-team/VRCM/issues) • [Feature Requests](https://github.com/vrcm-team/VRCM/discussions)
+[Download Latest Release](https://github.com/Neil100o/VRCMoskavis/releases/latest) • [Report Issues](https://github.com/Neil100o/VRCMoskavis/issues) • [Feature Requests](https://github.com/Neil100o/VRCMoskavis/discussions)
 
 </div>

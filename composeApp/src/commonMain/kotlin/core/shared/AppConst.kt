@@ -1,11 +1,11 @@
 package io.github.vrcmteam.vrcm.core.shared
 
 object AppConst {
-    const val APP_NAME = "VRCM"
+    const val APP_NAME = "VRCMomo"
 
-    const val APP_VERSION = "1.0.7"
+    const val APP_VERSION = "1.0.9"
 
-    const val APP_GITHUB_URL = "https://github.com/vrcm-team/VRCM"
+    const val APP_GITHUB_URL = "https://github.com/Neil100o/VRCMoskavis"
 
-    const val APP_GITHUB_LATEST_RELEASE_URL = "https://api.github.com/repos/vrcm-team/VRCM/releases/latest"
+    const val APP_GITHUB_LATEST_RELEASE_URL = "https://api.github.com/repos/Neil100o/VRCMoskavis/releases/latest"
 }

@@ -75,5 +75,5 @@ jobs:
       - name: Upload Debug Artifact # 上传构建好的 Debug APK 作为工作流产物
         uses: actions/upload-artifact@v4
         with:
-          name: VRCM-DEBUG
+          name: VRCMomo-DEBUG
           path: artifact/*.apk

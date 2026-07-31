@@ -24,6 +24,7 @@ import io.github.vrcmteam.vrcm.presentation.screens.home.data.responseTarget
 import io.github.vrcmteam.vrcm.presentation.screens.home.pager.FriendLocationPagerModel
 import io.github.vrcmteam.vrcm.service.AuthService
 import io.github.vrcmteam.vrcm.service.FriendService
+import io.github.vrcmteam.vrcm.service.SocialNotificationService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
@@ -38,6 +39,7 @@ class HomeScreenModel(
     private val usersApi: UsersApi,
     private val notificationApi: NotificationApi,
     private val friendService: FriendService,
+    private val socialNotificationService: SocialNotificationService,
     private val friendLocationPagerModel: FriendLocationPagerModel,
     private val logger: Logger,
 ) : ScreenModel {
@@ -72,6 +74,7 @@ class HomeScreenModel(
     fun init() {
         if (initialized) return
         initialized = true
+        socialNotificationService.start()
         friendService.preloadFriendList()
         friendLocationPagerModel.preloadFriendLocations()
         refreshCurrentUser()
@@ -157,11 +160,15 @@ class HomeScreenModel(
             knownNotificationIds += items.map { it.id }
             notificationSnapshotInitialized = true
         } else {
-            items.asSequence()
+            val newBoops = items.asSequence()
                 .filter { it.type == NotificationType.Boop.value }
                 .filter { knownNotificationIds.add(it.id) }
                 .sortedBy { it.createdAt }
-                .forEach(pendingReceivedBoops::add)
+                .toList()
+            newBoops.forEach { notification ->
+                pendingReceivedBoops.add(notification)
+                socialNotificationService.notifyBoop(notification)
+            }
             showNextReceivedBoopIfNeeded()
         }
         _notifications.value = items

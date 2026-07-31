@@ -6,6 +6,8 @@ import com.russhwolf.settings.Settings
 import io.github.vrcmteam.vrcm.AppPlatform
 import io.github.vrcmteam.vrcm.IosAppPlatform
 import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.IosPlatformImageCodec
+import io.github.vrcmteam.vrcm.presentation.notifications.IosPlatformNotificationService
+import io.github.vrcmteam.vrcm.presentation.notifications.PlatformNotificationService
 import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.PlatformImageCodec
 import org.koin.core.logger.Logger
 import org.koin.core.logger.PrintLogger
@@ -21,4 +23,5 @@ actual val platformModule: Module = module {
     singleOf<Settings.Factory>(NSUserDefaultsSettings::Factory)
     singleOf<AppPlatform>(::IosAppPlatform)
     singleOf(::IosPlatformImageCodec) bind PlatformImageCodec::class
+    singleOf(::IosPlatformNotificationService) bind PlatformNotificationService::class
 }

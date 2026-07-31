@@ -6,6 +6,8 @@ import com.russhwolf.settings.Settings
 import io.github.vrcmteam.vrcm.AppPlatform
 import io.github.vrcmteam.vrcm.DesktopAppPlatform
 import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.DesktopPlatformImageCodec
+import io.github.vrcmteam.vrcm.presentation.notifications.DesktopPlatformNotificationService
+import io.github.vrcmteam.vrcm.presentation.notifications.PlatformNotificationService
 import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.PlatformImageCodec
 import okio.FileSystem
 import org.koin.core.logger.Logger
@@ -38,4 +40,5 @@ actual val platformModule: Module = module {
     }
     singleOf<AppPlatform>(::DesktopAppPlatform)
     singleOf(::DesktopPlatformImageCodec) bind PlatformImageCodec::class
+    singleOf(::DesktopPlatformNotificationService) bind PlatformNotificationService::class
 }

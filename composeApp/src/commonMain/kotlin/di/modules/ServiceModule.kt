@@ -10,5 +10,6 @@ val serviceModule: Module = module {
     singleOf(::AuthService)
     singleOf(::FavoriteService)
     singleOf(::FriendService)
+    singleOf(::SocialNotificationService)
     singleOf(::WorldPlatformService)
 }

@@ -5,6 +5,8 @@ import com.russhwolf.settings.SharedPreferencesSettings
 import io.github.vrcmteam.vrcm.AndroidAppPlatform
 import io.github.vrcmteam.vrcm.AppPlatform
 import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.AndroidPlatformImageCodec
+import io.github.vrcmteam.vrcm.presentation.notifications.AndroidPlatformNotificationService
+import io.github.vrcmteam.vrcm.presentation.notifications.PlatformNotificationService
 import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.PlatformImageCodec
 import org.koin.android.logger.AndroidLogger
 import org.koin.core.logger.Logger
@@ -18,4 +20,5 @@ actual val platformModule: Module = module {
     singleOf(SharedPreferencesSettings::Factory) bind Settings.Factory::class
     singleOf(::AndroidAppPlatform) bind AppPlatform::class
     singleOf(::AndroidPlatformImageCodec) bind PlatformImageCodec::class
+    singleOf(::AndroidPlatformNotificationService) bind PlatformNotificationService::class
 }

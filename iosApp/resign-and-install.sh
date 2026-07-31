@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Re-sign the ad-hoc VRCM IPA with a local Apple certificate and provisioning
+# Re-sign the ad-hoc VRCMomo IPA with a local Apple certificate and provisioning
 # profile, then optionally install it on a connected iPhone.
 #
 # Build the input IPA first:
@@ -42,7 +42,8 @@ if [ -f "$CONFIG_FILE" ]; then
   source "$CONFIG_FILE"
 fi
 
-IPA="${_env_IPA:-${IPA:-$SCRIPT_DIR/build/archives/release/VRCM.ipa}}"
+DEFAULT_IPA="$(find "$SCRIPT_DIR/build/archives/release" -maxdepth 1 -type f -name 'VRCMomo-v*.ipa' -print 2>/dev/null | sort -V | tail -n 1)"
+IPA="${_env_IPA:-${IPA:-$DEFAULT_IPA}}"
 IDENTITY="${_env_IDENTITY:-${IDENTITY:-}}"
 PROFILE="${_env_PROFILE:-${PROFILE:-}}"
 BUNDLE_ID="${_env_BUNDLE_ID:-${BUNDLE_ID:-}}"
@@ -381,7 +382,7 @@ codesign -dv "$APP" 2>&1 \
   | grep -iE "Authority|TeamIdentifier|Identifier" \
   | sed 's/^/    /' || true
 
-OUT_IPA="$SCRIPT_DIR/build/archives/release/VRCM-signed.ipa"
+OUT_IPA="$SCRIPT_DIR/build/archives/release/VRCMomo-signed.ipa"
 rm -f "$OUT_IPA"
 (
   cd "$WORK"
@@ -414,7 +415,7 @@ if xcrun devicectl list devices >/dev/null 2>&1; then
   [ -n "$DEVICE" ] || die "No connected iPhone found. Set DEVICE or run --list."
   log "Target device: $DEVICE"
   if xcrun devicectl device install app --device "$DEVICE" "$APP"; then
-    ok "Installation completed with devicectl. You can now open VRCM."
+    ok "Installation completed with devicectl. You can now open VRCMomo."
     exit 0
   fi
   die "devicectl installation failed."

@@ -78,7 +78,7 @@ jobs:
       - name: Move Release APK
         run: |
           mkdir -p artifact
-          APK_NAME="VRCM-v${APP_VERSION}.apk"
+          APK_NAME="VRCMomo-v${APP_VERSION}.apk"
           find . -name "*.apk" -exec cp {} artifact/${APK_NAME} \;
           
       - name: Create Release
@@ -86,7 +86,7 @@ jobs:
         uses: actions/create-release@v1
         with:
           tag_name: v${{ env.APP_VERSION }}-build-${{ github.run_number }}
-          release_name: "VRCM v${{ env.APP_VERSION }}"
+          release_name: "VRCMomo v${{ env.APP_VERSION }}"
           draft: false
           prerelease: false
         env:

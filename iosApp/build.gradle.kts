@@ -1,8 +1,15 @@
+import org.gradle.api.artifacts.VersionCatalogsExtension
 import org.gradle.api.tasks.Exec
 
 val xcodeProject = layout.projectDirectory.file("iosApp.xcodeproj")
 val xcodeScheme = "iosApp"
-val ipaName = "VRCM"
+val appVersion = extensions
+    .getByType<VersionCatalogsExtension>()
+    .named("libs")
+    .findVersion("app-version")
+    .get()
+    .requiredVersion
+val ipaName = "VRCMomo-v$appVersion"
 val packageIpaScript = layout.projectDirectory.file("package-ipa.sh")
 
 fun registerArchiveTask(
