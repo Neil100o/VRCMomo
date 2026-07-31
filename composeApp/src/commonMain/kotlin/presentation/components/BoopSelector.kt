@@ -12,28 +12,34 @@ import androidx.compose.ui.unit.dp
 import io.github.vrcmteam.vrcm.network.api.users.data.BoopData
 
 /**
- * VRChat default Boop emoji constants.
+ * VRChat default Boop emoji mapping.
  *
- * emojiId accepts string constants for default emojis or FileIDs for custom
- * inventory emojis.
+ * Keep display names and API ids separate so custom emoji support can be added
+ * later without changing the selector UI.
  */
+data class BoopEmoji(
+    val name: String,
+    val emojiId: String,
+    val display: String,
+)
+
 private val defaultBoops = listOf(
-    "🎁" to "Gift",
-    "🎁" to "Gifts",
-    "💍" to "Life Ring",
-    "🌿" to "Mistletoe",
-    "💰" to "Money",
-    "🕶️" to "Neon Shades",
-    "🧴" to "Sun Lotion",
-    "👻" to "Boo",
-    "💔" to "Broken Heart",
-    "❗" to "Exclamation",
-    "▶️" to "Go",
-    "❤️" to "Heart",
-    "🎵" to "Music Note",
-    "❓" to "Question",
-    "🛑" to "Stop",
-    "💤" to "Zzz",
+    BoopEmoji("Gift", "Gift", "🎁"),
+    BoopEmoji("Gifts", "Gifts", "🎁"),
+    BoopEmoji("Life Ring", "Life Ring", "💍"),
+    BoopEmoji("Mistletoe", "Mistletoe", "🌿"),
+    BoopEmoji("Money", "Money", "💰"),
+    BoopEmoji("Neon Shades", "Neon Shades", "🕶️"),
+    BoopEmoji("Sun Lotion", "Sun Lotion", "🧴"),
+    BoopEmoji("Boo", "Boo", "👻"),
+    BoopEmoji("Broken Heart", "Broken Heart", "💔"),
+    BoopEmoji("Exclamation", "Exclamation", "❗"),
+    BoopEmoji("Go", "Go", "▶️"),
+    BoopEmoji("Heart", "Heart", "❤️"),
+    BoopEmoji("Music Note", "Music Note", "🎵"),
+    BoopEmoji("Question", "Question", "❓"),
+    BoopEmoji("Stop", "Stop", "🛑"),
+    BoopEmoji("Zzz", "Zzz", "💤"),
 )
 
 @Composable
@@ -48,14 +54,14 @@ fun BoopSelector(
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                defaultBoops.forEach { (display, id) ->
+                defaultBoops.forEach { boop ->
                     TextButton(
                         modifier = Modifier.padding(4.dp),
                         onClick = {
-                            onSelect(BoopData(emojiId = id))
+                            onSelect(BoopData(emojiId = boop.emojiId))
                         },
                     ) {
-                        Text(display)
+                        Text(boop.display)
                     }
                 }
             }
