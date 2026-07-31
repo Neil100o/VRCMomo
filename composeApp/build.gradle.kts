@@ -126,9 +126,9 @@ android {
 
     applicationVariants.all {
         outputs.all {
-            val variantName = rootProject.name
+            val artifactName = "VRCMomo"
             val versionName = versionName
-            val newApkName = "$variantName-v$versionName.apk"
+            val newApkName = "$artifactName-v$versionName.apk"
             (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl).outputFileName = newApkName
         }
     }
