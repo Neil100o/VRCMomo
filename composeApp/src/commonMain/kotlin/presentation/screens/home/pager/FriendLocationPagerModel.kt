@@ -20,6 +20,7 @@ import io.github.vrcmteam.vrcm.service.AccountGenerationToken
 import io.github.vrcmteam.vrcm.service.AccountGenerationTracker
 import io.github.vrcmteam.vrcm.service.AuthService
 import io.github.vrcmteam.vrcm.service.FriendService
+import io.github.vrcmteam.vrcm.service.FriendActivityService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -73,6 +74,7 @@ class FriendLocationPagerModel(
     private val groupsApi: GroupsApi,
     private val instancesApi: InstancesApi,
     private val authService: AuthService,
+    private val friendActivityService: FriendActivityService,
 ) : ScreenModel {
     private val initialSession = SharedFlowCentre.currentSession.value
     private val publishedState = FriendLocationPublishedState()
@@ -203,6 +205,7 @@ class FriendLocationPagerModel(
         updateMutex.withLock { presenceStore.beginRefresh() }
         try {
             val currentUser = authService.currentUser(isRefresh = true)
+            friendActivityService.updateSelfInstance(currentUser.presence.instance)
             updateMutex.withLock {
                 if (accountTracker.isCurrent(token)) {
                     presenceStore.setActiveFriends(currentUser.activeFriends)

@@ -43,6 +43,8 @@ import io.github.vrcmteam.vrcm.presentation.screens.home.data.FriendLocation
 import io.github.vrcmteam.vrcm.presentation.screens.group.GroupProfileScreen
 import io.github.vrcmteam.vrcm.presentation.screens.group.data.GroupProfileVo
 import io.github.vrcmteam.vrcm.presentation.screens.user.data.UserProfileVo
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
+import io.github.vrcmteam.vrcm.presentation.extensions.ignoredFormat
 import io.github.vrcmteam.vrcm.presentation.screens.world.RecentWorldsScreen
 import io.github.vrcmteam.vrcm.presentation.screens.user.FriendNetworkScreen
 import io.github.vrcmteam.vrcm.presentation.screens.user.MutualFriendsScreen
@@ -60,7 +62,13 @@ import io.github.vrcmteam.vrcm.network.api.worlds.data.FavoritedWorld
 import io.github.vrcmteam.vrcm.network.api.avatars.data.AvatarData
 import io.github.vrcmteam.vrcm.presentation.screens.avatar.AvatarProfileScreen
 import io.github.vrcmteam.vrcm.presentation.screens.avatar.data.AvatarProfileVo
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import org.koin.core.parameter.parametersOf
 
 internal class OneShotScrollRestorer(savedPosition: Int) {
@@ -149,6 +157,7 @@ data class UserProfileScreen(
                 ProfileContent(
                     currentUser = currentUser,
                     friendLocation = userProfileScreenModel.friendLocation,
+                    friendActivityStats = userProfileScreenModel.friendActivityStats,
                     userGroups = userGroups,
                     mutualGroups = mutualGroups,
                     createdWorlds = userProfileScreenModel.createdWorlds,
@@ -432,6 +441,125 @@ private fun ColumnScope.SheetButtonItem(
     }
 }
 
+@OptIn(ExperimentalTime::class)
+@Composable
+private fun RelationshipStatsCard(stats: FriendActivityStats?) {
+    val localeStrings = strings
+    var nowMillis by remember { mutableLongStateOf(Clock.System.now().toEpochMilliseconds()) }
+
+    LaunchedEffect(stats?.userId) {
+        while (true) {
+            nowMillis = Clock.System.now().toEpochMilliseconds()
+            delay(30_000)
+        }
+    }
+
+    val togetherDuration = stats?.let { currentStats ->
+        currentStats.togetherDurationMillis +
+            (currentStats.activeTogetherSinceMillis?.let { nowMillis - it } ?: 0L).coerceAtLeast(0L)
+    } ?: 0L
+    val isOffline = stats?.let { currentStats ->
+        currentStats.lastObservedLocation == "offline" ||
+            currentStats.lastObservedStatus.equals("offline", ignoreCase = true)
+    } == true
+    val offlineDuration = stats?.lastOfflineAtMillis?.let { offlineAt ->
+        (nowMillis - offlineAt).coerceAtLeast(0L)
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 10.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        shape = MaterialTheme.shapes.large,
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = localeStrings.friendActivityTitle,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            RelationshipStatRow(
+                label = localeStrings.friendActivityLastSeenTogether,
+                value = formatActivityTimestamp(stats?.lastSeenTogetherAtMillis, localeStrings.friendActivityNoRecord),
+            )
+            RelationshipStatRow(
+                label = localeStrings.friendActivityMeetingCount,
+                value = if (stats == null) localeStrings.friendActivityNoRecord
+                else "${stats.meetingCount} ${localeStrings.friendActivityMeetingUnit}",
+            )
+            RelationshipStatRow(
+                label = localeStrings.friendActivityTogetherDuration,
+                value = if (stats == null) localeStrings.friendActivityNoRecord else formatActivityDuration(togetherDuration, localeStrings),
+            )
+            RelationshipStatRow(
+                label = localeStrings.friendActivityOfflineDuration,
+                value = when {
+                    stats == null -> localeStrings.friendActivityNoRecord
+                    isOffline && offlineDuration != null -> formatActivityDuration(offlineDuration, localeStrings)
+                    else -> localeStrings.friendActivityCurrentlyOnline
+                },
+            )
+            RelationshipStatRow(
+                label = localeStrings.friendActivityLastActive,
+                value = formatActivityTimestamp(stats?.lastActivityAtMillis, localeStrings.friendActivityNoRecord),
+            )
+        }
+    }
+}
+
+@Composable
+private fun RelationshipStatRow(
+    label: String,
+    value: String,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.width(12.dp))
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@OptIn(ExperimentalTime::class)
+private fun formatActivityTimestamp(epochMillis: Long?, emptyLabel: String): String =
+    epochMillis?.let {
+        Instant.fromEpochMilliseconds(it)
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+            .ignoredFormat
+    } ?: emptyLabel
+
+private fun formatActivityDuration(
+    milliseconds: Long,
+    localeStrings: io.github.vrcmteam.vrcm.presentation.settings.locale.LocaleStrings,
+): String {
+    val totalMinutes = milliseconds / 60_000L
+    val days = totalMinutes / (24 * 60)
+    val hours = (totalMinutes / 60) % 24
+    val minutes = totalMinutes % 60
+    return when {
+        days > 0 -> "$days${localeStrings.friendActivityDurationDay} $hours${localeStrings.friendActivityDurationHour}"
+        hours > 0 -> "$hours${localeStrings.friendActivityDurationHour} $minutes${localeStrings.friendActivityDurationMinute}"
+        else -> "$minutes${localeStrings.friendActivityDurationMinute}"
+    }
+}
+
 @Composable
 private fun JsonAlertDialog(
     openAlertDialog: Boolean,
@@ -470,6 +598,7 @@ private fun JsonAlertDialog(
 private fun ColumnScope.ProfileContent(
     currentUser: UserProfileVo?,
     friendLocation: FriendLocation?,
+    friendActivityStats: FriendActivityStats?,
     userGroups: List<LimitedUserGroup>,
     mutualGroups: List<LimitedUserGroup>,
     createdWorlds: List<WorldData>,
@@ -501,6 +630,9 @@ private fun ColumnScope.ProfileContent(
     UserPronouns(pronouns = currentUser.pronouns)
     // status
     UserStatusRow(canCopy = true, user = currentUser,)
+    if (currentUser.isFriend && !currentUser.isSelf) {
+        RelationshipStatsCard(friendActivityStats)
+    }
     // LanguagesRow && LinksRow
     LangAndLinkRow(currentUser)
 

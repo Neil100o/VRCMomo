@@ -16,10 +16,12 @@ import io.github.vrcmteam.vrcm.network.websocket.data.content.FriendActiveConten
 import io.github.vrcmteam.vrcm.network.websocket.data.content.UserContent
 import io.github.vrcmteam.vrcm.network.websocket.data.type.FriendEvents
 import io.github.vrcmteam.vrcm.service.AuthService
+import io.github.vrcmteam.vrcm.service.FriendActivityService
 import io.github.vrcmteam.vrcm.service.FriendService
 import io.github.vrcmteam.vrcm.service.data.AccountDto
 import io.github.vrcmteam.vrcm.storage.AccountCacheManager
 import io.github.vrcmteam.vrcm.storage.AccountDao
+import io.github.vrcmteam.vrcm.storage.FriendActivityCacheDao
 import io.github.vrcmteam.vrcm.storage.FriendListCacheDao
 import io.github.vrcmteam.vrcm.storage.UserProfileCacheDao
 import io.github.vrcmteam.vrcm.testing.MainDispatcherTest
@@ -61,6 +63,7 @@ class LateSessionConsumerIntegrationTest : MainDispatcherTest() {
         val cacheManager = AccountCacheManager(
             friendListCacheDao = friendListCacheDao,
             userProfileCacheDao = UserProfileCacheDao(MapSettings()),
+            friendActivityCacheDao = FriendActivityCacheDao(MapSettings()),
         )
         val authService = AuthService(
             authApi = AuthApi(client),
@@ -68,12 +71,14 @@ class LateSessionConsumerIntegrationTest : MainDispatcherTest() {
             cookiesStorage = PersistentCookiesStorage(EmptyLogger()),
             accountCacheManager = cacheManager,
         )
+        val friendActivityService = FriendActivityService(FriendActivityCacheDao(MapSettings()))
         val friendService = FriendService(
             friendsApi = FriendsApi(client),
             authService = authService,
             json = json,
             friendListCacheDao = friendListCacheDao,
             accountCacheManager = cacheManager,
+            friendActivityService = friendActivityService,
         )
         val locationModel = FriendLocationPagerModel(
             friendService = friendService,
@@ -81,6 +86,7 @@ class LateSessionConsumerIntegrationTest : MainDispatcherTest() {
             groupsApi = GroupsApi(client),
             instancesApi = InstancesApi(client),
             authService = authService,
+            friendActivityService = friendActivityService,
         )
 
         try {

@@ -14,7 +14,8 @@ class AccountCacheManagerTest {
         val profileSettings = MapSettings()
         val friendDao = FriendListCacheDao(friendSettings)
         val profileDao = UserProfileCacheDao(profileSettings)
-        val manager = AccountCacheManager(friendDao, profileDao)
+        val activityDao = FriendActivityCacheDao(MapSettings())
+        val manager = AccountCacheManager(friendDao, profileDao, activityDao)
         friendDao.save("usr_a", FriendListCache(emptyList()))
         friendDao.save("usr_b", FriendListCache(emptyList()))
         profileSettings.putString(profileKey("usr_a", "usr_profile"), "cached-a")
@@ -34,7 +35,8 @@ class AccountCacheManagerTest {
         val profileSettings = MapSettings()
         val friendDao = FriendListCacheDao(friendSettings)
         val profileDao = UserProfileCacheDao(profileSettings)
-        val manager = AccountCacheManager(friendDao, profileDao)
+        val activityDao = FriendActivityCacheDao(MapSettings())
+        val manager = AccountCacheManager(friendDao, profileDao, activityDao)
         friendDao.save("usr_a", FriendListCache(emptyList()))
         friendDao.save("usr_b", FriendListCache(emptyList()))
         profileSettings.putString(profileKey("usr_a", "usr_profile"), "cached-a")
@@ -49,7 +51,11 @@ class AccountCacheManagerTest {
     @Test
     fun queuedWriteCapturedBeforeAccountClearCannotRestoreDeletedCache() {
         val friendDao = FriendListCacheDao(MapSettings())
-        val manager = AccountCacheManager(friendDao, UserProfileCacheDao(MapSettings()))
+        val manager = AccountCacheManager(
+            friendDao,
+            UserProfileCacheDao(MapSettings()),
+            FriendActivityCacheDao(MapSettings()),
+        )
         val staleToken = manager.captureWriteToken("usr_a")
 
         manager.clearAccount("usr_a")

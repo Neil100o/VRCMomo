@@ -13,6 +13,7 @@ import io.github.vrcmteam.vrcm.service.AuthService
 import io.github.vrcmteam.vrcm.service.data.AccountDto
 import io.github.vrcmteam.vrcm.storage.AccountDao
 import io.github.vrcmteam.vrcm.storage.AccountCacheManager
+import io.github.vrcmteam.vrcm.storage.FriendActivityCacheDao
 import io.github.vrcmteam.vrcm.storage.FriendListCacheDao
 import io.github.vrcmteam.vrcm.storage.UserProfileCacheDao
 import io.github.vrcmteam.vrcm.testing.MainDispatcherTest
@@ -512,6 +513,7 @@ private fun createFixture(
         accountCacheManager = AccountCacheManager(
             friendListCacheDao = FriendListCacheDao(MapSettings()),
             userProfileCacheDao = UserProfileCacheDao(MapSettings()),
+            friendActivityCacheDao = FriendActivityCacheDao(MapSettings()),
         ),
     )
     return SearchModelFixture(

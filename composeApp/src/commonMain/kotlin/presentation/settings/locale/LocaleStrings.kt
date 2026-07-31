@@ -273,6 +273,21 @@ sealed class LocaleStrings {
     open val profileBoopDefaultEmoji: String = "Default"
     open val profileBoopReceived: String = "%s booped you"
     open val profileBoopReceivedLabel: String = "Boop received"
+
+    // Local relationship activity, recorded only while VRCMomo is monitoring this account.
+    open val friendActivityTitle: String = "Relationship activity"
+    open val friendActivityLastSeenTogether: String = "Last seen together"
+    open val friendActivityMeetingCount: String = "Meetings"
+    open val friendActivityMeetingUnit: String = "times"
+    open val friendActivityTogetherDuration: String = "Time together"
+    open val friendActivityOfflineDuration: String = "Offline for"
+    open val friendActivityLastActive: String = "Last activity"
+    open val friendActivityNoRecord: String = "No record yet"
+    open val friendActivityCurrentlyOnline: String = "Currently online"
+    open val friendActivityDurationDay: String = "d"
+    open val friendActivityDurationHour: String = "h"
+    open val friendActivityDurationMinute: String = "m"
+
     open val profileInviteToMyInstance: String = "Invite to My Instance"
     open val profileInviteSent: String = "Invite sent"
     open val profileInviteNotInInstance: String = "You are not in an instance"

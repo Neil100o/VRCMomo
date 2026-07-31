@@ -45,6 +45,7 @@ class FriendService(
     private val json: Json,
     private val friendListCacheDao: FriendListCacheDao,
     private val accountCacheManager: AccountCacheManager,
+    private val friendActivityService: FriendActivityService,
 ) {
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val friendMapLock = Any()
@@ -97,6 +98,7 @@ class FriendService(
                         accountTracker.onLogout()
                         activeAccountUserId = null
                         activeSessionToken = null
+                        friendActivityService.deactivateAccount()
                         friendStore.clear()
                         publishFriendState()
                     }
@@ -113,6 +115,7 @@ class FriendService(
             if (activeSessionToken == session.token) return@synchronized false
             activeSessionToken = session.token
             if (activeAccountUserId != session.account.userId) {
+                friendActivityService.activateAccount(session.account.userId)
                 restoreCachedFriendList(session.account.userId)
             }
             accountTracker.onAuthenticated(session.account.userId)
@@ -310,6 +313,7 @@ class FriendService(
 
     private fun publishFriendState() {
         val snapshot = friendStore.snapshot
+        friendActivityService.observeFriends(snapshot)
         if (_friendState.value != snapshot) {
             _friendState.value = snapshot
         }

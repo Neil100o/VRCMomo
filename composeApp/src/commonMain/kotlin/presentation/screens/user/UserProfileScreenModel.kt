@@ -36,9 +36,11 @@ import io.github.vrcmteam.vrcm.presentation.screens.home.pager.FriendLocationPag
 import io.github.vrcmteam.vrcm.presentation.screens.user.data.UserProfileVo
 import io.github.vrcmteam.vrcm.service.AuthService
 import io.github.vrcmteam.vrcm.service.FriendService
+import io.github.vrcmteam.vrcm.service.FriendActivityService
 import io.github.vrcmteam.vrcm.storage.UserProfileCacheDao
 import io.github.vrcmteam.vrcm.storage.data.FavoritedWorldGroup
 import io.github.vrcmteam.vrcm.storage.data.UserProfileCache
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
 import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.CancellationException
@@ -208,6 +210,7 @@ class UserProfileScreenModel(
     private val inviteApi: InviteApi,
     private val userProfileCacheDao: UserProfileCacheDao,
     private val friendLocationPagerModel: FriendLocationPagerModel,
+    private val friendActivityService: FriendActivityService,
 ) : ScreenModel {
 
     private val _userState = mutableStateOf(userProfileVO)
@@ -215,6 +218,9 @@ class UserProfileScreenModel(
 
     private val _friendLocation = mutableStateOf<FriendLocation?>(null)
     val friendLocation by _friendLocation
+
+    private val _friendActivityStats = mutableStateOf<FriendActivityStats?>(null)
+    val friendActivityStats by _friendActivityStats
 
     private val _userJson = mutableStateOf("")
     val userJson by _userJson
@@ -255,6 +261,11 @@ class UserProfileScreenModel(
 
     init {
         userProfileCacheDao.load(cacheOwnerUserId, userProfileVO.id)?.let(::restoreCachedProfile)
+        screenModelScope.launch {
+            friendActivityService.friendActivityState.collect { stats ->
+                _friendActivityStats.value = stats[userProfileVO.id]
+            }
+        }
         screenModelScope.launch {
             combine(
                 friendService.friendState,

@@ -92,4 +92,9 @@ object DaoKeys{
         const val NAME = "${PREFIX}.friend.list.cache"
         const val KEY_PREFIX = "${PREFIX}.friend.list.cache"
     }
+
+    object FriendActivity {
+        const val NAME = "${PREFIX}.friend.activity"
+        const val KEY_PREFIX = "${PREFIX}.friend.activity.cache"
+    }
 }
