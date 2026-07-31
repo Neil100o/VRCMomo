@@ -1,14 +1,14 @@
-# Privacy Policy for VRCM
+# Privacy Policy for VRCMomo
 
 **Last Updated:** October 23, 2025
 
 ## 1. Introduction
 
-Welcome to **VRCM**. We are committed to protecting your privacy. This Privacy Policy explains how we handle information in connection with your use of our application.
+Welcome to **VRCMomo**. We are committed to protecting your privacy. This Privacy Policy explains how we handle information in connection with your use of our application.
 
 ## 2. Data Collection
 
-**We affirm that VRCM does NOT collect any personal data or user information.**
+**We affirm that VRCMomo does NOT collect any personal data or user information.**
 
 Specifically:
 
@@ -33,4 +33,4 @@ If we ever change our data practices, we will update this policy and notify user
 ## 6. Contact Us
 
 If you have questions about this policy, contact us at:  
-**kamosama.dev@gmail.com**
+**https://github.com/Neil100o/VRCMoskavis/issues**

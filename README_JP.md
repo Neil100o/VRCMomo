@@ -1,6 +1,6 @@
 <div align="center">
 
-# <img src="image/Logo.png" width="50" height="50"  alt="logo"/> VRCM
+# <img src="image/Logo.png" width="50" height="50"  alt="logo"/> VRCMomo
 
 <!-- Language Selection -->
 **🌐 Languages / 语言 / 言語:**  
@@ -8,8 +8,8 @@
 
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub release](https://img.shields.io/github/release/vrcm-team/VRCM.svg)](https://github.com/vrcm-team/VRCM/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/vrcm-team/VRCM/total?color=6451f1)](https://github.com/vrcm-team/VRCM/releases/latest)
+[![GitHub release](https://img.shields.io/github/release/Neil100o/VRCMoskavis.svg)](https://github.com/Neil100o/VRCMoskavis/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Neil100o/VRCMoskavis/total?color=6451f1)](https://github.com/Neil100o/VRCMoskavis/releases/latest)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-blue.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.10.3-blue)](https://www.jetbrains.com/lp/compose-multiplatform/)
 
@@ -143,10 +143,10 @@
 
 </div>
 
-- VRCMはVRChat Incと関連がなく、VRChat Incの見解や意見を代表するものではありません
-- VRCMはあなたのデバイス外でデータを保存・収集することはありません
+- VRCMomoはVRChat Incと関連がなく、VRChat Incの見解や意見を代表するものではありません
+- VRCMomoはあなたのデバイス外でデータを保存・収集することはありません
 - アプリケーション作者はこのアプリケーションが引き起こす損害について責任を負いません
-- VRCMはゲームを改変・改ざんせず、[VRChat利用規約](https://hello.vrchat.com/legal)に違反しません
+- VRCMomoはゲームを改変・改ざんせず、[VRChat利用規約](https://hello.vrchat.com/legal)に違反しません
 - このアプリケーションを合理的に使用し、関連法規とプラットフォーム規定を遵守してください
 
 <div align="center">
@@ -171,6 +171,6 @@
 
 **このプロジェクトがお役に立てば、⭐をお願いします**
 
-[最新版をダウンロード](https://github.com/vrcm-team/VRCM/releases/latest) • [問題を報告](https://github.com/vrcm-team/VRCM/issues) • [機能提案](https://github.com/vrcm-team/VRCM/discussions)
+[最新版をダウンロード](https://github.com/Neil100o/VRCMoskavis/releases/latest) • [問題を報告](https://github.com/Neil100o/VRCMoskavis/issues) • [機能提案](https://github.com/Neil100o/VRCMoskavis/discussions)
 
 </div>

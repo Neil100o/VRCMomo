@@ -1,6 +1,6 @@
 <div align="center">
 
-# <img src="image/Logo.png" width="50" height="50"  alt="logo"/> VRCM
+# <img src="image/Logo.png" width="50" height="50"  alt="logo"/> VRCMomo
 
 <!-- Language Selection -->
 **🌐 Languages / 语言 / 言語:**  
@@ -8,8 +8,8 @@
 
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub release](https://img.shields.io/github/release/vrcm-team/VRCM.svg)](https://github.com/vrcm-team/VRCM/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/vrcm-team/VRCM/total?color=6451f1)](https://github.com/vrcm-team/VRCM/releases/latest)
+[![GitHub release](https://img.shields.io/github/release/Neil100o/VRCMoskavis.svg)](https://github.com/Neil100o/VRCMoskavis/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Neil100o/VRCMoskavis/total?color=6451f1)](https://github.com/Neil100o/VRCMoskavis/releases/latest)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-blue.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.10.3-blue)](https://www.jetbrains.com/lp/compose-multiplatform/)
 
@@ -143,10 +143,10 @@
 
 </div>
 
-- VRCM 与 VRChat Inc 无关联，不代表 VRChat Inc 的观点或意见
-- VRCM 不会在您的设备之外存储或收集任何数据
+- VRCMomo 与 VRChat Inc 无关联，不代表 VRChat Inc 的观点或意见
+- VRCMomo 不会在您的设备之外存储或收集任何数据
 - 应用作者不对此应用造成的任何损害负责
-- VRCM 不修改或篡改游戏，不违反 [VRChat 服务条款](https://hello.vrchat.com/legal)
+- VRCMomo 不修改或篡改游戏，不违反 [VRChat 服务条款](https://hello.vrchat.com/legal)
 - 请合理使用此应用，遵守相关法律法规和平台规定
 
 <div align="center">
@@ -171,7 +171,7 @@
 
 **如果这个项目对您有帮助，请给我们一个 ⭐**
 
-[下载最新版本](https://github.com/vrcm-team/VRCM/releases/latest) • [反馈问题](https://github.com/vrcm-team/VRCM/issues) • [功能建议](https://github.com/vrcm-team/VRCM/discussions)
+[下载最新版本](https://github.com/Neil100o/VRCMoskavis/releases/latest) • [反馈问题](https://github.com/Neil100o/VRCMoskavis/issues) • [功能建议](https://github.com/Neil100o/VRCMoskavis/discussions)
 
 </div>
 

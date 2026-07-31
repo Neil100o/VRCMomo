@@ -7,4 +7,4 @@
 # PROFILE="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/xxxx.mobileprovision"
 # BUNDLE_ID="io.github.vrcmteam.vrcm"
 # DEVICE="00008150-XXXXXXXXXXXXXXXX"
-# IPA="$SCRIPT_DIR/build/archives/release/VRCMomo-v1.0.9.ipa"
+# IPA="$SCRIPT_DIR/build/archives/release/VRCMomo-v0.1.0.ipa"
