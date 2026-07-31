@@ -19,6 +19,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -81,7 +82,7 @@ object HomeScreen : Screen {
 
         Scaffold(
             contentColor = MaterialTheme.colorScheme.primary,
-            topBar = { HomeTopAppBar(hazeState) },
+            topBar = { HomeTopAppBar(hazeState, pagerList[pagerState.currentPage].title) },
             bottomBar = { HomeBottomBar(pagerList, pagerState, hazeState) },
         ) {
             Surface(
@@ -114,6 +115,7 @@ object HomeScreen : Screen {
 @Composable
 private inline fun Screen.HomeTopAppBar(
     hazeState: HazeState?,
+    currentPageTitle: String,
 ) {
     val homeScreenModel: HomeScreenModel = koinScreenModel()
     val currentUser = homeScreenModel.currentUser
@@ -178,13 +180,20 @@ private inline fun Screen.HomeTopAppBar(
                     iconUrl = currentUser?.iconUrl ?: homeScreenModel.iconUrl
                 )
                 Column(
-                    modifier = Modifier.widthIn(max = 220.dp)
+                    modifier = Modifier.widthIn(max = 240.dp)
                         .simpleClickable { currentUser?.let { onClickShowStatusDialog(currentUser) } },
                     horizontalAlignment = Alignment.Start,
                 ) {
+                    Text(
+                        text = currentPageTitle,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = 1,
+                    )
                     UserInfoRow(
                         iconSize = 16.dp,
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleSmall,
                         user = currentUser,
                     )
                     AnimatedVisibility(statusVisibility){

@@ -1,12 +1,17 @@
 package io.github.vrcmteam.vrcm.presentation.screens.home.sheet
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
@@ -39,22 +44,24 @@ fun SettingsBottomSheet(
     isVisible: Boolean,
     onDismissRequest: () -> Unit,
 ) {
-
     ABottomSheet(
         isVisible = isVisible,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
     ) {
-
         Column(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .align(Alignment.CenterHorizontally)
-                .padding(horizontal = 12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             SettingsBlockSurface {
-                CustomBlock()
+                AppearanceBlock()
+            }
+            SettingsBlockSurface {
+                BackgroundMonitoringBlock()
             }
             SettingsBlockSurface {
                 AboutBlock()
@@ -64,9 +71,76 @@ fun SettingsBottomSheet(
     }
 }
 
+@Composable
+private fun AppearanceBlock() {
+    var currentSettings by LocalSettingsState.current
+    val themeColors: List<ThemeColor> = with(currentKoinScope()) {
+        remember { getAll<ThemeColor>().filter { it.name != ThemeColor.Default.name } }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        SettingsSectionTitle(AppConst.APP_NAME)
+        SettingsItem(strings.stettingLanguage) {
+            LanguageTag.entries.forEach { language ->
+                SettingsChoiceButton(
+                    selected = language.tag == currentSettings.languageTag.tag,
+                    onClick = { currentSettings = currentSettings.copy(languageTag = language) },
+                ) {
+                    Text(language.displayName, style = MaterialTheme.typography.labelMedium)
+                }
+            }
+        }
+        SettingsDivider()
+        SettingsItem(strings.stettingThemeMode) {
+            listOf(null, true, false).forEach { isDark ->
+                SettingsChoiceButton(
+                    selected = currentSettings.isDarkTheme == isDark,
+                    onClick = { currentSettings = currentSettings.copy(isDarkTheme = isDark) },
+                ) {
+                    Text(
+                        text = when (isDark) {
+                            null -> strings.stettingSystemThemeMode
+                            true -> strings.stettingDarkThemeMode
+                            false -> strings.stettingLightThemeMode
+                        },
+                        style = MaterialTheme.typography.labelMedium,
+                    )
+                }
+            }
+        }
+        SettingsDivider()
+        SettingsItem(strings.stettingThemeColor) {
+            themeColors.forEach { theme ->
+                SettingsChoiceButton(
+                    selected = theme.name == currentSettings.themeColor.name,
+                    onClick = { currentSettings = currentSettings.copy(themeColor = theme) },
+                    containerColor = theme.colorScheme.primaryContainer,
+                    contentColor = theme.colorScheme.onPrimaryContainer,
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        Surface(
+                            modifier = Modifier.size(12.dp),
+                            shape = CircleShape,
+                            color = theme.colorScheme.primary,
+                        ) {}
+                        Text(theme.name, style = MaterialTheme.typography.labelMedium)
+                    }
+                }
+            }
+        }
+    }
+}
 
 @Composable
-private fun ColumnScope.CustomBlock() {
+private fun BackgroundMonitoringBlock() {
     var currentSettings by LocalSettingsState.current
     val platform = koinInject<AppPlatform>()
     val scope = rememberCoroutineScope()
@@ -94,76 +168,18 @@ private fun ColumnScope.CustomBlock() {
     }
 
     Column(
-        modifier = Modifier.fillMaxWidth()
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        SettingsItem("${strings.stettingLanguage}:") {
-            LanguageTag.entries.forEach {
-                TextButton(
-                    enabled = it.tag != currentSettings.languageTag.tag,
-                    onClick = {
-                        currentSettings = currentSettings.copy(languageTag = it)
-                    }
-                ) {
-                    Text(
-                        text = it.displayName,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
-            }
-        }
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 12.dp), thickness = 0.5.dp)
-        SettingsItem("${strings.stettingThemeMode}:") {
-            listOf(null, true, false).forEach {
-                TextButton(enabled = currentSettings.isDarkTheme != it, onClick = {
-                    currentSettings = currentSettings.copy(isDarkTheme = it)
-                }) {
-                    Text(
-                        text = when (it) {
-                            null -> strings.stettingSystemThemeMode
-                            true -> strings.stettingDarkThemeMode
-                            false -> strings.stettingLightThemeMode
-                        },
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
-            }
-        }
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 12.dp), thickness = 0.5.dp)
-        val themeColors: List<ThemeColor> = with(currentKoinScope()) {
-            remember { getAll<ThemeColor>().filter { it.name != ThemeColor.Default.name } }
-        }
-        SettingsItem("${strings.stettingThemeColor}:") {
-            themeColors.forEach {
-                TextButton(
-                    enabled = it.name != currentSettings.themeColor.name,
-                    onClick = {
-                        currentSettings = currentSettings.copy(themeColor = it)
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = it.colorScheme.primaryContainer,
-                        contentColor = it.colorScheme.onPrimaryContainer
-                    )
-                ) {
-                    Text(
-                        text = it.name,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                }
-            }
-        }
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 12.dp), thickness = 0.5.dp)
+        SettingsSectionTitle(localeStrings.backgroundFriendMonitoringTitle)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
                     changeBackgroundMonitoring(!currentSettings.isBackgroundFriendMonitoringEnabled)
-                }
-                .padding(vertical = 4.dp),
+                },
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -171,11 +187,6 @@ private fun ColumnScope.CustomBlock() {
                 modifier = Modifier.weight(1f),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-                Text(
-                    text = localeStrings.backgroundFriendMonitoringTitle,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
                 Text(
                     text = if (platform.supportsBackgroundFriendMonitoring) {
                         localeStrings.backgroundFriendMonitoringDescription
@@ -195,10 +206,7 @@ private fun ColumnScope.CustomBlock() {
         if (platform.supportsBatteryOptimizationSettings &&
             currentSettings.isBackgroundFriendMonitoringEnabled
         ) {
-            HorizontalDivider(
-                modifier = Modifier.padding(horizontal = 12.dp),
-                thickness = 0.5.dp,
-            )
+            SettingsDivider()
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -299,7 +307,6 @@ private fun AboutBlock() {
     val accountCacheManager = koinInject<AccountCacheManager>()
     val scope = rememberCoroutineScope()
     var version by remember { mutableStateOf(VersionVo()) }
-    // 不能直接version.not()因为默认为false会导致一点开就显示
     var isLatestVersion by remember { mutableStateOf(false) }
     var isLoadingVersion by remember { mutableStateOf(false) }
     val platform = koinInject<AppPlatform>()
@@ -314,7 +321,7 @@ private fun AboutBlock() {
                     it.htmlUrl,
                     it.body,
                     it.hasNewVersion,
-                    it.downloadUrl
+                    it.downloadUrl,
                 )
             }.onApiFailure("Setting") {
                 SharedFlowCentre.toastText.emit(ToastText.Error(it))
@@ -322,76 +329,66 @@ private fun AboutBlock() {
             isLoadingVersion = false
         }
     }
-    Column {
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+    ) {
+        SettingsSectionTitle(strings.stettingAbout)
         val diskCache = imageLoader.diskCache
         var size by remember(diskCache) { mutableStateOf(diskCache?.size ?: 0L) }
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .clickable {
-                    diskCache?.clear()
-                    accountCacheManager.clearAll()
-                    size = 0
+        SettingsActionRow(
+            title = strings.stettingClearCache,
+            value = diskCache?.let { "${size.bytesToMb()}/${it.maxSize.bytesToMb()}MB" },
+            onClick = {
+                diskCache?.clear()
+                accountCacheManager.clearAll()
+                size = 0
+            },
+        )
+        SettingsDivider()
+        SettingsActionRow(
+            title = strings.stettingVersion,
+            value = AppConst.APP_VERSION,
+            onClick = { checkVersion(); Unit },
+            trailing = {
+                AnimatedVisibility(isLatestVersion) {
+                    Text(
+                        text = strings.stettingAlreadyLatest,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
                 }
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(text = "${strings.stettingClearCache}:")
-            Spacer(modifier = Modifier.weight(1f))
-            diskCache?.let {
-                Text(text = "${size.bytesToMb()}/${it.maxSize.bytesToMb()}MB")
-            }
-        }
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 12.dp), thickness = 0.5.dp)
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .clickable { checkVersion() }
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(text = "${strings.stettingVersion}:")
-            Spacer(modifier = Modifier.weight(1f))
-            Text(text = AppConst.APP_VERSION)
-            AnimatedVisibility(isLatestVersion) {
-                Text(text = "(${strings.stettingAlreadyLatest})")
-            }
-            AnimatedVisibility(isLoadingVersion) {
-                CircularProgressIndicator(
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .size(20.dp),
-                    color = MaterialTheme.colorScheme.primary,
-                    strokeWidth = 2.dp
+                AnimatedVisibility(isLoadingVersion) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 2.dp,
+                    )
+                }
+            },
+        )
+        SettingsDivider()
+        SettingsActionRow(
+            title = strings.stettingAbout,
+            value = "GitHub",
+            onClick = { platform.openUrl(AppConst.APP_GITHUB_URL) },
+            trailing = {
+                Icon(
+                    modifier = Modifier.size(20.dp),
+                    imageVector = WebIcons.GithubIcon,
+                    contentDescription = "GitHub",
                 )
-            }
-        }
-        HorizontalDivider(modifier = Modifier.padding(horizontal = 12.dp), thickness = 0.5.dp)
-        Row(
-            modifier = Modifier.fillMaxWidth()
-                .clickable {
-                    platform.openUrl(AppConst.APP_GITHUB_URL)
-                }
-                .padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(text = "${strings.stettingAbout}:")
-            Spacer(modifier = Modifier.weight(1f))
-            Icon(
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .size(20.dp),
-                imageVector = WebIcons.GithubIcon,
-                contentDescription = "GithubIcon",
-            )
-            Text(text = "GitHub")
-        }
+            },
+        )
         if (!isLatestVersion) {
             UpdateDialog(
                 version = version,
-                onDismissRequest = { version = VersionVo() }
+                onDismissRequest = { version = VersionVo() },
             )
         }
     }
-
 }
 
 @Composable
@@ -405,34 +402,97 @@ private fun LogoutButton(onDismissRequest: () -> Unit) {
         onDismissRequest()
         authService.logout()
     }
-    Row(
+    TextButton(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center
+        onClick = logoutCall,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.error,
+        ),
     ) {
-        Spacer(modifier = Modifier.weight(0.25f))
-        TextButton(
-            modifier = Modifier.weight(0.5f),
-            onClick = logoutCall,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.errorContainer,
-                contentColor = MaterialTheme.colorScheme.error
-            )
-        ) {
-            Text(
-                text = strings.stettingLogout,
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.labelMedium
-            )
-        }
-        Spacer(modifier = Modifier.weight(0.25f))
+        Text(
+            text = strings.stettingLogout,
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.labelMedium,
+        )
     }
 }
 
 @Composable
-private inline fun SettingsBlockSurface(
-    crossinline content: @Composable () -> Unit,
+private fun SettingsSectionTitle(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.titleMedium,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurface,
+    )
+}
+
+@Composable
+private fun SettingsDivider() {
+    HorizontalDivider(
+        modifier = Modifier.padding(vertical = 2.dp),
+        thickness = 0.5.dp,
+    )
+}
+
+@Composable
+private fun SettingsChoiceButton(
+    selected: Boolean,
+    onClick: () -> Unit,
+    containerColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    contentColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
+    content: @Composable RowScope.() -> Unit,
+) {
+    TextButton(
+        enabled = !selected,
+        onClick = onClick,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else containerColor,
+            contentColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else contentColor,
+            disabledContainerColor = MaterialTheme.colorScheme.primaryContainer,
+            disabledContentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+    ) {
+        content()
+    }
+}
+
+@Composable
+private fun SettingsActionRow(
+    title: String,
+    value: String?,
+    onClick: () -> Unit,
+    trailing: @Composable RowScope.() -> Unit = {},
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(title, style = MaterialTheme.typography.bodyLarge)
+        Spacer(modifier = Modifier.weight(1f))
+        trailing()
+        value?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsBlockSurface(
+    content: @Composable () -> Unit,
 ) {
     Surface(
+        modifier = Modifier.fillMaxWidth(),
         color = MaterialTheme.colorScheme.surfaceContainerLowest,
         shape = MaterialTheme.shapes.large,
     ) {
@@ -441,25 +501,23 @@ private inline fun SettingsBlockSurface(
 }
 
 @Composable
-private inline fun SettingsItem(
+private fun SettingsItem(
     title: String,
     content: @Composable RowScope.() -> Unit,
 ) {
-
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
+    Column(modifier = Modifier.fillMaxWidth()) {
         Text(
             text = title,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
-        ) {
-            content()
-        }
+            content = content,
+        )
     }
-
 }
