@@ -170,6 +170,8 @@ VRCMomo's own work is focused on the new branding and app identity, theme and na
 
 We are grateful to the VRCM Team and all upstream contributors. Please refer to the [upstream repository](https://github.com/vrcm-team/VRCM) for the original project history and contribution attribution.
 
+For the planned review of VRCX and VRCX-jirai-inspired features, see [VRCX-jirai feature review](docs/VRCX_JIRAI_FEATURE_REVIEW.md). The review separates upstream VRCX ideas, VRCX-jirai-specific work, VRCM contributions, and VRCMomo-only work, and keeps privacy-sensitive automation out of the stable line.
+
 <div align="center">
 
 ## 📄 License
