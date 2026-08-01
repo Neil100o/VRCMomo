@@ -1,6 +1,10 @@
 # VRCX 活动导出桥接工具
 
-在 Windows 上双击 `Export-VRCXActivity.bat`。它默认读取：
+给普通用户分发的是 `VRCMomo-VRCX-Activity-Export.exe`，双击即可运行，**不需要安装 Python**。当前构建文件位于 `tools/dist/`。
+
+`Export-VRCXActivity.bat` 和 `export_vrcx_activity.py` 是开发/维护用版本，需要本机安装 Python。
+
+导出工具默认读取：
 
 `%APPDATA%\VRCX\VRCX.sqlite3`
 

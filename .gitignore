@@ -12,6 +12,8 @@ iosApp/resign.config
 .DS_Store
 captures
 VRCMomo-crash.txt
+tools/build/
+tools/dist/
 .externalNativeBuild
 .cxx
 .worktrees/
