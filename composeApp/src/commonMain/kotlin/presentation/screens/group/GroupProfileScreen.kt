@@ -120,6 +120,8 @@ class GroupProfileScreen(
         val members by screenModel.members.collectAsState()
         val owner by screenModel.owner.collectAsState()
         val galleryImages by screenModel.galleryImages.collectAsState()
+        val galleryCanLoadMore by screenModel.galleryCanLoadMore.collectAsState()
+        val galleryLoadingMoreIds by screenModel.galleryLoadingMoreIds.collectAsState()
         val posts by screenModel.posts.collectAsState()
         val postAuthors by screenModel.postAuthors.collectAsState()
         val postsLoading by screenModel.postsLoading.collectAsState()
@@ -176,7 +178,13 @@ class GroupProfileScreen(
                         isLoadingMore = membersLoadingMore,
                         onLoadMore = screenModel::loadMoreMembers,
                     )
-                    else -> GalleriesContent(group = group, galleryImages = galleryImages)
+                    else -> GalleriesContent(
+                        group = group,
+                        galleryImages = galleryImages,
+                        canLoadMore = galleryCanLoadMore,
+                        loadingMoreIds = galleryLoadingMoreIds,
+                        onLoadMore = screenModel::loadMoreGallery,
+                    )
                 }
                 Spacer(modifier = Modifier.height(32.dp))
             }
@@ -498,9 +506,7 @@ private fun DetailsContent(group: GroupProfileVo, owner: UserData?, instances: L
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        if (instances.isNotEmpty()) {
-            GroupInstancesSection(instances = instances)
-        }
+        GroupInstancesSection(instances = instances)
 
         OwnerCard(
             owner = owner,
@@ -602,11 +608,13 @@ private fun GroupInstancesSection(instances: List<InstanceData>) {
         title = "${strings.groupInstances} (${instances.size})",
         modifier = Modifier.fillMaxWidth()
     ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            instances.forEach { instance ->
-                GroupInstanceCard(instance = instance)
+        if (instances.isEmpty()) {
+            EmptyState(message = "No live group instances right now")
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                instances.forEach { instance ->
+                    GroupInstanceCard(instance = instance)
+                }
             }
         }
     }
@@ -867,6 +875,9 @@ private fun GroupLoadMoreButton(
 private fun GalleriesContent(
     group: GroupProfileVo,
     galleryImages: Map<String, List<GroupGalleryImage>>,
+    canLoadMore: Map<String, Boolean>,
+    loadingMoreIds: Set<String>,
+    onLoadMore: (String) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -884,6 +895,9 @@ private fun GalleriesContent(
                 GallerySection(
                     gallery = gallery,
                     images = galleryImages[gallery.id].orEmpty(),
+                    canLoadMore = canLoadMore[gallery.id] == true,
+                    isLoadingMore = gallery.id in loadingMoreIds,
+                    onLoadMore = { onLoadMore(gallery.id) },
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
@@ -896,6 +910,9 @@ private fun GalleriesContent(
 private fun GallerySection(
     gallery: Gallery,
     images: List<GroupGalleryImage>,
+    canLoadMore: Boolean,
+    isLoadingMore: Boolean,
+    onLoadMore: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val (dialogContent, setDialogContent) = LocationDialogContent.current
@@ -950,6 +967,11 @@ private fun GallerySection(
                 }
             }
         }
+        GroupLoadMoreButton(
+            visible = canLoadMore,
+            isLoading = isLoadingMore,
+            onClick = onLoadMore,
+        )
         KeyValueRow(label = "Created At", value = formatLocalTime(gallery.createdAt))
         KeyValueRow(label = "Updated At", value = formatLocalTime(gallery.updatedAt))
     }

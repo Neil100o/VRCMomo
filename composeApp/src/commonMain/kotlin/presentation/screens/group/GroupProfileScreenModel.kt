@@ -42,6 +42,10 @@ class GroupProfileScreenModel(
 
     private val _galleryImages = MutableStateFlow<Map<String, List<GroupGalleryImage>>>(emptyMap())
     val galleryImages: StateFlow<Map<String, List<GroupGalleryImage>>> = _galleryImages.asStateFlow()
+    private val _galleryCanLoadMore = MutableStateFlow<Map<String, Boolean>>(emptyMap())
+    val galleryCanLoadMore: StateFlow<Map<String, Boolean>> = _galleryCanLoadMore.asStateFlow()
+    private val _galleryLoadingMoreIds = MutableStateFlow<Set<String>>(emptySet())
+    val galleryLoadingMoreIds: StateFlow<Set<String>> = _galleryLoadingMoreIds.asStateFlow()
 
     private val _posts = MutableStateFlow<List<GroupPost>>(emptyList())
     val posts: StateFlow<List<GroupPost>> = _posts.asStateFlow()
@@ -78,6 +82,8 @@ class GroupProfileScreenModel(
         _members.value = emptyList()
         _owner.value = null
         _galleryImages.value = emptyMap()
+        _galleryCanLoadMore.value = emptyMap()
+        _galleryLoadingMoreIds.value = emptySet()
         _posts.value = emptyList()
         _postAuthors.value = emptyMap()
         _postsLoading.value = true
@@ -246,14 +252,38 @@ class GroupProfileScreenModel(
         }
     }
 
+    fun loadMoreGallery(galleryId: String) {
+        val groupId = _groupProfileState.value?.groupId ?: return
+        if (_galleryLoadingMoreIds.value.contains(galleryId) || _galleryCanLoadMore.value[galleryId] != true) return
+        _galleryLoadingMoreIds.value += galleryId
+        screenModelScope.launch(Dispatchers.IO) {
+            val offset = _galleryImages.value[galleryId].orEmpty().size
+            authService.reTryAuthCatching {
+                groupsApi.getGroupGalleryImages(
+                    groupId = groupId,
+                    groupGalleryId = galleryId,
+                    n = GALLERY_PAGE_SIZE,
+                    offset = offset,
+                )
+            }.onSuccess { page ->
+                _galleryImages.value = _galleryImages.value.toMutableMap().apply {
+                    this[galleryId] = (this[galleryId].orEmpty() + page).distinctBy { it.id }
+                }
+                _galleryCanLoadMore.value = _galleryCanLoadMore.value + (galleryId to (page.size >= GALLERY_PAGE_SIZE))
+            }.onFailure { logger.error(it.message.orEmpty()) }
+            _galleryLoadingMoreIds.value -= galleryId
+        }
+    }
+
     private suspend fun loadGalleryImages(groupId: String, galleries: List<io.github.vrcmteam.vrcm.network.api.groups.data.Gallery>) {
         if (galleries.isEmpty()) return
         val imagesMap = mutableMapOf<String, List<GroupGalleryImage>>()
         galleries.forEach { gallery ->
             authService.reTryAuthCatching {
-                groupsApi.getGroupGalleryImages(groupId = groupId, groupGalleryId = gallery.id, n = 30, offset = 0)
-            }.onSuccess {
-                imagesMap[gallery.id] = it
+                groupsApi.getGroupGalleryImages(groupId = groupId, groupGalleryId = gallery.id, n = GALLERY_PAGE_SIZE, offset = 0)
+            }.onSuccess { page ->
+                imagesMap[gallery.id] = page
+                _galleryCanLoadMore.value = _galleryCanLoadMore.value + (gallery.id to (page.size >= GALLERY_PAGE_SIZE))
             }.onFailure {
                 logger.error(it.message.orEmpty())
             }
@@ -264,6 +294,7 @@ class GroupProfileScreenModel(
     private companion object {
         const val MEMBER_PAGE_SIZE = 24
         const val POST_PAGE_SIZE = 20
+        const val GALLERY_PAGE_SIZE = 30
     }
 
     private suspend fun handleError(tag: String, error: Throwable) {
