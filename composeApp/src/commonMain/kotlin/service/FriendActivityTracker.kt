@@ -77,25 +77,47 @@ internal class FriendActivityTracker(
 
                 next = reconcileMeeting(next, friend.location, nowMillis)
                 val name = friend.friendData?.displayName ?: existing?.lastKnownFriend?.displayName.orEmpty()
-                if (hasPriorObservation) {
-                    if (!wasInGame && isInGame) appendEvent(friend.userId, name, FriendActivityEventType.Online, nowMillis)
-                    if (wasInGame && !isInGame) appendEvent(friend.userId, name, FriendActivityEventType.Offline, nowMillis)
-                    if (wasInGame && isInGame && previousLocation != friend.location) {
-                        appendEvent(friend.userId, name, FriendActivityEventType.LocationChanged, nowMillis)
-                    }
-                if (previousStatus != friend.status) {
-                    appendEvent(friend.userId, name, FriendActivityEventType.StatusChanged, nowMillis)
-                }
-                val profileDiff = friendBioDiff(existing?.lastKnownFriend?.bio, friend.friendData?.bio)
-                if (profileDiff.isNotEmpty()) {
+                if (!hasPriorObservation && isInGame) {
                     appendEvent(
-                        userId = friend.userId,
-                        displayName = name,
-                        type = FriendActivityEventType.ProfileChanged,
-                        occurredAtMillis = nowMillis,
-                        diffLines = profileDiff,
+                        friend.userId, name, FriendActivityEventType.LocationChanged, nowMillis,
+                        currentValue = friend.location,
                     )
                 }
+                if (hasPriorObservation) {
+                    if (!wasInGame && isInGame) {
+                        appendEvent(
+                            friend.userId, name, FriendActivityEventType.Online, nowMillis,
+                            previousValue = previousLocation, currentValue = friend.location,
+                        )
+                    }
+                    if (wasInGame && !isInGame) {
+                        appendEvent(
+                            friend.userId, name, FriendActivityEventType.Offline, nowMillis,
+                            previousValue = previousLocation, currentValue = friend.location,
+                        )
+                    }
+                    if (wasInGame && isInGame && previousLocation != friend.location) {
+                        appendEvent(
+                            friend.userId, name, FriendActivityEventType.LocationChanged, nowMillis,
+                            previousValue = previousLocation, currentValue = friend.location,
+                        )
+                    }
+                    if (previousStatus != friend.status) {
+                        appendEvent(
+                            friend.userId, name, FriendActivityEventType.StatusChanged, nowMillis,
+                            previousValue = previousStatus, currentValue = friend.status,
+                        )
+                    }
+                    val profileDiff = friendBioDiff(existing?.lastKnownFriend?.bio, friend.friendData?.bio)
+                    if (profileDiff.isNotEmpty()) {
+                        appendEvent(
+                            userId = friend.userId,
+                            displayName = name,
+                            type = FriendActivityEventType.ProfileChanged,
+                            occurredAtMillis = nowMillis,
+                            diffLines = profileDiff,
+                        )
+                    }
                 }
                 if (existing?.activeTogetherSinceMillis == null && next.activeTogetherSinceMillis != null) {
                     appendEvent(friend.userId, name, FriendActivityEventType.Met, nowMillis)
@@ -198,8 +220,13 @@ internal class FriendActivityTracker(
         type: FriendActivityEventType,
         occurredAtMillis: Long,
         diffLines: List<FriendActivityDiffLine> = emptyList(),
+        previousValue: String? = null,
+        currentValue: String? = null,
     ) {
-        activityEvents.add(0, FriendActivityEvent(userId, displayName, type, occurredAtMillis, diffLines))
+        activityEvents.add(
+            0,
+            FriendActivityEvent(userId, displayName, type, occurredAtMillis, diffLines, previousValue, currentValue),
+        )
     }
 
     fun pruneEventsBefore(cutoffMillis: Long): Boolean {

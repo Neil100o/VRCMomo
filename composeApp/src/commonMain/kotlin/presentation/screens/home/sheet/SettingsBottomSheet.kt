@@ -227,6 +227,20 @@ private fun FriendActivityLogSheet(
                                             style = MaterialTheme.typography.bodySmall,
                                         )
                                     }
+                                    event.previousValue?.takeIf { it.isNotBlank() }?.let { value ->
+                                        Text(
+                                            text = "- $value",
+                                            color = DiffRemovedRed,
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
+                                    event.currentValue?.takeIf { it.isNotBlank() }?.let { value ->
+                                        Text(
+                                            text = "+ $value",
+                                            color = DiffAddedGreen,
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
                                 }
                             },
                         )

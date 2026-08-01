@@ -24,7 +24,7 @@ data class FriendActivityCache(
 ) {
     companion object {
         const val LEGACY_SCHEMA_VERSION = 1
-        const val CURRENT_SCHEMA_VERSION = 6
+        const val CURRENT_SCHEMA_VERSION = 7
     }
 }
 
@@ -36,6 +36,9 @@ data class FriendActivityEvent(
     val occurredAtMillis: Long,
     /** Line-level profile text changes. Removed lines are false; added lines are true. */
     val diffLines: List<FriendActivityDiffLine> = emptyList(),
+    /** Exact before/after values for status and location changes. */
+    val previousValue: String? = null,
+    val currentValue: String? = null,
 )
 
 @Serializable
