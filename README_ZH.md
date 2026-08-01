@@ -1,6 +1,6 @@
 ﻿<div align="center">
 
-# <img src="image/Logo.png" width="50" height="50"  alt="logo"/> VRCMomo
+# <img src="image/VRCMomoLogo.png" width="50" height="50"  alt="logo"/> VRCMomo
 
 <!-- Language Selection -->
 **Languages / 语言 / 言語:**
