@@ -186,7 +186,7 @@ class GalleryScreenModel internal constructor(
      * 获取指定标签类型的数量上限（参照 VRCX）
      */
     fun getMaxCount(tagType: FileTagType): Int = when (tagType) {
-        FileTagType.Gallery, FileTagType.Icon, FileTagType.Print -> MAX_FIXED_FILES
+        FileTagType.Gallery, FileTagType.Icon, FileTagType.AvatarImage, FileTagType.Print -> MAX_FIXED_FILES
         FileTagType.Emoji -> MAX_EMOJI_DEFAULT
         FileTagType.Sticker -> MAX_STICKER_DEFAULT
     }

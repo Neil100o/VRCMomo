@@ -1,5 +1,6 @@
 package io.github.vrcmteam.vrcm.presentation.screens.home.pager
 
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -131,7 +132,24 @@ object FriendListPager : Pager {
 
                     }
 
-                    SearchTabType.AVATAR -> { // 模型标签页
+                    SearchTabType.AVATAR -> {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                        ) {
+                            FilterChip(
+                                selected = avatarGroupOptions.showOwnUploads,
+                                onClick = {
+                                    friendListPagerModel.updateAvatarGroupOptions(
+                                        avatarGroupOptions.copy(
+                                            showOwnUploads = !avatarGroupOptions.showOwnUploads,
+                                            selectedGroup = null,
+                                        )
+                                    )
+                                },
+                                label = { Text(strings.userCreatedAvatars) },
+                            )
+                        }
+ // 模型标签页
 
                         GroupOptionsUI(
                             currentOptions = avatarGroupOptions,

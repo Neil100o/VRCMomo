@@ -52,7 +52,8 @@ data class WorldGroupOptions(
  * 模型分组选项数据类
  */
 data class AvatarGroupOptions(
-    val selectedGroup: FavoriteGroupData? = null
+    val selectedGroup: FavoriteGroupData? = null,
+    val showOwnUploads: Boolean = false,
 )
 
 class FriendListPagerModel(
@@ -97,6 +98,8 @@ class FriendListPagerModel(
 
     // 缓存模型数据，以ID为键
     private val favoritedAvatarMap: MutableMap<String, AvatarData> = mutableStateMapOf()
+    /** Avatars uploaded by the signed-in account; kept separate from favorites. */
+    private val uploadedAvatarMap: MutableMap<String, AvatarData> = mutableStateMapOf()
 
     private val _avatarList = MutableStateFlow(emptyList<AvatarData>())
     val avatarList: StateFlow<List<AvatarData>> = _avatarList.asStateFlow()
@@ -273,6 +276,7 @@ class FriendListPagerModel(
      */
     fun updateAvatarGroupOptions(options: AvatarGroupOptions) {
         _avatarGroupOptions.value = options
+        _avatarTotal.value = if (options.showOwnUploads) uploadedAvatarMap.size else favoritedAvatarMap.size
         refreshCurrentTabListData()
     }
 
@@ -384,22 +388,25 @@ class FriendListPagerModel(
      * 只从缓存中筛选数据，不调用API
      */
     private fun findAvatarList(name: String) {
-        val selectedGroup = avatarGroupOptions.value.selectedGroup
+        val options = avatarGroupOptions.value
+        val selectedGroup = options.selectedGroup
+        val source = if (options.showOwnUploads) uploadedAvatarMap.values else favoritedAvatarMap.values
 
-        // 从缓存中获取模型数据并过滤
-        val filteredAvatars = if (selectedGroup != null) {
+        val filteredAvatars = if (options.showOwnUploads) {
+            source.filter { avatar ->
+                name.isEmpty() || avatar.name.lowercase().contains(name.lowercase()) || avatar.id.lowercase().contains(name.lowercase())
+            }
+        } else if (selectedGroup != null) {
             val favoriteIds = avatarFavoriteGroupsFlow.value[selectedGroup]
                 ?.map { it.favoriteId }?.toSet() ?: emptySet()
-            favoritedAvatarMap.values
-                .filter { avatar ->
-                    favoriteIds.contains(avatar.id) &&
-                            (name.isEmpty() || avatar.name.lowercase().contains(name.lowercase()) || avatar.id.lowercase().contains(name.lowercase()))
-                }
+            source.filter { avatar ->
+                favoriteIds.contains(avatar.id) &&
+                    (name.isEmpty() || avatar.name.lowercase().contains(name.lowercase()) || avatar.id.lowercase().contains(name.lowercase()))
+            }
         } else {
-            favoritedAvatarMap.values
-                .filter { avatar ->
-                    name.isEmpty() || avatar.name.lowercase().contains(name.lowercase()) || avatar.id.lowercase().contains(name.lowercase())
-                }
+            source.filter { avatar ->
+                name.isEmpty() || avatar.name.lowercase().contains(name.lowercase()) || avatar.id.lowercase().contains(name.lowercase())
+            }
         }.sortedWith(compareBy<AvatarData> { it.releaseStatus == "hidden" }.thenBy { it.name })
 
         _avatarList.value = filteredAvatars
@@ -423,11 +430,20 @@ class FriendListPagerModel(
             val localAvatars = localFavoritedAvatarIds(avatarFavoriteGroupsFlow.value).mapNotNull { avatarId ->
                 authService.reTryAuthCatching { avatarsApi.getAvatarById(avatarId) }.getOrNull()
             }
-            mergeFavoritedAvatars(remoteAvatars, localAvatars)
-        }.onSuccess { avatars ->
+            val uploaded = avatarsApi.getAvatars(
+                user = "me",
+                sort = "updated",
+                order = "descending",
+                releaseStatus = "all",
+                n = 100,
+            )
+            mergeFavoritedAvatars(remoteAvatars, localAvatars) to uploaded
+        }.onSuccess { (avatars, uploaded) ->
             favoritedAvatarMap.clear()
             favoritedAvatarMap.putAll(avatars.associateBy { it.id })
-            _avatarTotal.value = favoritedAvatarMap.size
+            uploadedAvatarMap.clear()
+            uploadedAvatarMap.putAll(uploaded.associateBy { it.id })
+            _avatarTotal.value = if (avatarGroupOptions.value.showOwnUploads) uploadedAvatarMap.size else favoritedAvatarMap.size
             findAvatarList(_searchText.value)
         }.onFailure {
             SharedFlowCentre.toastText.emit(ToastText.Error("获取收藏模型失败: ${it.message}"))

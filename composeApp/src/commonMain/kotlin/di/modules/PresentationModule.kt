@@ -83,7 +83,14 @@ val presentationModule: Module = module {
     singleOf(::WorldProfileScreenModel)
     singleOf(::GroupProfileScreenModel)
     singleOf(::NetworkAvatarProfileLoader) bind AvatarProfileLoader::class
-    factory { AvatarProfileScreenModel(get(), avatarsApi = getOrNull(), authService = getOrNull()) }
+    factory {
+        AvatarProfileScreenModel(
+            get(),
+            avatarsApi = getOrNull(),
+            authService = getOrNull(),
+            fileApi = getOrNull(),
+        )
+    }
     factoryOf(::RecentWorldsScreenModel)
     single<ImageLoader> { imageLoaderDefinition(it) }
     configThemeColor()

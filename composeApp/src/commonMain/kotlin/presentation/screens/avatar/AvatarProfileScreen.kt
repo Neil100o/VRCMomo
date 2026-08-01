@@ -11,6 +11,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,6 +28,9 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
+import io.github.vinceglb.filekit.name
 import io.github.vrcmteam.vrcm.core.extensions.toLocalDate
 import io.github.vrcmteam.vrcm.presentation.compoments.ATooltipBox
 import io.github.vrcmteam.vrcm.presentation.compoments.LocalSharedSuffixKey
@@ -37,10 +41,13 @@ import io.github.vrcmteam.vrcm.presentation.extensions.simpleClickable
 import io.github.vrcmteam.vrcm.presentation.extensions.simpleFormat
 import io.github.vrcmteam.vrcm.presentation.screens.avatar.data.AvatarPlatformInfo
 import io.github.vrcmteam.vrcm.presentation.screens.avatar.data.AvatarProfileVo
+import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.PrintImageLimits
+import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.readBoundedBytes
 import io.github.vrcmteam.vrcm.presentation.screens.user.UserProfileScreen
 import io.github.vrcmteam.vrcm.presentation.screens.user.data.UserProfileVo
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
 import io.github.vrcmteam.vrcm.presentation.supports.AppIcons
+import kotlinx.coroutines.launch
 
 class AvatarProfileScreen(
     private val avatarProfileVo: AvatarProfileVo,
@@ -82,8 +89,19 @@ class AvatarProfileScreen(
                 avatar = displayedAvatar,
                 isSaving = isSaving,
                 onDismiss = { if (!isSaving) showEditDialog = false },
-                onSave = { name, imageUrl ->
-                    screenModel.updateAvatar(displayedAvatar, name, imageUrl)
+                onSave = { name, description, imageUrl, cover ->
+                    if (cover == null) {
+                        screenModel.updateAvatar(displayedAvatar, name, description, imageUrl)
+                    } else {
+                        screenModel.uploadCoverAndUpdateAvatar(
+                            avatar = displayedAvatar,
+                            name = name,
+                            description = description,
+                            imageBytes = cover.bytes,
+                            fileName = cover.fileName,
+                            mimeType = cover.mimeType,
+                        )
+                    }
                     showEditDialog = false
                 },
             )
@@ -336,15 +354,52 @@ private fun ratingColor(rating: String?): androidx.compose.ui.graphics.Color {
     }
 }
 
+private data class AvatarCoverUpload(
+    val bytes: ByteArray,
+    val fileName: String,
+    val mimeType: String,
+)
+
+private fun avatarCoverMimeType(fileName: String): String = when (fileName.substringAfterLast('.', "").lowercase()) {
+    "jpg", "jpeg" -> "image/jpeg"
+    "webp" -> "image/webp"
+    "gif" -> "image/gif"
+    else -> "image/png"
+}
+
 @Composable
 private fun AvatarEditDialog(
     avatar: AvatarProfileVo,
     isSaving: Boolean,
     onDismiss: () -> Unit,
-    onSave: (String, String?) -> Unit,
+    onSave: (String, String, String?, AvatarCoverUpload?) -> Unit,
 ) {
     var name by remember(avatar.avatarId) { mutableStateOf(avatar.avatarName) }
+    var description by remember(avatar.avatarId) { mutableStateOf(avatar.avatarDescription) }
     var imageUrl by remember(avatar.avatarId) { mutableStateOf(avatar.avatarImageUrl.orEmpty()) }
+    var selectedCover by remember(avatar.avatarId) { mutableStateOf<AvatarCoverUpload?>(null) }
+    var coverError by remember(avatar.avatarId) { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+    val coverPicker = rememberFilePickerLauncher(
+        type = FileKitType.File("jpg", "jpeg", "png", "webp", "gif"),
+    ) { image ->
+        if (image != null && !isSaving) {
+            scope.launch {
+                runCatching {
+                    AvatarCoverUpload(
+                        bytes = image.readBoundedBytes(PrintImageLimits.MAX_FILE_BYTES),
+                        fileName = image.name,
+                        mimeType = avatarCoverMimeType(image.name),
+                    )
+                }.onSuccess {
+                    selectedCover = it
+                    coverError = null
+                }.onFailure {
+                    coverError = "Could not read the selected image"
+                }
+            }
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -358,18 +413,33 @@ private fun AvatarEditDialog(
                     singleLine = true,
                 )
                 OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Description") },
+                    minLines = 3,
+                    maxLines = 6,
+                )
+                OutlinedTextField(
                     value = imageUrl,
                     onValueChange = { imageUrl = it },
                     label = { Text("Cover FileID or URL") },
-                    supportingText = { Text("VRChat accepts an image FileID or URL here.") },
+                    supportingText = { Text("Optional when uploading a new cover below.") },
                     singleLine = true,
                 )
+                OutlinedButton(
+                    enabled = !isSaving,
+                    onClick = coverPicker::launch,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(selectedCover?.fileName ?: "Upload new cover")
+                }
+                coverError?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
         },
         confirmButton = {
             TextButton(
                 enabled = name.isNotBlank() && !isSaving,
-                onClick = { onSave(name, imageUrl) },
+                onClick = { onSave(name, description, imageUrl, selectedCover) },
             ) { Text(if (isSaving) "Saving?" else "Save") }
         },
         dismissButton = {

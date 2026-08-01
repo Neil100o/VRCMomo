@@ -20,6 +20,10 @@ enum class FileTagType(val value: String) {
     @SerialName("gallery")
     Gallery("gallery"),
 
+    /** Official VRChat tag for an image used as an avatar cover. */
+    @SerialName("avatarimage")
+    AvatarImage("avatarimage"),
+
     @SerialName("print")
     Print("print");
     

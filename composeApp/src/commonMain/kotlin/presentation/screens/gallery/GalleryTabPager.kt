@@ -409,14 +409,14 @@ sealed class GalleryTabPager(private val tagType: FileTagType) {
     ) {
         // 根据文件类型设置不同的列数
         val count = when (tagType) {
-            FileTagType.Gallery, FileTagType.Print -> 2
+            FileTagType.Gallery, FileTagType.AvatarImage, FileTagType.Print -> 2
             FileTagType.Emoji, FileTagType.Sticker -> 3
             FileTagType.Icon -> 4
         }
         // 根据文件类型设置不同的宽高比
         val aspectRatio = when (tagType) {
             FileTagType.Icon -> 1.0f  // 圆形展示，使用1:1比例
-            FileTagType.Gallery, FileTagType.Print -> 16f / 9f  // 16:9比例
+            FileTagType.Gallery, FileTagType.AvatarImage, FileTagType.Print -> 16f / 9f  // 16:9比例
             FileTagType.Emoji, FileTagType.Sticker -> 1.0f  // 正方形展示，使用1:1比例
         }
         // 根据文件类型设置不同的形状
