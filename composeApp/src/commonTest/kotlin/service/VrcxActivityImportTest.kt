@@ -67,4 +67,26 @@ class VrcxActivityImportTest {
         assertEquals("active · new", preview.result.events.first { it.type.name == "StatusChanged" }.currentValue)
         assertEquals(listOf("old line", "new line"), preview.result.events.first { it.type.name == "ProfileChanged" }.diffLines.map { it.text })
     }
+
+    @Test
+    fun `v3 normalizes VRCX title-case social statuses`() {
+        val preview = VrcxActivityImporter.preview(
+            """
+            {
+              "format":"vrcmomo-vrcx-activity-v3",
+              "events": {
+                "statusChanges":[
+                  {"created_at":"2026-01-01T01:00:00Z","user_id":"$userId","previous_status":"Ask Me","status":"Active"}
+                ]
+              },
+              "archive":{"account":{"friendCurrent":[]}}
+            }
+            """.trimIndent(),
+            emptySet(),
+        )
+
+        val event = preview.result.events.single()
+        assertEquals("ask me", event.previousValue)
+        assertEquals("active", event.currentValue)
+    }
 }

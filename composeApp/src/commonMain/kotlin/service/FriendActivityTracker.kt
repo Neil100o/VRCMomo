@@ -42,6 +42,10 @@ internal class FriendActivityTracker(
     ): Boolean {
         var changed = false
         friends.forEach { friend ->
+            // VRCX history uses title case ("Active") while the live Android API currently
+            // exposes lower case ("active"). Keep one canonical value so charts and logs do
+            // not split the same social status into two categories.
+            val normalizedStatus = normalizeSocialStatus(friend.status)
             val existing = statsByFriendId[friend.userId]
             val previousLocation = existing?.lastObservedLocation
             val previousStatus = existing?.lastObservedStatus
@@ -56,11 +60,11 @@ internal class FriendActivityTracker(
                 // First observation is a baseline, not an invented online/offline transition.
                 next = next.copy(
                     lastObservedLocation = friend.location,
-                    lastObservedStatus = friend.status,
+                    lastObservedStatus = normalizedStatus,
                     lastActivityAtMillis = latest(next.lastActivityAtMillis, friend.lastActivityAtMillis),
                 )
             } else {
-                val presenceChanged = previousLocation != friend.location || previousStatus != friend.status
+                val presenceChanged = previousLocation != friend.location || previousStatus != normalizedStatus
                 val activityAt = if (presenceChanged) nowMillis else null
                 next = next.copy(
                     lastOnlineAtMillis = if (!wasInGame && isInGame) nowMillis else next.lastOnlineAtMillis,
@@ -71,7 +75,7 @@ internal class FriendActivityTracker(
                         activityAt,
                     ),
                     lastObservedLocation = friend.location,
-                    lastObservedStatus = friend.status,
+                    lastObservedStatus = normalizedStatus,
                 )
             }
 
@@ -102,10 +106,10 @@ internal class FriendActivityTracker(
                             previousValue = previousLocation, currentValue = friend.location,
                         )
                     }
-                    if (previousStatus != friend.status) {
+                    if (previousStatus != normalizedStatus) {
                         appendEvent(
                             friend.userId, name, FriendActivityEventType.StatusChanged, nowMillis,
-                            previousValue = previousStatus, currentValue = friend.status,
+                            previousValue = previousStatus, currentValue = normalizedStatus,
                         )
                     }
                     val profileDiff = friendBioDiff(existing?.lastKnownFriend?.bio, friend.friendData?.bio)
@@ -248,6 +252,24 @@ internal class FriendActivityTracker(
         return true
     }
 }
+
+/**
+ * VRChat/VRCX have historically used different casing and spacing for the same social states.
+ * Store a stable form for comparison and statistics; user-entered status descriptions remain
+ * untouched beside this value.
+ */
+internal fun normalizeSocialStatus(value: String): String = value
+    .trim()
+    .lowercase()
+    .replace('_', ' ')
+    .replace(Regex("\\s+"), " ")
+    .let { status ->
+        when (status) {
+            "joinme" -> "join me"
+            "askme" -> "ask me"
+            else -> status
+        }
+    }
 
 /** A compact line diff for profile bios, retaining only lines that were actually changed. */
 internal fun friendBioDiff(before: String?, after: String?): List<FriendActivityDiffLine> {

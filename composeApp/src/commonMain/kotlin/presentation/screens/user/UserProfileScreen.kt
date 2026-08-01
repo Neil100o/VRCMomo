@@ -43,6 +43,7 @@ import io.github.vrcmteam.vrcm.presentation.screens.home.data.FriendLocation
 import io.github.vrcmteam.vrcm.presentation.screens.group.GroupProfileScreen
 import io.github.vrcmteam.vrcm.presentation.screens.group.data.GroupProfileVo
 import io.github.vrcmteam.vrcm.presentation.screens.user.data.UserProfileVo
+import io.github.vrcmteam.vrcm.service.normalizeSocialStatus
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEventType
@@ -615,16 +616,16 @@ private fun statusDurations(events: List<FriendActivityEvent>, nowMillis: Long):
     val changes = events.filter { it.type == FriendActivityEventType.StatusChanged }
         .sortedBy(FriendActivityEvent::occurredAtMillis)
     var currentStatus = changes.lastOrNull { it.occurredAtMillis < cutoff }
-        ?.currentValue?.substringBefore(" · ")
+        ?.currentValue.statusToken()
         ?: changes.firstOrNull { it.occurredAtMillis >= cutoff }
-            ?.previousValue?.substringBefore(" · ")
+            ?.previousValue.statusToken()
     var cursor = cutoff
     val durations = mutableMapOf<String, Long>()
     changes.filter { it.occurredAtMillis >= cutoff }.forEach { event ->
         currentStatus?.takeIf { it.isNotBlank() }?.let { status ->
             durations[status] = (durations[status] ?: 0L) + (event.occurredAtMillis - cursor).coerceAtLeast(0L)
         }
-        currentStatus = event.currentValue?.substringBefore(" · ")
+        currentStatus = event.currentValue.statusToken()
         cursor = event.occurredAtMillis
     }
     currentStatus?.takeIf { it.isNotBlank() }?.let { status ->
@@ -635,6 +636,12 @@ private fun statusDurations(events: List<FriendActivityEvent>, nowMillis: Long):
         StatusDuration(status, duration.toFloat() / total)
     }
 }
+
+/** Supports existing history that was saved before social-status case normalization. */
+private fun String?.statusToken(): String? = this
+    ?.substringBefore(" · ")
+    ?.let(::normalizeSocialStatus)
+    ?.takeIf(String::isNotBlank)
 
 @OptIn(ExperimentalTime::class)
 private fun activityHeatmap(events: List<FriendActivityEvent>, nowMillis: Long): IntArray {

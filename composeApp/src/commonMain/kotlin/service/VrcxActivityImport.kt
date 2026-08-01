@@ -12,6 +12,7 @@ import kotlin.time.ExperimentalTime
 
 internal const val VRCX_ACTIVITY_BRIDGE_FORMAT_V1 = "vrcmomo-vrcx-activity-v1"
 internal const val VRCX_ACTIVITY_BRIDGE_FORMAT_V2 = "vrcmomo-vrcx-activity-v2"
+internal const val VRCX_ACTIVITY_BRIDGE_FORMAT_V3 = "vrcmomo-vrcx-activity-v3"
 
 @Serializable
 internal data class VrcxActivityBridge(
@@ -124,7 +125,11 @@ internal object VrcxActivityImporter {
 
     fun preview(raw: String, existingEventKeys: Set<String>): VrcxActivityImportPreview {
         val bridge = json.decodeFromString<VrcxActivityBridge>(raw)
-        require(bridge.format in setOf(VRCX_ACTIVITY_BRIDGE_FORMAT_V1, VRCX_ACTIVITY_BRIDGE_FORMAT_V2)) {
+        require(bridge.format in setOf(
+            VRCX_ACTIVITY_BRIDGE_FORMAT_V1,
+            VRCX_ACTIVITY_BRIDGE_FORMAT_V2,
+            VRCX_ACTIVITY_BRIDGE_FORMAT_V3,
+        )) {
             "Unsupported VRCX activity export"
         }
 
@@ -179,8 +184,8 @@ internal object VrcxActivityImporter {
         bridge.events.statusChanges.forEach { event ->
             val timestamp = event.createdAt.toEpochMillisOrNull() ?: return@forEach
             if (!event.userId.isVrcUserId()) return@forEach
-            val before = event.previousStatus.withDescription(event.previousStatusDescription)
-            val after = event.status.withDescription(event.statusDescription)
+            val before = normalizeSocialStatus(event.previousStatus).withDescription(event.previousStatusDescription)
+            val after = normalizeSocialStatus(event.status).withDescription(event.statusDescription)
             val key = "status|${event.createdAt}|${event.userId}|$before|$after"
             accept(key) {
                 val current = statsFor(event.userId)

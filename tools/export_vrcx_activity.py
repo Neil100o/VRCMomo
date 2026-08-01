@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-FORMAT = "vrcmomo-vrcx-activity-v2"
+FORMAT = "vrcmomo-vrcx-activity-v3"
 PREFIX_SUFFIX = "_feed_online_offline"
 DEFAULT_DB = Path(os.environ.get("APPDATA", "")) / "VRCX" / "VRCX.sqlite3"
 
@@ -53,6 +53,27 @@ def read_table(connection: sqlite3.Connection, tables: set[str], name: str, colu
     return [dict(zip(selected, row)) for row in connection.execute(query)]
 
 
+def read_all_columns(connection: sqlite3.Connection, tables: set[str], name: str) -> list[dict]:
+    """Read a known, non-secret table without assuming its exact VRCX version schema."""
+    if name not in tables:
+        return []
+    columns = [row[1] for row in connection.execute(f"PRAGMA table_info({quote_identifier(name)})")]
+    if not columns:
+        return []
+    order_by = "created_at" if "created_at" in columns else columns[0]
+    query = f"SELECT {', '.join(quote_identifier(column) for column in columns)} FROM {quote_identifier(name)} ORDER BY {quote_identifier(order_by)}"
+    return [dict(zip(columns, row)) for row in connection.execute(query)]
+
+
+def read_known_tables(connection: sqlite3.Connection, tables: set[str], names: dict[str, str]) -> dict[str, list[dict]]:
+    """Return only tables deliberately approved for VRCMomo interoperability."""
+    return {
+        label: rows
+        for label, table_name in names.items()
+        if (rows := read_all_columns(connection, tables, table_name))
+    }
+
+
 def choose_prefix(prefixes: list[str], requested: str | None) -> str:
     if requested:
         if requested not in prefixes:
@@ -75,8 +96,13 @@ def choose_prefix(prefixes: list[str], requested: str | None) -> str:
 def main() -> int:
     parser = argparse.ArgumentParser(description="Export VRCX activity history for VRCMomo.")
     parser.add_argument("--db", type=Path, default=DEFAULT_DB, help="Path to VRCX.sqlite3")
-    parser.add_argument("--output", type=Path, default=Path.cwd() / "vrcmomo-vrcx-activity-v1.json")
+    parser.add_argument("--output", type=Path, default=Path.cwd() / "vrcmomo-vrcx-activity-v3.json")
     parser.add_argument("--account-prefix", help="VRCX account-table prefix when more than one account exists")
+    parser.add_argument(
+        "--include-private-notes",
+        action="store_true",
+        help="Also export VRCX local notes/memos. These are personal text and are excluded by default.",
+    )
     args = parser.parse_args()
 
     if not args.db.is_file():
@@ -125,13 +151,54 @@ def main() -> int:
                     ["created_at", "type", "display_name", "location", "user_id", "time"],
                 ),
             },
+            # These records are not all displayed by the current Android build yet.  They are
+            # deliberately included in the portable bridge now, so future VRCMomo versions can
+            # add features without forcing users to re-export an old VRCX database.
+            "archive": {
+                "account": read_known_tables(connection, tables, {
+                    "friendCurrent": f"{prefix}_friend_log_current",
+                    "activitySessions": f"{prefix}_activity_sessions_v2",
+                    "activitySyncState": f"{prefix}_activity_sync_state_v2",
+                    "mutualGraphFriends": f"{prefix}_mutual_graph_friends",
+                    "mutualGraphLinks": f"{prefix}_mutual_graph_links",
+                    "mutualGraphMeta": f"{prefix}_mutual_graph_meta",
+                    "avatarHistory": f"{prefix}_avatar_history",
+                }),
+                "library": read_known_tables(connection, tables, {
+                    "cachedAvatars": "cache_avatar",
+                    "cachedWorlds": "cache_world",
+                    "favoriteWorlds": "favorite_world",
+                    "favoriteAvatars": "favorite_avatar",
+                    "favoriteFriends": "favorite_friend",
+                }),
+                "selfGameLog": read_known_tables(connection, tables, {
+                    "portalSpawns": "gamelog_portal_spawn",
+                    "videoPlays": "gamelog_video_play",
+                    "resourceLoads": "gamelog_resource_load",
+                    "events": "gamelog_event",
+                    "external": "gamelog_external",
+                }),
+            },
         }
+        if args.include_private_notes:
+            payload["archive"]["privateNotes"] = read_known_tables(connection, tables, {
+                "friendNotes": f"{prefix}_notes",
+                "userMemos": "memos",
+                "worldMemos": "world_memos",
+                "avatarMemos": "avatar_memos",
+                "avatarTags": "avatar_tags",
+            })
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     counts = {name: len(rows) for name, rows in payload["events"].items()}
+    archive_counts = {
+        name: sum(len(rows) for rows in section.values())
+        for name, section in payload["archive"].items()
+    }
     print(f"Wrote {args.output}")
     print("Event counts: " + ", ".join(f"{name}={count}" for name, count in counts.items()))
+    print("Archive counts: " + ", ".join(f"{name}={count}" for name, count in archive_counts.items()))
     return 0
 
 
