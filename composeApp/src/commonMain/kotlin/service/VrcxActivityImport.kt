@@ -184,8 +184,8 @@ internal object VrcxActivityImporter {
         bridge.events.statusChanges.forEach { event ->
             val timestamp = event.createdAt.toEpochMillisOrNull() ?: return@forEach
             if (!event.userId.isVrcUserId()) return@forEach
-            val before = normalizeSocialStatus(event.previousStatus).withDescription(event.previousStatusDescription)
-            val after = normalizeSocialStatus(event.status).withDescription(event.statusDescription)
+            val before = formatSocialStatus(event.previousStatus, event.previousStatusDescription)
+            val after = formatSocialStatus(event.status, event.statusDescription)
             val key = "status|${event.createdAt}|${event.userId}|$before|$after"
             accept(key) {
                 val current = statsFor(event.userId)

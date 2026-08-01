@@ -17,11 +17,11 @@
 
 A mobile-first VRChat companion, continued from VRCM, for managing friends, Gallery, notifications, and recent shared play.
 
-> **Current test version: 0.3.13.** Please report reproducible issues with device, Android version, steps and logs through [Issues](https://github.com/Neil100o/VRCMomo/issues).
+> **Current test version: 0.3.14.** Please report reproducible issues with device, Android version, steps and logs through [Issues](https://github.com/Neil100o/VRCMomo/issues).
 
 ## Test downloads
 
-- **Android APK:** [VRCMomo-v0.3.13.apk](downloads/VRCMomo-v0.3.13.apk) — download it to an Android device, allow installation from the browser/file manager when Android asks, then install.
+- **Android APK:** [VRCMomo-v0.3.14.apk](downloads/VRCMomo-v0.3.14.apk) — download it to an Android device, allow installation from the browser/file manager when Android asks, then install.
 - **Optional VRCX exporter (Windows):** [VRCMomo-VRCX-Activity-Export.exe](downloads/VRCMomo-VRCX-Activity-Export.exe) — run it on the computer with VRCX, then import its JSON file from VRCMomo settings.
 - See [downloads/README.md](downloads/README.md) for privacy boundaries and testing notes. These are test files, not a stable release.
 - The app checks this testing channel for newer Android builds; use the update prompt to open the APK directly.

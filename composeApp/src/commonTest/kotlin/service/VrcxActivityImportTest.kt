@@ -89,4 +89,25 @@ class VrcxActivityImportTest {
         assertEquals("ask me", event.previousValue)
         assertEquals("active", event.currentValue)
     }
+
+    @Test
+    fun `status changes retain the social status description`() {
+        val preview = VrcxActivityImporter.preview(
+            """
+            {
+              "format":"vrcmomo-vrcx-activity-v3",
+              "events": {
+                "statusChanges":[
+                  {"created_at":"2026-01-01T01:00:00Z","user_id":"$userId","previous_status":"Active","previous_status_description":"old text","status":"Ask Me","status_description":"new text"}
+                ]
+              }
+            }
+            """.trimIndent(),
+            emptySet(),
+        )
+
+        val event = preview.result.events.single()
+        assertEquals(formatSocialStatus("active", "old text"), event.previousValue)
+        assertEquals(formatSocialStatus("ask me", "new text"), event.currentValue)
+    }
 }

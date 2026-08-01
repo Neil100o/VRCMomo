@@ -83,6 +83,7 @@ class FriendActivityService(
                     userId = friend.id,
                     location = friend.location,
                     status = friend.status.name,
+                    statusDescription = friend.statusDescription,
                     lastActivityAtMillis = friend.lastActivity.toEpochMillisOrNull(),
                     friendData = friend,
                 )

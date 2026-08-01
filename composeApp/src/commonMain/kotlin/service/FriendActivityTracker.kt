@@ -10,6 +10,7 @@ internal data class FriendActivityObservation(
     val userId: String,
     val location: String,
     val status: String,
+    val statusDescription: String = "",
     val lastActivityAtMillis: Long?,
     val friendData: FriendData? = null,
 )
@@ -45,7 +46,7 @@ internal class FriendActivityTracker(
             // VRCX history uses title case ("Active") while the live Android API currently
             // exposes lower case ("active"). Keep one canonical value so charts and logs do
             // not split the same social status into two categories.
-            val normalizedStatus = normalizeSocialStatus(friend.status)
+            val normalizedStatus = formatSocialStatus(friend.status, friend.statusDescription)
             val existing = statsByFriendId[friend.userId]
             val previousLocation = existing?.lastObservedLocation
             val previousStatus = existing?.lastObservedStatus
@@ -270,6 +271,14 @@ internal fun normalizeSocialStatus(value: String): String = value
             else -> status
         }
     }
+
+internal const val SOCIAL_STATUS_DESCRIPTION_SEPARATOR = " \u00B7 "
+
+/** A stable log value that retains the optional free-text description below a social status. */
+internal fun formatSocialStatus(status: String, description: String): String = listOf(
+    normalizeSocialStatus(status),
+    description.trim(),
+).filter(String::isNotBlank).joinToString(SOCIAL_STATUS_DESCRIPTION_SEPARATOR)
 
 /** A compact line diff for profile bios, retaining only lines that were actually changed. */
 internal fun friendBioDiff(before: String?, after: String?): List<FriendActivityDiffLine> {

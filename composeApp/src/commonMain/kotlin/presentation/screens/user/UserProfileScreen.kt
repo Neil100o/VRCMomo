@@ -44,6 +44,7 @@ import io.github.vrcmteam.vrcm.presentation.screens.group.GroupProfileScreen
 import io.github.vrcmteam.vrcm.presentation.screens.group.data.GroupProfileVo
 import io.github.vrcmteam.vrcm.presentation.screens.user.data.UserProfileVo
 import io.github.vrcmteam.vrcm.service.normalizeSocialStatus
+import io.github.vrcmteam.vrcm.service.SOCIAL_STATUS_DESCRIPTION_SEPARATOR
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEventType
@@ -639,7 +640,7 @@ private fun statusDurations(events: List<FriendActivityEvent>, nowMillis: Long):
 
 /** Supports existing history that was saved before social-status case normalization. */
 private fun String?.statusToken(): String? = this
-    ?.substringBefore(" · ")
+    ?.substringBefore(SOCIAL_STATUS_DESCRIPTION_SEPARATOR)
     ?.let(::normalizeSocialStatus)
     ?.takeIf(String::isNotBlank)
 
