@@ -24,7 +24,6 @@ import io.github.vrcmteam.vrcm.presentation.compoments.ABottomSheet
 import io.github.vrcmteam.vrcm.presentation.compoments.ToastText
 import io.github.vrcmteam.vrcm.presentation.extensions.onApiFailure
 import io.github.vrcmteam.vrcm.presentation.extensions.openUrl
-import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.readBoundedBytes
 import io.github.vrcmteam.vrcm.presentation.settings.LocalSettingsState
 import io.github.vrcmteam.vrcm.presentation.settings.locale.LanguageTag
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
@@ -32,11 +31,7 @@ import io.github.vrcmteam.vrcm.presentation.settings.theme.ThemeColor
 import io.github.vrcmteam.vrcm.presentation.supports.WebIcons
 import io.github.vrcmteam.vrcm.service.AuthService
 import io.github.vrcmteam.vrcm.service.VersionService
-import io.github.vrcmteam.vrcm.service.VrcxDataImportService
-import io.github.vrcmteam.vrcm.service.VrcxFriendImportPreview
 import io.github.vrcmteam.vrcm.storage.AccountCacheManager
-import io.github.vinceglb.filekit.dialogs.FileKitType
-import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.launch
 import org.koin.compose.currentKoinScope
 import org.koin.compose.koinInject
@@ -69,9 +64,6 @@ fun SettingsBottomSheet(
                 BackgroundMonitoringBlock()
             }
             SettingsBlockSurface {
-                VrcxImportBlock()
-            }
-            SettingsBlockSurface {
                 AboutBlock()
             }
             LogoutButton(onDismissRequest)
@@ -79,82 +71,6 @@ fun SettingsBottomSheet(
     }
 }
 
-@Composable
-private fun VrcxImportBlock() {
-    val importer = koinInject<VrcxDataImportService>()
-    val scope = rememberCoroutineScope()
-    val localeStrings = strings
-    var preview by remember { mutableStateOf<VrcxFriendImportPreview?>(null) }
-    val filePicker = rememberFilePickerLauncher(
-        type = FileKitType.File("json", "csv", "txt"),
-    ) { file ->
-        if (file != null) {
-            scope.launch {
-                runCatching {
-                    importer.previewFriendImport(
-                        file.readBoundedBytes(MAX_VRCX_IMPORT_BYTES).decodeToString(),
-                    )
-                }.onSuccess { parsed ->
-                    if (parsed.isEmpty) {
-                        SharedFlowCentre.toastText.emit(ToastText.Error(localeStrings.vrcxImportNoRecords))
-                    } else {
-                        preview = parsed
-                    }
-                }.onFailure {
-                    SharedFlowCentre.toastText.emit(ToastText.Error(localeStrings.vrcxImportNoRecords))
-                }
-            }
-        }
-    }
-
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        SettingsSectionTitle(localeStrings.vrcxImportTitle)
-        Text(
-            localeStrings.vrcxImportDescription,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        TextButton(onClick = filePicker::launch) {
-            Text(localeStrings.vrcxImportAction)
-        }
-    }
-
-    preview?.let { selectedPreview ->
-        AlertDialog(
-            onDismissRequest = { preview = null },
-            title = { Text(localeStrings.vrcxImportConfirmTitle) },
-            text = {
-                Text(
-                    localeStrings.vrcxImportConfirmMessage.replace(
-                        "%d",
-                        selectedPreview.friendIds.size.toString(),
-                    ),
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    val imported = importer.importFriendFavorites(selectedPreview)
-                    preview = null
-                    scope.launch {
-                        SharedFlowCentre.toastText.emit(
-                            ToastText.Info(
-                                localeStrings.vrcxImportSuccess.replace("%d", imported.toString()),
-                            ),
-                        )
-                    }
-                }) { Text(localeStrings.vrcxImportAction) }
-            },
-            dismissButton = {
-                TextButton(onClick = { preview = null }) { Text(localeStrings.backgroundFriendMonitoringCancel) }
-            },
-        )
-    }
-}
-
-private const val MAX_VRCX_IMPORT_BYTES = 2L * 1024L * 1024L
 
 @Composable
 private fun AppearanceBlock() {

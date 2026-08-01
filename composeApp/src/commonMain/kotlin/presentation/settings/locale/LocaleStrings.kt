@@ -296,13 +296,6 @@ sealed class LocaleStrings {
     open val friendActivityIntervalWeek: String = "1–7 days"
     open val friendActivityIntervalEarlier: String = "Earlier"
     open val friendActivityIntervalUnknown: String = "No record"
-    open val vrcxImportTitle: String = "VRCX data import"
-    open val vrcxImportDescription: String = "Import a VRCX friend-list JSON or UserID CSV into local friend favorites. Account credentials and database files are never read."
-    open val vrcxImportAction: String = "Choose VRCX export"
-    open val vrcxImportConfirmTitle: String = "Import VRCX friends?"
-    open val vrcxImportConfirmMessage: String = "%d friend IDs will be added to local favorites."
-    open val vrcxImportNoRecords: String = "No valid VRCX friend IDs found in this file."
-    open val vrcxImportSuccess: String = "Imported %d new local friend favorites."
 
     // Optional Android foreground monitoring. It is never enabled by default.
     open val backgroundFriendMonitoringTitle: String = "Background friend monitoring"

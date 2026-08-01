@@ -36,10 +36,6 @@ A mobile-first VRChat companion, continued from VRCM, for managing friends, Gall
 - **Friend Management** - Complete operations including adding new friends and removing friends
 - **Activity Records** - Persist observed presence, last activity, meetings, and time spent together
 
-### ↔️ VRCX Data Import
-- **Friend-list Import** - Read VRCX friend-list JSON or CSV files with a `UserID` column into local friend favorites
-- **Privacy Boundary** - Never reads VRCX databases, account credentials, cookies, passwords, or tokens
-
 ### 🔍 Search Functionality
 - **User Search** - Quickly find VRChat users by username
 - **World Search** - Discover and search various worlds in VRChat
