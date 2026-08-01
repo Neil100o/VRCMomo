@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
@@ -37,6 +38,7 @@ import io.github.vrcmteam.vrcm.service.AuthService
 import io.github.vrcmteam.vrcm.service.FriendActivityService
 import io.github.vrcmteam.vrcm.service.VersionService
 import io.github.vrcmteam.vrcm.service.VrcxActivityImportPreview
+import io.github.vrcmteam.vrcm.network.api.worlds.WorldsApi
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEventType
 import io.github.vrcmteam.vrcm.storage.AccountCacheManager
@@ -176,7 +178,10 @@ private fun FriendActivityLogSheet(
     onDismissRequest: () -> Unit,
 ) {
     val localeStrings = strings
+    val worldsApi = koinInject<WorldsApi>()
     val selectedTypes = remember { mutableStateListOf(*FriendActivityEventType.entries.toTypedArray()) }
+    val resolvedWorldNames = remember { mutableStateMapOf<String, String>() }
+    val resolvingWorldIds = remember { mutableStateSetOf<String>() }
     val filtered = events.filter { it.type in selectedTypes }
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
@@ -228,17 +233,25 @@ private fun FriendActivityLogSheet(
                                         )
                                     }
                                     event.previousValue?.takeIf { it.isNotBlank() }?.let { value ->
-                                        Text(
-                                            text = "- $value",
+                                        ActivityLogValue(
+                                            prefix = "- ",
+                                            value = value,
                                             color = DiffRemovedRed,
                                             style = MaterialTheme.typography.bodySmall,
+                                            worldsApi = worldsApi,
+                                            resolvedWorldNames = resolvedWorldNames,
+                                            resolvingWorldIds = resolvingWorldIds,
                                         )
                                     }
                                     event.currentValue?.takeIf { it.isNotBlank() }?.let { value ->
-                                        Text(
-                                            text = "+ $value",
+                                        ActivityLogValue(
+                                            prefix = "+ ",
+                                            value = value,
                                             color = DiffAddedGreen,
                                             style = MaterialTheme.typography.bodySmall,
+                                            worldsApi = worldsApi,
+                                            resolvedWorldNames = resolvedWorldNames,
+                                            resolvingWorldIds = resolvingWorldIds,
                                         )
                                     }
                                 }
@@ -264,6 +277,33 @@ private fun FriendActivityEventType.activityLabel(localeStrings: io.github.vrcmt
         FriendActivityEventType.AvatarChanged -> localeStrings.friendActivityEventAvatarChanged
         FriendActivityEventType.FriendshipChanged -> localeStrings.friendActivityEventFriendshipChanged
     }
+
+/** Resolves only visible log rows and leaves the original location visible if the lookup fails. */
+@Composable
+private fun ActivityLogValue(
+    prefix: String,
+    value: String,
+    color: Color,
+    style: TextStyle,
+    worldsApi: WorldsApi,
+    resolvedWorldNames: MutableMap<String, String>,
+    resolvingWorldIds: MutableSet<String>,
+) {
+    val worldId = value.worldIdOrNull()
+    LaunchedEffect(worldId) {
+        if (worldId == null || worldId in resolvedWorldNames || !resolvingWorldIds.add(worldId)) return@LaunchedEffect
+        runCatching { worldsApi.getWorldById(worldId).name }
+            .onSuccess { resolvedWorldNames[worldId] = it }
+        resolvingWorldIds.remove(worldId)
+    }
+    val display = worldId?.let { id ->
+        resolvedWorldNames[id]?.let { name -> value.replaceFirst(id, name) }
+    } ?: value
+    Text(text = prefix + display, color = color, style = style)
+}
+
+private fun String.worldIdOrNull(): String? =
+    Regex("wrld_[A-Za-z0-9-]+").find(this)?.value
 
 private val DiffAddedGreen = Color(0xFF43A047)
 private val DiffRemovedRed = Color(0xFFE53935)
