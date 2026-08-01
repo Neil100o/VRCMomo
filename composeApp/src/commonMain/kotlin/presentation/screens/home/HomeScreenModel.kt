@@ -205,9 +205,15 @@ class HomeScreenModel(
 
     private fun markBoopSeen(notification: NotificationItemData) {
         screenModelScope.launch(Dispatchers.IO) {
-            authService.reTryAuthCatching {
-                notificationApi.markNotificationAsRead(notification.id)
-            }.onFailure { logger.warn("Could not mark Boop ${notification.id} as seen: ${it.message}") }
+            val v2Result = authService.reTryAuthCatching {
+                notificationApi.acknowledgeNotificationV2(notification.id)
+            }
+            if (v2Result.isFailure) {
+                // Some existing accounts can still return a legacy notification payload.
+                authService.reTryAuthCatching {
+                    notificationApi.markNotificationAsRead(notification.id)
+                }.onFailure { logger.warn("Could not acknowledge Boop ${notification.id}: ${it.message}") }
+            }
         }
     }
 

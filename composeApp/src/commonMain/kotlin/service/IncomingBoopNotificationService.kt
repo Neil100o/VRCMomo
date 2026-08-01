@@ -118,8 +118,13 @@ class IncomingBoopNotificationService(
     }
 
     private suspend fun markSeen(notificationId: String) {
-        authService.reTryAuthCatching {
-            notificationApi.markNotificationAsRead(notificationId)
+        val v2Result = authService.reTryAuthCatching {
+            notificationApi.acknowledgeNotificationV2(notificationId)
+        }
+        if (v2Result.isFailure) {
+            authService.reTryAuthCatching {
+                notificationApi.markNotificationAsRead(notificationId)
+            }
         }
     }
 }

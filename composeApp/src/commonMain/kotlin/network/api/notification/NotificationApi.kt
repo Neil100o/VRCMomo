@@ -89,6 +89,23 @@ class NotificationApi(
             }
         }.checkSuccess()
 
+    /**
+     * Acknowledges a NotificationV2 (including a Boop). This is intentionally separate from
+     * [markNotificationAsRead], which is the legacy notification endpoint.
+     */
+    suspend fun acknowledgeNotificationV2(notificationId: String): VRChatResponse =
+        client.post {
+            url {
+                path(
+                    AUTH_API_PREFIX,
+                    USER_API_PREFIX,
+                    NOTIFICATIONS_API_PREFIX,
+                    notificationId,
+                    "see",
+                )
+            }
+        }.checkSuccess()
+
     suspend fun deleteNotification(notificationId: String): VRChatResponse =
         client.put {
             url {
