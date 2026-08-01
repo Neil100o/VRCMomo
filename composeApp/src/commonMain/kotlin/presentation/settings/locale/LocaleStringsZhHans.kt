@@ -293,6 +293,8 @@ internal object LocaleStringsZhHans : LocaleStrings() {
     override val friendActivityEventLocationChanged = "切换了位置"
     override val friendActivityEventStatusChanged = "更改了社交状态"
     override val friendActivityEventProfileChanged = "更新了个人简介"
+    override val friendActivityEventAvatarChanged = "更换了模型"
+    override val friendActivityEventFriendshipChanged = "好友关系发生变化"
     override val friendActivityLogRetention = "自动清理"
     override val friendActivityLogKeepForever = "永久保留"
     override val friendActivityLogRetentionDaysSuffix = "天"

@@ -45,4 +45,26 @@ class VrcxActivityImportTest {
         assertEquals(1, repeat.alreadyImportedEvents)
         assertTrue(repeat.result.updates.isEmpty())
     }
+
+    @Test
+    fun `v2 imports location status and bio history into the timeline`() {
+        val preview = VrcxActivityImporter.preview(
+            """
+            {
+              "format":"vrcmomo-vrcx-activity-v2",
+              "events": {
+                "locationChanges":[{"created_at":"2026-01-01T00:00:00Z","user_id":"$userId","display_name":"Momo","previous_location":"wrld_old:1","location":"wrld_new:2"}],
+                "statusChanges":[{"created_at":"2026-01-01T01:00:00Z","user_id":"$userId","display_name":"Momo","previous_status":"ask me","previous_status_description":"old","status":"active","status_description":"new"}],
+                "profileChanges":[{"created_at":"2026-01-01T02:00:00Z","user_id":"$userId","display_name":"Momo","previous_bio":"old line","bio":"new line"}]
+              }
+            }
+            """.trimIndent(),
+            emptySet(),
+        )
+
+        assertEquals(3, preview.result.events.size)
+        assertEquals("wrld_old:1", preview.result.events.first { it.type.name == "LocationChanged" }.previousValue)
+        assertEquals("active · new", preview.result.events.first { it.type.name == "StatusChanged" }.currentValue)
+        assertEquals(listOf("old line", "new line"), preview.result.events.first { it.type.name == "ProfileChanged" }.diffLines.map { it.text })
+    }
 }

@@ -144,6 +144,7 @@ class FriendActivityService(
         if (preview.result.acceptedEventKeys.isEmpty()) return@synchronized
 
         tracker.mergeImportedStats(preview.result.updates)
+        tracker.mergeImportedEvents(preview.result.events)
         importedVrcxEventKeys = importedVrcxEventKeys + preview.result.acceptedEventKeys
         publishLocked(save = true)
     }

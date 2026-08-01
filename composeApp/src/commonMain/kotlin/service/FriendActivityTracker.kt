@@ -184,6 +184,13 @@ internal class FriendActivityTracker(
         }
     }
 
+    /** Event keys are tracked by the import service, so this only merges and orders accepted history. */
+    fun mergeImportedEvents(imported: List<FriendActivityEvent>) {
+        if (imported.isEmpty()) return
+        activityEvents += imported
+        activityEvents.sortByDescending(FriendActivityEvent::occurredAtMillis)
+    }
+
     private fun reconcileMeeting(
         stats: FriendActivityStats,
         friendLocation: String,

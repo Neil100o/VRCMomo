@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
 
-FORMAT = "vrcmomo-vrcx-activity-v1"
+FORMAT = "vrcmomo-vrcx-activity-v2"
 PREFIX_SUFFIX = "_feed_online_offline"
 DEFAULT_DB = Path(os.environ.get("APPDATA", "")) / "VRCX" / "VRCX.sqlite3"
 
@@ -99,6 +99,18 @@ def main() -> int:
                 "locationChanges": read_table(
                     connection, tables, f"{prefix}_feed_gps",
                     ["created_at", "user_id", "display_name", "location", "world_name", "previous_location", "time", "group_name"],
+                ),
+                "statusChanges": read_table(
+                    connection, tables, f"{prefix}_feed_status",
+                    ["created_at", "user_id", "display_name", "status", "status_description", "previous_status", "previous_status_description"],
+                ),
+                "profileChanges": read_table(
+                    connection, tables, f"{prefix}_feed_bio",
+                    ["created_at", "user_id", "display_name", "bio", "previous_bio"],
+                ),
+                "avatarChanges": read_table(
+                    connection, tables, f"{prefix}_feed_avatar",
+                    ["created_at", "user_id", "display_name", "owner_id", "avatar_name", "current_avatar_image_url", "current_avatar_thumbnail_image_url", "previous_current_avatar_image_url", "previous_current_avatar_thumbnail_image_url"],
                 ),
                 "friendHistory": read_table(
                     connection, tables, f"{prefix}_friend_log_history",

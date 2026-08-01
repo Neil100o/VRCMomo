@@ -261,6 +261,8 @@ private fun FriendActivityEventType.activityLabel(localeStrings: io.github.vrcmt
         FriendActivityEventType.LocationChanged -> localeStrings.friendActivityEventLocationChanged
         FriendActivityEventType.StatusChanged -> localeStrings.friendActivityEventStatusChanged
         FriendActivityEventType.ProfileChanged -> localeStrings.friendActivityEventProfileChanged
+        FriendActivityEventType.AvatarChanged -> localeStrings.friendActivityEventAvatarChanged
+        FriendActivityEventType.FriendshipChanged -> localeStrings.friendActivityEventFriendshipChanged
     }
 
 private val DiffAddedGreen = Color(0xFF43A047)

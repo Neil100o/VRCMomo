@@ -24,7 +24,7 @@ data class FriendActivityCache(
 ) {
     companion object {
         const val LEGACY_SCHEMA_VERSION = 1
-        const val CURRENT_SCHEMA_VERSION = 7
+        const val CURRENT_SCHEMA_VERSION = 8
     }
 }
 
@@ -56,6 +56,8 @@ enum class FriendActivityEventType {
     LocationChanged,
     StatusChanged,
     ProfileChanged,
+    AvatarChanged,
+    FriendshipChanged,
 }
 
 @Serializable

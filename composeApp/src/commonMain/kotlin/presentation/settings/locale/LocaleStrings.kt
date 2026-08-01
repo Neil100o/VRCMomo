@@ -307,6 +307,8 @@ sealed class LocaleStrings {
     open val friendActivityEventLocationChanged: String = "changed location"
     open val friendActivityEventStatusChanged: String = "changed social status"
     open val friendActivityEventProfileChanged: String = "updated their bio"
+    open val friendActivityEventAvatarChanged: String = "changed avatar"
+    open val friendActivityEventFriendshipChanged: String = "updated friendship"
     open val friendActivityLogRetention: String = "Automatic cleanup"
     open val friendActivityLogKeepForever: String = "Keep forever"
     open val friendActivityLogRetentionDaysSuffix: String = "days"

@@ -23,6 +23,7 @@
 - Tracker: `service/FriendActivityTracker.kt`
 - File storage: `storage/FriendActivityCacheDao.kt`
 - Search integration: `presentation/screens/home/pager/SearchListPagerModel.kt`
+- VRCX bridge: `tools/export_vrcx_activity.py` (read-only SQLite export) and `service/VrcxActivityImport.kt` (Android merge). Bridge v2 carries presence, locations, social status, BIO diffs, avatar changes, friendship history and completed shared sessions. Credentials, cookies, notes and moderation data are excluded.
 
 ## Attribution
 The original VRCM application structure and VRCM-authored features remain credited to the VRCM team. VRCMomo-specific UI, branding, friend activity persistence, notification/background work, and avatar editing are fork modifications.
