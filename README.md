@@ -34,6 +34,7 @@ A feature-rich cross-platform VRChat friend management application that lets you
 - **Friend Location** - Track friends' current worlds and rooms
 - **Friend Profile** - View detailed user information, status, and bio
 - **Friend Management** - Complete operations including adding new friends and removing friends
+- **Activity Records** - Persist observed presence, last activity, meetings, and time spent together
 
 ### 🔍 Search Functionality
 - **User Search** - Quickly find VRChat users by username
@@ -54,6 +55,11 @@ A feature-rich cross-platform VRChat friend management application that lets you
 - **Real-time Notifications** - Receive friend requests, invitations, group notifications, and other types of notifications
 - **Notification Management** - Display in chronological order with support for marking as read and deletion
 - **Friend Requests** - Handle friend requests, accept or decline invitations
+- **Native System Notifications** - Android local notifications for Boops and favorited friends entering or leaving VRChat
+
+### 👤 Profile and Avatar Management
+- **Profile Editing** - Edit your own status, bio, and related profile details
+- **Uploaded Avatar Management** - Browse your uploaded avatars separately and edit their name, description, and cover image
 
 ### 🎨 Interface Experience
 - **Modern Design** - Follows Material Design principles
@@ -108,13 +114,10 @@ A feature-rich cross-platform VRChat friend management application that lets you
 
 ### Coming Soon:
 - 📷 **Gallery Upload Functionality** - Support for uploading images from local devices through gallery or camera to VRChat+ gallery
-- 👤 **User Profile Editing** - Support for users to modify their personal bio, avatar, and other profile information
 
 ### Future Possibilities?
 - 📱 **Widescreen Adaptation** - Perfect adaptation for tablets and foldable devices with dual-screen layout and multi-window operations
 - 🖥️ **Complete Desktop Support** - Full platform support for Windows, macOS, and Linux
-- 📊 **Activity History Records** - Background persistent recording of friend activity history with long-term data storage and query support
-- 📢 **System Notifications** - Native system notification support
 
 <div align="center">
 
