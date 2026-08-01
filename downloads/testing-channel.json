@@ -1,0 +1,6 @@
+{
+  "version": "0.3.10",
+  "notes": "VRCMomo 0.3.10 test build\n\n- Added a testing update channel: later test APKs can be opened directly from the in-app update prompt.\n- Friend activity charts now belong to each individual friend profile.\n- Added a social-status time distribution and a 7×24 activity heatmap for the last 30 days.\n- Replaced the signed-out default avatar with the VRCMomo icon.",
+  "apkUrl": "https://github.com/Neil100o/VRCMomo/raw/main/downloads/VRCMomo-v0.3.10.apk",
+  "pageUrl": "https://github.com/Neil100o/VRCMomo/tree/main/downloads"
+}

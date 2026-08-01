@@ -19,10 +19,30 @@ class VersionService(
      * @return 最新版本号和最新版本链接
      */
     suspend fun checkVersion(checkRemember: Boolean): Result<VersionDto> =
+        gitHubApi.testingChannel(AppConst.APP_TESTING_CHANNEL_URL).fold(
+            onSuccess = { channel ->
+                Result.success(
+                    VersionDto(
+                        tagName = channel.version,
+                        htmlUrl = channel.pageUrl,
+                        body = channel.notes,
+                        hasNewVersion = isNewerVersion(channel.version, AppConst.APP_VERSION) &&
+                            (!checkRemember || settingsDao.rememberVersion != channel.version),
+                        downloadUrl = listOf(channel.apkUrl),
+                    ),
+                )
+            },
+            onFailure = { testingChannelError -> checkReleaseFallback(checkRemember, testingChannelError) },
+        )
+
+    private suspend fun checkReleaseFallback(
+        checkRemember: Boolean,
+        testingChannelError: Throwable,
+    ): Result<VersionDto> =
         gitHubApi.latestRelease(AppConst.APP_GITHUB_LATEST_RELEASE_URL).let { it ->
             when {
                 it.isSuccess -> {
-                    val releaseData = it.getOrNull()!!
+                    val releaseData = it.getOrNull() ?: return@let Result.failure(testingChannelError)
                     val tagName = releaseData.tagName
                     val downloadUrl = releaseData.assets.map { asset -> asset.browserDownloadUrl }
                     if (AppConst.APP_VERSION == tagName
@@ -37,7 +57,7 @@ class VersionService(
                 }
 
                 else -> {
-                    val error = it.exceptionOrNull()!!
+                    val error = it.exceptionOrNull() ?: testingChannelError
                     if (error is VRCApiException && error.code in GITHUB_OPTIONAL_UPDATE_CODES) {
                         // GitHub's public API is shared by all users behind the same network address.
                         // A missing release, rate limit, or temporary GitHub refusal must never affect login.
@@ -48,6 +68,16 @@ class VersionService(
                 }
             }
         }
+
+    private fun isNewerVersion(candidate: String, current: String): Boolean {
+        val candidateParts = candidate.removePrefix("v").split('.').map { it.toIntOrNull() ?: 0 }
+        val currentParts = current.removePrefix("v").split('.').map { it.toIntOrNull() ?: 0 }
+        val maxLength = maxOf(candidateParts.size, currentParts.size)
+        return (0 until maxLength).firstNotNullOfOrNull { index ->
+            (candidateParts.getOrElse(index) { 0 }).compareTo(currentParts.getOrElse(index) { 0 })
+                .takeIf { it != 0 }
+        }?.let { it > 0 } ?: false
+    }
 
     private fun noUpdateAvailable(): Result<VersionDto> = Result.success(
         VersionDto(

@@ -17,13 +17,14 @@
 
 一个基于 VRCM 延续开发的移动端 VRChat Companion，帮助你在手机上管理好友、相册、通知与最近共同游玩记录。
 
-> **当前测试版本：0.3.9**。欢迎通过 [Issues](https://github.com/Neil100o/VRCMomo/issues) 反馈问题、设备信息和复现步骤。
+> **当前测试版本：0.3.10**。欢迎通过 [Issues](https://github.com/Neil100o/VRCMomo/issues) 反馈问题、设备信息和复现步骤。
 
 ## 测试版下载
 
-- **Android 安装包：**[VRCMomo-v0.3.9.apk](downloads/VRCMomo-v0.3.9.apk) —— 下载到 Android 设备；系统提示时，允许浏览器或文件管理器安装未知来源应用后安装。
+- **Android 安装包：**[VRCMomo-v0.3.10.apk](downloads/VRCMomo-v0.3.10.apk) —— 下载到 Android 设备；系统提示时，允许浏览器或文件管理器安装未知来源应用后安装。
 - **可选 VRCX 导出工具（Windows）：**[VRCMomo-VRCX-Activity-Export.exe](downloads/VRCMomo-VRCX-Activity-Export.exe) —— 在安装了 VRCX 的电脑上运行，再从 VRCMomo 设置页导入生成的 JSON 文件。
 - 隐私边界和测试注意事项见 [downloads/README.md](downloads/README.md)。以上均为测试文件，不是稳定发行版。
+- 客户端会检查该测试通道；发现新版 Android 安装包时，可直接通过更新提示打开下载地址。
 
 </div>
 
