@@ -45,6 +45,11 @@ A feature-rich cross-platform VRChat friend management application that lets you
 - **World Browsing** - Browse popular and recommended worlds
 - **Room Invitations** - Invite yourself to rooms
 
+### 👥 Group Features
+- **Group Profiles** - View group descriptions, icons, banners, and core details
+- **Members and Posts** - Browse members, announcements, and posts with paging
+- **Gallery and Instances** - Browse group Gallery items and visible group instance states
+
 ### 🔔 Notification System
 - **Real-time Notifications** - Receive friend requests, invitations, group notifications, and other types of notifications
 - **Notification Management** - Display in chronological order with support for marking as read and deletion
@@ -104,7 +109,6 @@ A feature-rich cross-platform VRChat friend management application that lets you
 ### Coming Soon:
 - 📷 **Gallery Upload Functionality** - Support for uploading images from local devices through gallery or camera to VRChat+ gallery
 - 👤 **User Profile Editing** - Support for users to modify their personal bio, avatar, and other profile information
-- 👥 **Group Features** - Complete group functionality including group profile viewing and group room viewing
 
 ### Future Possibilities?
 - 📱 **Widescreen Adaptation** - Perfect adaptation for tablets and foldable devices with dual-screen layout and multi-window operations
