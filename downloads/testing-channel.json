@@ -1,6 +1,6 @@
 {
-  "version": "0.3.11",
-  "notes": "VRCMomo 0.3.11 test build\n\n- Expanded the VRCX export bridge with future-compatible activity, relationship, library and game-log archive sections.\n- Normalized social-status casing, so VRCX \"Active\" and Android \"active\" share one chart category.\n- Updated the Windows VRCX exporter included in the downloads folder.",
-  "apkUrl": "https://github.com/Neil100o/VRCMomo/raw/main/downloads/VRCMomo-v0.3.11.apk",
+  "version": "0.3.12",
+  "notes": "VRCMomo 0.3.12 test build\n\n- Fixed the test update channel: GitHub publishes the manifest as text/plain, so older builds could silently fall back to the empty Release channel.\n- Expanded the VRCX export bridge with future-compatible activity, relationship, library and game-log archive sections.\n- Normalized social-status casing, so VRCX \"Active\" and Android \"active\" share one chart category.",
+  "apkUrl": "https://github.com/Neil100o/VRCMomo/raw/main/downloads/VRCMomo-v0.3.12.apk",
   "pageUrl": "https://github.com/Neil100o/VRCMomo/tree/main/downloads"
 }

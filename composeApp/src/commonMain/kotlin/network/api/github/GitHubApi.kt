@@ -5,7 +5,9 @@ import io.github.vrcmteam.vrcm.network.api.github.data.TestingChannelData
 import io.github.vrcmteam.vrcm.network.extensions.checkSuccess
 import io.ktor.client.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.*
+import kotlinx.serialization.json.Json
 
 class GitHubApi(
     private val client: HttpClient
@@ -26,7 +28,11 @@ class GitHubApi(
                 githubAuthToken()?.let { token ->
                     header(HttpHeaders.Authorization, "Bearer $token")
                 }
-            }.checkSuccess<TestingChannelData>()
+            }.checkSuccess {
+                // raw.githubusercontent.com serves .json files as text/plain. Decoding the
+                // text explicitly avoids Ktor rejecting the otherwise valid update manifest.
+                Json { ignoreUnknownKeys = true }.decodeFromString<TestingChannelData>(bodyAsText())
+            }
         }
 
 }
