@@ -12,6 +12,10 @@ import kotlinx.serialization.json.Json
 class GitHubApi(
     private val client: HttpClient
 ) {
+    // The main API client has VRChat's default base URL and cookies installed. Update metadata
+    // lives on GitHub, so it must use an independent client instead of inheriting that request
+    // configuration.
+    private val publicUpdateClient = HttpClient()
 
     suspend fun latestRelease(releaseUrl: String): Result<ReleaseData> =
         runCatching {
@@ -24,11 +28,7 @@ class GitHubApi(
 
     suspend fun testingChannel(channelUrl: String): Result<TestingChannelData> =
         runCatching {
-            client.get(channelUrl) {
-                githubAuthToken()?.let { token ->
-                    header(HttpHeaders.Authorization, "Bearer $token")
-                }
-            }.checkSuccess {
+            publicUpdateClient.get(channelUrl).checkSuccess {
                 // raw.githubusercontent.com serves .json files as text/plain. Decoding the
                 // text explicitly avoids Ktor rejecting the otherwise valid update manifest.
                 Json { ignoreUnknownKeys = true }.decodeFromString<TestingChannelData>(bodyAsText())

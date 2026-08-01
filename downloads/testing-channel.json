@@ -1,6 +1,6 @@
 {
-  "version": "0.3.14",
-  "notes": "VRCMomo 0.3.14 test build\n\n- Activity logs now retain and show the free-text description attached to social-status changes.\n- Activity logs resolve visible world IDs to readable world names.\n- Expanded the VRCX export bridge and normalized social-status casing.",
-  "apkUrl": "https://github.com/Neil100o/VRCMomo/raw/main/downloads/VRCMomo-v0.3.14.apk",
+  "version": "0.3.15",
+  "notes": "VRCMomo 0.3.15 test build\n\n- Fixed update checks by using an independent public HTTP client for GitHub metadata.\n- Activity logs retain social-status descriptions and resolve visible world IDs to names.\n- Expanded the VRCX export bridge and normalized social-status casing.",
+  "apkUrl": "https://github.com/Neil100o/VRCMomo/raw/main/downloads/VRCMomo-v0.3.15.apk",
   "pageUrl": "https://github.com/Neil100o/VRCMomo/tree/main/downloads"
 }
