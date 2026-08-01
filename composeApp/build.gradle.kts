@@ -210,7 +210,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = libs.versions.app.packageName.get()
             // macOS DMG metadata rejects a zero major version. The app itself
-            // still presents the independent VRCMomo prerelease version (0.2.0).
+            // still presents the independent VRCMomo prerelease version (0.3.0).
             packageVersion = "1.0.0"
         }
     }
