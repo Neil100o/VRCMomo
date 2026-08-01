@@ -13,9 +13,9 @@
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-blue.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.10.3-blue)](https://www.jetbrains.com/lp/compose-multiplatform/)
 
-## Multi-platform VRChat Friend "Monitoring" Application
+## Mobile VRChat Companion
 
-A feature-rich cross-platform VRChat friend management application that lets you keep track of your friends' activities anytime, anywhere.
+A mobile-first VRChat companion, continued from VRCM, for managing friends, Gallery, notifications, and recent shared play.
 
 </div>
 
@@ -35,6 +35,10 @@ A feature-rich cross-platform VRChat friend management application that lets you
 - **Friend Profile** - View detailed user information, status, and bio
 - **Friend Management** - Complete operations including adding new friends and removing friends
 - **Activity Records** - Persist observed presence, last activity, meetings, and time spent together
+
+### ↔️ VRCX Data Import
+- **Friend-list Import** - Read VRCX friend-list JSON or CSV files with a `UserID` column into local friend favorites
+- **Privacy Boundary** - Never reads VRCX databases, account credentials, cookies, passwords, or tokens
 
 ### 🔍 Search Functionality
 - **User Search** - Quickly find VRChat users by username
@@ -81,8 +85,7 @@ A feature-rich cross-platform VRChat friend management application that lets you
 
 </div>
 
-- ✅ **Android** - Full feature support
-- ✅ **iOS** - Full feature support (requires [self-signing](self-signing.md))
+- ✅ **Android** - Current primary testing and maintenance platform
 
 <div align="center">
 
@@ -112,12 +115,9 @@ A feature-rich cross-platform VRChat friend management application that lets you
 
 </div>
 
-### Coming Soon:
-- 📷 **Gallery Upload Functionality** - Support for uploading images from local devices through gallery or camera to VRChat+ gallery
-
-### Future Possibilities?
-- 📱 **Widescreen Adaptation** - Perfect adaptation for tablets and foldable devices with dual-screen layout and multi-window operations
-- 🖥️ **Complete Desktop Support** - Full platform support for Windows, macOS, and Linux
+### Current Focus
+- 📱 **Mobile Stability** - Prioritize Android device fixes, background monitoring, and notification reliability
+- 🧪 **Community Testing** - Improve the existing friend, group, Gallery, and profile features from real-world feedback
 
 <div align="center">
 
