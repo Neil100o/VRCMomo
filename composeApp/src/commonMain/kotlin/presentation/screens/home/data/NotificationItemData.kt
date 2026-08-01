@@ -43,6 +43,47 @@ data class NotificationItemData(
                 ?.takeIf { it.isNotEmpty() }
                 ?.let { "Custom emoji" }
 
+    /** A compact, offline-safe visual for the built-in Boop reactions. */
+    val boopEmojiGlyph: String
+        get() = when (boopEmojiId) {
+            "default_angry" -> "😠"
+            "default_bats" -> "🦇"
+            "default_beachball" -> "🏖"
+            "default_beer" -> "🍺"
+            "default_blushing" -> "😊"
+            "default_boo", "default_spooky_ghost" -> "👻"
+            "default_broken_heart" -> "💔"
+            "default_candy", "default_candy_cane" -> "🍬"
+            "default_champagne" -> "🍾"
+            "default_cloud" -> "☁"
+            "default_confetti" -> "🎉"
+            "default_crying" -> "😢"
+            "default_exclamation" -> "❗"
+            "default_fire" -> "🔥"
+            "default_gift", "default_gifts" -> "🎁"
+            "default_hand_wave" -> "👋"
+            "default_heart", "default_in_love", "default_kiss" -> "❤"
+            "default_ice_cream" -> "🍦"
+            "default_laugh" -> "😂"
+            "default_life_ring" -> "🛟"
+            "default_money" -> "💰"
+            "default_music_note" -> "🎵"
+            "default_pizza" -> "🍕"
+            "default_question" -> "❓"
+            "default_skull" -> "💀"
+            "default_smile" -> "🙂"
+            "default_snowball", "default_snow_fall" -> "❄"
+            "default_stop" -> "🛑"
+            "default_sunglasses", "default_neon_shades" -> "😎"
+            "default_thinking" -> "🤔"
+            "default_thumbs_down" -> "👎"
+            "default_thumbs_up" -> "👍"
+            "default_tomato" -> "🍅"
+            "default_zzz" -> "💤"
+            null -> "✦"
+            else -> "✦"
+        }
+
     /** The VRChat user targeted by a `user:usr_...` notification link. */
     val linkedUserId: String?
         get() = link
