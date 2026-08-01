@@ -16,7 +16,11 @@ class SettingsDao(
                 isBackgroundFriendMonitoringEnabled = settingsSettings.getBoolean(
                     DaoKeys.Settings.BACKGROUND_FRIEND_MONITORING_ENABLED_KEY,
                     false,
-                )
+                ),
+                isSystemNotificationsEnabled = settingsSettings.getBoolean(
+                    DaoKeys.Settings.SYSTEM_NOTIFICATIONS_ENABLED_KEY,
+                    true,
+                ),
             )
         }
         set(value) {
@@ -35,6 +39,10 @@ class SettingsDao(
             settingsSettings.putBoolean(
                 DaoKeys.Settings.BACKGROUND_FRIEND_MONITORING_ENABLED_KEY,
                 value.isBackgroundFriendMonitoringEnabled,
+            )
+            settingsSettings.putBoolean(
+                DaoKeys.Settings.SYSTEM_NOTIFICATIONS_ENABLED_KEY,
+                value.isSystemNotificationsEnabled,
             )
         }
 

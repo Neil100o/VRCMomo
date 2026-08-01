@@ -4,6 +4,8 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -34,6 +36,8 @@ import io.github.vrcmteam.vrcm.service.AuthService
 import io.github.vrcmteam.vrcm.service.FriendActivityService
 import io.github.vrcmteam.vrcm.service.VersionService
 import io.github.vrcmteam.vrcm.service.VrcxActivityImportPreview
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityEventType
 import io.github.vrcmteam.vrcm.storage.AccountCacheManager
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
@@ -42,6 +46,7 @@ import org.koin.compose.currentKoinScope
 import org.koin.compose.koinInject
 import presentation.compoments.UpdateDialog
 import presentation.screens.auth.data.VersionVo
+import kotlinx.datetime.Instant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,10 +71,16 @@ fun SettingsBottomSheet(
                 AppearanceBlock()
             }
             SettingsBlockSurface {
+                SystemNotificationsBlock()
+            }
+            SettingsBlockSurface {
                 BackgroundMonitoringBlock()
             }
             SettingsBlockSurface {
                 VrcxActivityImportBlock()
+            }
+            SettingsBlockSurface {
+                FriendActivityLogBlock()
             }
             SettingsBlockSurface {
                 AboutBlock()
@@ -78,6 +89,134 @@ fun SettingsBottomSheet(
         }
     }
 }
+
+@Composable
+private fun SystemNotificationsBlock() {
+    var currentSettings by LocalSettingsState.current
+    val localeStrings = strings
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        SettingsSectionTitle(localeStrings.systemNotificationsTitle)
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable {
+                currentSettings = currentSettings.copy(
+                    isSystemNotificationsEnabled = !currentSettings.isSystemNotificationsEnabled,
+                )
+            },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                localeStrings.systemNotificationsDescription,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Switch(
+                checked = currentSettings.isSystemNotificationsEnabled,
+                onCheckedChange = { enabled ->
+                    currentSettings = currentSettings.copy(isSystemNotificationsEnabled = enabled)
+                },
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun FriendActivityLogBlock() {
+    val activityService = koinInject<FriendActivityService>()
+    val events by activityService.activityLog.collectAsState()
+    val localeStrings = strings
+    var open by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        SettingsSectionTitle(localeStrings.friendActivityLogTitle)
+        Text(
+            localeStrings.friendActivityLogDescription,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        TextButton(onClick = { open = true }) { Text(localeStrings.friendActivityLogOpen) }
+    }
+    if (open) {
+        FriendActivityLogSheet(events = events, onDismissRequest = { open = false })
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class, kotlin.time.ExperimentalTime::class)
+@Composable
+private fun FriendActivityLogSheet(
+    events: List<FriendActivityEvent>,
+    onDismissRequest: () -> Unit,
+) {
+    val localeStrings = strings
+    val selectedTypes = remember { mutableStateListOf(*FriendActivityEventType.entries.toTypedArray()) }
+    val filtered = events.filter { it.type in selectedTypes }
+    ModalBottomSheet(
+        onDismissRequest = onDismissRequest,
+        sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(localeStrings.friendActivityLogTitle, style = MaterialTheme.typography.titleLarge)
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                FriendActivityEventType.entries.forEach { type ->
+                    FilterChip(
+                        selected = type in selectedTypes,
+                        onClick = {
+                            if (type in selectedTypes) selectedTypes.remove(type) else selectedTypes.add(type)
+                        },
+                        label = { Text(type.activityLabel(localeStrings)) },
+                    )
+                }
+            }
+            if (filtered.isEmpty()) {
+                Text(
+                    localeStrings.friendActivityLogEmpty,
+                    modifier = Modifier.padding(vertical = 32.dp).align(Alignment.CenterHorizontally),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth().heightIn(max = 560.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    items(filtered, key = { "${it.userId}-${it.type}-${it.occurredAtMillis}" }) { event ->
+                        ListItem(
+                            headlineContent = {
+                                Text("${event.displayName.ifBlank { event.userId }} ${event.type.activityLabel(localeStrings)}")
+                            },
+                            supportingContent = {
+                                Text(Instant.fromEpochMilliseconds(event.occurredAtMillis).toString().replace('T', ' ').removeSuffix("Z"))
+                            },
+                        )
+                    }
+                }
+            }
+        }
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+private fun FriendActivityEventType.activityLabel(localeStrings: io.github.vrcmteam.vrcm.presentation.settings.locale.LocaleStrings): String =
+    when (this) {
+        FriendActivityEventType.Online -> localeStrings.friendActivityEventOnline
+        FriendActivityEventType.Offline -> localeStrings.friendActivityEventOffline
+        FriendActivityEventType.Met -> localeStrings.friendActivityEventMet
+        FriendActivityEventType.Left -> localeStrings.friendActivityEventLeft
+        FriendActivityEventType.LocationChanged -> localeStrings.friendActivityEventLocationChanged
+        FriendActivityEventType.StatusChanged -> localeStrings.friendActivityEventStatusChanged
+    }
 
 @Composable
 private fun VrcxActivityImportBlock() {

@@ -4,6 +4,7 @@ import io.github.vrcmteam.vrcm.network.api.friends.date.FriendData
 import io.github.vrcmteam.vrcm.storage.FriendActivityCacheDao
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityCache
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -40,6 +41,8 @@ class FriendActivityService(
 
     private val _friendActivityState = MutableStateFlow<Map<String, FriendActivityStats>>(emptyMap())
     val friendActivityState: StateFlow<Map<String, FriendActivityStats>> = _friendActivityState.asStateFlow()
+    private val _activityLog = MutableStateFlow<List<FriendActivityEvent>>(emptyList())
+    val activityLog: StateFlow<List<FriendActivityEvent>> = _activityLog.asStateFlow()
 
     init {
         serviceScope.launch {
@@ -55,7 +58,7 @@ class FriendActivityService(
         persistLocked()
         activeAccountUserId = userId
         val cache = cacheDao.load(userId)
-        tracker = FriendActivityTracker(cache?.statsByFriendId.orEmpty())
+        tracker = FriendActivityTracker(cache?.statsByFriendId.orEmpty(), cache?.activityEvents.orEmpty())
         importedVrcxEventKeys = cache?.importedVrcxEventKeys.orEmpty()
         publishLocked(save = false)
     }
@@ -66,6 +69,7 @@ class FriendActivityService(
         tracker = FriendActivityTracker()
         importedVrcxEventKeys = emptySet()
         _friendActivityState.value = emptyMap()
+        _activityLog.value = emptyList()
     }
 
     fun observeFriends(friends: Map<String, FriendData>) = synchronized(lock) {
@@ -135,6 +139,7 @@ class FriendActivityService(
                 statsByFriendId = tracker.snapshotForPersistence(Clock.System.now().toEpochMilliseconds()),
                 schemaVersion = FriendActivityCache.CURRENT_SCHEMA_VERSION,
                 importedVrcxEventKeys = importedVrcxEventKeys,
+                activityEvents = tracker.eventLog,
             )
         } ?: return
         writer.submit(pending.first, pending.second)
@@ -148,6 +153,7 @@ class FriendActivityService(
                 statsByFriendId = tracker.snapshotForPersistence(Clock.System.now().toEpochMilliseconds()),
                 schemaVersion = FriendActivityCache.CURRENT_SCHEMA_VERSION,
                 importedVrcxEventKeys = importedVrcxEventKeys,
+                activityEvents = tracker.eventLog,
             ),
         )
     }
@@ -155,6 +161,7 @@ class FriendActivityService(
     private fun publishLocked(save: Boolean) {
         val snapshot = tracker.snapshot
         _friendActivityState.value = snapshot
+        _activityLog.value = tracker.eventLog
         if (save) persistLocked()
     }
 

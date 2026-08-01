@@ -26,7 +26,10 @@ class FriendActivityCacheDaoTest {
         assertEquals(12345, loaded.statsByFriendId.getValue("usr_friend").togetherDurationMillis)
 
         dao.save(userId, loaded)
-        assertTrue(settings.getString("${DaoKeys.FriendActivity.KEY_PREFIX}.$userId", "").contains("\"schemaVersion\":3"))
+        assertTrue(
+            settings.getString("${DaoKeys.FriendActivity.KEY_PREFIX}.$userId", "")
+                .contains("\"schemaVersion\":${FriendActivityCache.CURRENT_SCHEMA_VERSION}"),
+        )
     }
 
     @Test

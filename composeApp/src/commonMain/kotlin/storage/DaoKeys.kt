@@ -67,6 +67,7 @@ object DaoKeys{
         const val REMEMBER_VERSION_KEY = "${PREFIX}.rememberVersion"
 
         const val BACKGROUND_FRIEND_MONITORING_ENABLED_KEY = "${PREFIX}.backgroundFriendMonitoringEnabled"
+        const val SYSTEM_NOTIFICATIONS_ENABLED_KEY = "${PREFIX}.systemNotificationsEnabled"
 
     }
 

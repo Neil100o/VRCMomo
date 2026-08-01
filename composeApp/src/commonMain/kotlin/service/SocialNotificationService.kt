@@ -7,6 +7,7 @@ import io.github.vrcmteam.vrcm.network.api.friends.date.FriendData
 import io.github.vrcmteam.vrcm.presentation.notifications.PlatformNotificationService
 import io.github.vrcmteam.vrcm.presentation.notifications.SystemNotification
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.NotificationItemData
+import io.github.vrcmteam.vrcm.storage.SettingsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -27,6 +28,7 @@ class SocialNotificationService(
     private val platformNotificationService: PlatformNotificationService,
     private val favoriteService: FavoriteService,
     private val friendService: FriendService,
+    private val settingsDao: SettingsDao,
 ) {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val stateMutex = Mutex()
@@ -76,6 +78,7 @@ class SocialNotificationService(
     }
 
     fun notifyBoop(notification: NotificationItemData) {
+        if (!settingsDao.settings.isSystemNotificationsEnabled) return
         val senderName = notification.title?.trim().takeUnless { it.isNullOrEmpty() } ?: "未知用户"
         val emojiLabel = notification.boopEmojiLabel
         val reactionText = emojiLabel?.let { "（$it）" }.orEmpty()
@@ -97,6 +100,7 @@ class SocialNotificationService(
     }
 
     private fun notifyPresenceTransition(transition: FriendPresenceTransition) {
+        if (!settingsDao.settings.isSystemNotificationsEnabled) return
         val status = if (transition.inGame) "进入 VRChat 了" else "离开 VRChat 了"
         platformNotificationService.show(
             SystemNotification(

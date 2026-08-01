@@ -8,4 +8,5 @@ data class SettingsData(
     val themeColor: String?,
     val languageTag: String?,
     val isBackgroundFriendMonitoringEnabled: Boolean = false,
+    val isSystemNotificationsEnabled: Boolean = true,
 )

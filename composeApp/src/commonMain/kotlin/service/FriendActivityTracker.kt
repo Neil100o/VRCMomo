@@ -2,6 +2,8 @@ package io.github.vrcmteam.vrcm.service
 
 import io.github.vrcmteam.vrcm.network.api.friends.date.FriendData
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityEventType
 
 internal data class FriendActivityObservation(
     val userId: String,
@@ -17,14 +19,22 @@ internal data class FriendActivityObservation(
  */
 internal class FriendActivityTracker(
     initialStats: Map<String, FriendActivityStats> = emptyMap(),
+    initialEvents: List<FriendActivityEvent> = emptyList(),
 ) {
     private val statsByFriendId = initialStats.mapValues { (_, stats) ->
         stats.clearRuntimeObservation()
     }.toMutableMap()
     private var selfInstanceId: String? = null
+    private val activityEvents = initialEvents
+        .sortedByDescending(FriendActivityEvent::occurredAtMillis)
+        .take(MAX_ACTIVITY_EVENTS)
+        .toMutableList()
 
     val snapshot: Map<String, FriendActivityStats>
         get() = statsByFriendId.toMap()
+
+    val eventLog: List<FriendActivityEvent>
+        get() = activityEvents.toList()
 
     fun observeFriends(
         friends: Collection<FriendActivityObservation>,
@@ -35,6 +45,9 @@ internal class FriendActivityTracker(
             val existing = statsByFriendId[friend.userId]
             val previousLocation = existing?.lastObservedLocation
             val previousStatus = existing?.lastObservedStatus
+            val wasInGame = isInGameLocation(previousLocation)
+            val isInGame = isInGameLocation(friend.location)
+            val hasPriorObservation = previousLocation != null || previousStatus != null
             var next = (existing ?: FriendActivityStats(userId = friend.userId)).copy(
                 lastKnownFriend = friend.friendData ?: existing?.lastKnownFriend,
             )
@@ -47,8 +60,6 @@ internal class FriendActivityTracker(
                     lastActivityAtMillis = latest(next.lastActivityAtMillis, friend.lastActivityAtMillis),
                 )
             } else {
-                val wasInGame = isInGameLocation(previousLocation)
-                val isInGame = isInGameLocation(friend.location)
                 val presenceChanged = previousLocation != friend.location || previousStatus != friend.status
                 val activityAt = if (presenceChanged) nowMillis else null
                 next = next.copy(
@@ -64,7 +75,24 @@ internal class FriendActivityTracker(
                 )
             }
 
-            next = reconcileMeeting(next, friend.location, nowMillis)
+                next = reconcileMeeting(next, friend.location, nowMillis)
+                val name = friend.friendData?.displayName ?: existing?.lastKnownFriend?.displayName.orEmpty()
+                if (hasPriorObservation) {
+                    if (!wasInGame && isInGame) appendEvent(friend.userId, name, FriendActivityEventType.Online, nowMillis)
+                    if (wasInGame && !isInGame) appendEvent(friend.userId, name, FriendActivityEventType.Offline, nowMillis)
+                    if (wasInGame && isInGame && previousLocation != friend.location) {
+                        appendEvent(friend.userId, name, FriendActivityEventType.LocationChanged, nowMillis)
+                    }
+                    if (previousStatus != friend.status) {
+                        appendEvent(friend.userId, name, FriendActivityEventType.StatusChanged, nowMillis)
+                    }
+                }
+                if (existing?.activeTogetherSinceMillis == null && next.activeTogetherSinceMillis != null) {
+                    appendEvent(friend.userId, name, FriendActivityEventType.Met, nowMillis)
+                }
+                if (existing?.activeTogetherSinceMillis != null && next.activeTogetherSinceMillis == null) {
+                    appendEvent(friend.userId, name, FriendActivityEventType.Left, nowMillis)
+                }
             if (existing != next) {
                 statsByFriendId[friend.userId] = next
                 changed = true
@@ -91,6 +119,13 @@ internal class FriendActivityTracker(
         var changed = false
         statsByFriendId.forEach { (userId, current) ->
             val next = reconcileMeeting(current, current.lastObservedLocation.orEmpty(), nowMillis)
+            val name = current.lastKnownFriend?.displayName.orEmpty()
+            if (current.activeTogetherSinceMillis == null && next.activeTogetherSinceMillis != null) {
+                appendEvent(userId, name, FriendActivityEventType.Met, nowMillis)
+            }
+            if (current.activeTogetherSinceMillis != null && next.activeTogetherSinceMillis == null) {
+                appendEvent(userId, name, FriendActivityEventType.Left, nowMillis)
+            }
             if (next != current) {
                 statsByFriendId[userId] = next
                 changed = true
@@ -146,4 +181,18 @@ internal class FriendActivityTracker(
         this?.trim()?.takeIf { it.startsWith("wrld_") && ':' in it }
 
     private fun latest(vararg timestamps: Long?): Long? = timestamps.filterNotNull().maxOrNull()
+
+    private fun appendEvent(
+        userId: String,
+        displayName: String,
+        type: FriendActivityEventType,
+        occurredAtMillis: Long,
+    ) {
+        activityEvents.add(0, FriendActivityEvent(userId, displayName, type, occurredAtMillis))
+        if (activityEvents.size > MAX_ACTIVITY_EVENTS) activityEvents.removeLast()
+    }
+
+    private companion object {
+        const val MAX_ACTIVITY_EVENTS = 500
+    }
 }

@@ -71,6 +71,7 @@ class AndroidPlatformNotificationService(context: Context) : PlatformNotificatio
         return builder
             .setSmallIcon(R.drawable.ic_stat_vrcmomo)
             .setContentIntent(pendingIntent)
+            .setPriority(Notification.PRIORITY_HIGH)
     }
 
     private fun ensureSocialChannel() {
@@ -79,7 +80,7 @@ class AndroidPlatformNotificationService(context: Context) : PlatformNotificatio
             NotificationChannel(
                 SOCIAL_CHANNEL_ID,
                 appContext.getString(R.string.social_notification_channel_name),
-                NotificationManager.IMPORTANCE_DEFAULT,
+                NotificationManager.IMPORTANCE_HIGH,
             ).apply {
                 description = appContext.getString(R.string.social_notification_channel_description)
             },
@@ -101,7 +102,9 @@ class AndroidPlatformNotificationService(context: Context) : PlatformNotificatio
     }
 
     private companion object {
-        const val SOCIAL_CHANNEL_ID = "vrcmomo_social"
+        // Android channels cannot change importance after creation. A new ID upgrades users who
+        // previously had the old, quiet VRCMomo social channel.
+        const val SOCIAL_CHANNEL_ID = "vrcmomo_social_v2"
         const val BACKGROUND_MONITORING_CHANNEL_ID = "vrcmomo_background_monitoring"
         const val BACKGROUND_NOTIFICATION_REQUEST_CODE = 0x4D4F
     }

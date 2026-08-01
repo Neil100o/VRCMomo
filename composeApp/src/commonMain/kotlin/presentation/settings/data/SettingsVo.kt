@@ -8,4 +8,5 @@ data class SettingsVo(
     val languageTag: LanguageTag,
     val themeColor: ThemeColor,
     val isBackgroundFriendMonitoringEnabled: Boolean = false,
+    val isSystemNotificationsEnabled: Boolean = true,
 )

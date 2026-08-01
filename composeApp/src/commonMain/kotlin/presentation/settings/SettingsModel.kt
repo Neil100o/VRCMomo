@@ -18,6 +18,7 @@ class SettingsModel(
                 themeColor = it.themeColor.name,
                 languageTag = it.languageTag.tag,
                 isBackgroundFriendMonitoringEnabled = it.isBackgroundFriendMonitoringEnabled,
+                isSystemNotificationsEnabled = it.isSystemNotificationsEnabled,
             )
         }
     }
@@ -37,6 +38,7 @@ class SettingsModel(
                 themeColor = themeColor,
                 languageTag = languageTag,
                 isBackgroundFriendMonitoringEnabled = settings.isBackgroundFriendMonitoringEnabled,
+                isSystemNotificationsEnabled = settings.isSystemNotificationsEnabled,
             )
         }
 }
