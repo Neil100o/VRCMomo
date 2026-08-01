@@ -5,14 +5,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -20,7 +17,6 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.koin.koinScreenModel
 import io.github.vrcmteam.vrcm.network.api.attributes.FavoriteType
-import io.github.vrcmteam.vrcm.network.api.attributes.UserStatus
 import io.github.vrcmteam.vrcm.presentation.compoments.SearchTabType
 import io.github.vrcmteam.vrcm.presentation.compoments.StandardSearchList
 import io.github.vrcmteam.vrcm.presentation.extensions.currentNavigator
@@ -30,10 +26,6 @@ import io.github.vrcmteam.vrcm.presentation.screens.user.FriendNetworkScreen
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
 import io.github.vrcmteam.vrcm.presentation.supports.AppIcons
 import io.github.vrcmteam.vrcm.presentation.supports.Pager
-import io.github.vrcmteam.vrcm.presentation.theme.GameColor
-import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
-import kotlin.time.Clock
-import kotlin.time.ExperimentalTime
 import org.jetbrains.compose.resources.painterResource
 import vrcm.composeapp.generated.resources.Res
 import vrcm.composeapp.generated.resources.star
@@ -75,7 +67,6 @@ object FriendListPager : Pager {
         val avatarTotal by friendListPagerModel.avatarTotal.collectAsState()
         // 获取列表数据
         val filteredFriends by friendListPagerModel.friendList.collectAsState()
-        val friendActivityState by friendListPagerModel.friendActivityState.collectAsState()
         val filteredWorlds by friendListPagerModel.worldList.collectAsState()
         val filteredAvatars by friendListPagerModel.avatarList.collectAsState()
         val isRefreshing by friendListPagerModel.isRefreshing.collectAsState()
@@ -98,13 +89,7 @@ object FriendListPager : Pager {
             doRefresh = friendListPagerModel::refreshCurrentTabCacheData,
             headerContent = {
                 if (selectedTabIndex == SearchTabType.USER.index) {
-                    Column {
-                        FriendActivityOverviewCard(
-                            friends = filteredFriends,
-                            activityStats = friendActivityState,
-                        )
-                        RelationshipHubCard()
-                    }
+                    RelationshipHubCard()
                 }
             },
             userList = filteredFriends,
@@ -187,105 +172,6 @@ object FriendListPager : Pager {
         )
     }
 }
-
-@OptIn(ExperimentalTime::class)
-@Composable
-private fun FriendActivityOverviewCard(
-    friends: List<io.github.vrcmteam.vrcm.network.api.friends.date.FriendData>,
-    activityStats: Map<String, FriendActivityStats>,
-) {
-    val localeStrings = strings
-    val nowMillis = Clock.System.now().toEpochMilliseconds()
-    val statusCounts = remember(friends) {
-        UserStatus.entries.associateWith { status -> friends.count { it.status == status } }
-    }
-    val activityIntervals = remember(friends, activityStats, nowMillis / ACTIVITY_OVERVIEW_REFRESH_WINDOW) {
-        val counts = IntArray(5)
-        friends.forEach { friend ->
-            val lastActivity = activityStats[friend.id]?.lastActivityAtMillis
-            val index = when {
-                lastActivity == null -> 4
-                nowMillis - lastActivity <= HOUR_MILLIS -> 0
-                nowMillis - lastActivity <= DAY_MILLIS -> 1
-                nowMillis - lastActivity <= WEEK_MILLIS -> 2
-                else -> 3
-            }
-            counts[index]++
-        }
-        counts
-    }
-
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = MaterialTheme.shapes.large,
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
-        contentColor = MaterialTheme.colorScheme.onSurface,
-        tonalElevation = 1.dp,
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            Text(localeStrings.friendActivityOverviewTitle, style = MaterialTheme.typography.titleSmall)
-            Text(
-                localeStrings.friendActivityOverviewNote,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Text(localeStrings.friendActivityStatusDistribution, style = MaterialTheme.typography.labelLarge)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                UserStatus.entries.forEach { status ->
-                    StatusLightMetric(status = status, count = statusCounts[status].orZero())
-                }
-            }
-            Text(localeStrings.friendActivityIntervalDistribution, style = MaterialTheme.typography.labelLarge)
-            ActivityIntervalRow(localeStrings.friendActivityIntervalHour, activityIntervals[0])
-            ActivityIntervalRow(localeStrings.friendActivityIntervalDay, activityIntervals[1])
-            ActivityIntervalRow(localeStrings.friendActivityIntervalWeek, activityIntervals[2])
-            ActivityIntervalRow(localeStrings.friendActivityIntervalEarlier, activityIntervals[3])
-            ActivityIntervalRow(localeStrings.friendActivityIntervalUnknown, activityIntervals[4])
-        }
-    }
-}
-
-@Composable
-private fun StatusLightMetric(status: UserStatus, count: Int) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier = Modifier
-                .size(10.dp)
-                .background(GameColor.Status.fromValue(status), CircleShape),
-        )
-        Text(count.toString(), style = MaterialTheme.typography.labelMedium)
-        Text(
-            status.value,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            maxLines = 1,
-        )
-    }
-}
-
-@Composable
-private fun ActivityIntervalRow(label: String, count: Int) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(label, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        Text(count.toString(), style = MaterialTheme.typography.bodySmall)
-    }
-}
-
-private fun Int?.orZero(): Int = this ?: 0
-
-private const val HOUR_MILLIS = 60L * 60L * 1_000L
-private const val DAY_MILLIS = 24L * HOUR_MILLIS
-private const val WEEK_MILLIS = 7L * DAY_MILLIS
-private const val ACTIVITY_OVERVIEW_REFRESH_WINDOW = 5L * 60L * 1_000L
-
 
 @Composable
 private fun RelationshipHubCard() {

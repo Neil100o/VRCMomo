@@ -44,6 +44,8 @@ import io.github.vrcmteam.vrcm.presentation.screens.group.GroupProfileScreen
 import io.github.vrcmteam.vrcm.presentation.screens.group.data.GroupProfileVo
 import io.github.vrcmteam.vrcm.presentation.screens.user.data.UserProfileVo
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityEventType
 import io.github.vrcmteam.vrcm.presentation.extensions.ignoredFormat
 import io.github.vrcmteam.vrcm.presentation.screens.world.RecentWorldsScreen
 import io.github.vrcmteam.vrcm.presentation.screens.user.FriendNetworkScreen
@@ -158,6 +160,7 @@ data class UserProfileScreen(
                     currentUser = currentUser,
                     friendLocation = userProfileScreenModel.friendLocation,
                     friendActivityStats = userProfileScreenModel.friendActivityStats,
+                    friendActivityEvents = userProfileScreenModel.friendActivityEvents,
                     userGroups = userGroups,
                     mutualGroups = mutualGroups,
                     createdWorlds = userProfileScreenModel.createdWorlds,
@@ -443,7 +446,10 @@ private fun ColumnScope.SheetButtonItem(
 
 @OptIn(ExperimentalTime::class)
 @Composable
-private fun RelationshipStatsCard(stats: FriendActivityStats?) {
+private fun RelationshipStatsCard(
+    stats: FriendActivityStats?,
+    events: List<FriendActivityEvent>,
+) {
     val localeStrings = strings
     var nowMillis by remember { mutableLongStateOf(Clock.System.now().toEpochMilliseconds()) }
 
@@ -507,9 +513,155 @@ private fun RelationshipStatsCard(stats: FriendActivityStats?) {
                 label = localeStrings.friendActivityLastActive,
                 value = formatActivityTimestamp(stats?.lastActivityAtMillis, localeStrings.friendActivityNoRecord),
             )
+            FriendStatusTimeline(events = events, nowMillis = nowMillis)
+            FriendActivityHeatmap(events = events, nowMillis = nowMillis)
         }
     }
 }
+
+@Composable
+private fun FriendStatusTimeline(
+    events: List<FriendActivityEvent>,
+    nowMillis: Long,
+) {
+    val localeStrings = strings
+    val durations = remember(events, nowMillis / ACTIVITY_CHART_REFRESH_WINDOW) {
+        statusDurations(events, nowMillis)
+    }
+    Text(localeStrings.friendActivityStatusTimeline, style = MaterialTheme.typography.labelLarge)
+    if (durations.isEmpty()) {
+        Text(
+            localeStrings.friendActivityNotEnoughData,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        return
+    }
+    Row(
+        modifier = Modifier.fillMaxWidth().height(12.dp).clip(CircleShape),
+        horizontalArrangement = Arrangement.spacedBy(1.dp),
+    ) {
+        durations.forEach { duration ->
+            Box(
+                modifier = Modifier
+                    .weight(duration.fraction)
+                    .fillMaxHeight()
+                    .background(statusColor(duration.status)),
+            )
+        }
+    }
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        durations.forEach { duration ->
+            Text(
+                text = "${duration.status}: ${(duration.fraction * 100).toInt()}%",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalTime::class)
+@Composable
+private fun FriendActivityHeatmap(
+    events: List<FriendActivityEvent>,
+    nowMillis: Long,
+) {
+    val localeStrings = strings
+    val cells = remember(events, nowMillis / ACTIVITY_CHART_REFRESH_WINDOW) {
+        activityHeatmap(events, nowMillis)
+    }
+    val maximum = cells.maxOrNull() ?: 0
+    Text(localeStrings.friendActivityHeatmap, style = MaterialTheme.typography.labelLarge)
+    Text(
+        localeStrings.friendActivityHeatmapDescription,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    if (maximum == 0) return
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        repeat(HEATMAP_DAYS) { day ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                repeat(HEATMAP_HOURS) { hour ->
+                    val count = cells[day * HEATMAP_HOURS + hour]
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(10.dp)
+                            .clip(MaterialTheme.shapes.extraSmall)
+                            .background(
+                                if (count == 0) MaterialTheme.colorScheme.surfaceVariant
+                                else MaterialTheme.colorScheme.primary.copy(
+                                    alpha = 0.25f + 0.75f * count.toFloat() / maximum,
+                                ),
+                            ),
+                    )
+                }
+            }
+        }
+    }
+}
+
+private data class StatusDuration(
+    val status: String,
+    val fraction: Float,
+)
+
+private fun statusDurations(events: List<FriendActivityEvent>, nowMillis: Long): List<StatusDuration> {
+    val cutoff = nowMillis - ACTIVITY_CHART_RANGE_MILLIS
+    val changes = events.filter { it.type == FriendActivityEventType.StatusChanged }
+        .sortedBy(FriendActivityEvent::occurredAtMillis)
+    var currentStatus = changes.lastOrNull { it.occurredAtMillis < cutoff }
+        ?.currentValue?.substringBefore(" · ")
+        ?: changes.firstOrNull { it.occurredAtMillis >= cutoff }
+            ?.previousValue?.substringBefore(" · ")
+    var cursor = cutoff
+    val durations = mutableMapOf<String, Long>()
+    changes.filter { it.occurredAtMillis >= cutoff }.forEach { event ->
+        currentStatus?.takeIf { it.isNotBlank() }?.let { status ->
+            durations[status] = (durations[status] ?: 0L) + (event.occurredAtMillis - cursor).coerceAtLeast(0L)
+        }
+        currentStatus = event.currentValue?.substringBefore(" · ")
+        cursor = event.occurredAtMillis
+    }
+    currentStatus?.takeIf { it.isNotBlank() }?.let { status ->
+        durations[status] = (durations[status] ?: 0L) + (nowMillis - cursor).coerceAtLeast(0L)
+    }
+    val total = durations.values.sum().takeIf { it > 0 } ?: return emptyList()
+    return durations.entries.sortedByDescending { it.value }.map { (status, duration) ->
+        StatusDuration(status, duration.toFloat() / total)
+    }
+}
+
+@OptIn(ExperimentalTime::class)
+private fun activityHeatmap(events: List<FriendActivityEvent>, nowMillis: Long): IntArray {
+    val cutoff = nowMillis - ACTIVITY_CHART_RANGE_MILLIS
+    val cells = IntArray(HEATMAP_DAYS * HEATMAP_HOURS)
+    events.filter { it.occurredAtMillis >= cutoff }.forEach { event ->
+        val time = Instant.fromEpochMilliseconds(event.occurredAtMillis)
+            .toLocalDateTime(TimeZone.currentSystemDefault())
+        val index = time.dayOfWeek.ordinal * HEATMAP_HOURS + time.hour
+        cells[index]++
+    }
+    return cells
+}
+
+@Composable
+private fun statusColor(status: String) = when (status.lowercase()) {
+    "active" -> MaterialTheme.colorScheme.primary
+    "join me" -> MaterialTheme.colorScheme.tertiary
+    "ask me" -> MaterialTheme.colorScheme.secondary
+    "busy" -> MaterialTheme.colorScheme.error
+    else -> MaterialTheme.colorScheme.outline
+}
+
+private const val HEATMAP_DAYS = 7
+private const val HEATMAP_HOURS = 24
+private const val ACTIVITY_CHART_RANGE_MILLIS = 30L * 24L * 60L * 60L * 1_000L
+private const val ACTIVITY_CHART_REFRESH_WINDOW = 5L * 60L * 1_000L
 
 @Composable
 private fun RelationshipStatRow(
@@ -599,6 +751,7 @@ private fun ColumnScope.ProfileContent(
     currentUser: UserProfileVo?,
     friendLocation: FriendLocation?,
     friendActivityStats: FriendActivityStats?,
+    friendActivityEvents: List<FriendActivityEvent>,
     userGroups: List<LimitedUserGroup>,
     mutualGroups: List<LimitedUserGroup>,
     createdWorlds: List<WorldData>,
@@ -631,7 +784,7 @@ private fun ColumnScope.ProfileContent(
     // status
     UserStatusRow(canCopy = true, user = currentUser,)
     if (currentUser.isFriend && !currentUser.isSelf) {
-        RelationshipStatsCard(friendActivityStats)
+        RelationshipStatsCard(friendActivityStats, friendActivityEvents)
     }
     // LanguagesRow && LinksRow
     LangAndLinkRow(currentUser)

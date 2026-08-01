@@ -41,6 +41,7 @@ import io.github.vrcmteam.vrcm.storage.UserProfileCacheDao
 import io.github.vrcmteam.vrcm.storage.data.FavoritedWorldGroup
 import io.github.vrcmteam.vrcm.storage.data.UserProfileCache
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
 import io.ktor.client.call.*
 import io.ktor.client.statement.*
 import kotlinx.coroutines.CancellationException
@@ -222,6 +223,9 @@ class UserProfileScreenModel(
     private val _friendActivityStats = mutableStateOf<FriendActivityStats?>(null)
     val friendActivityStats by _friendActivityStats
 
+    private val _friendActivityEvents = mutableStateOf<List<FriendActivityEvent>>(emptyList())
+    val friendActivityEvents by _friendActivityEvents
+
     private val _userJson = mutableStateOf("")
     val userJson by _userJson
 
@@ -264,6 +268,11 @@ class UserProfileScreenModel(
         screenModelScope.launch {
             friendActivityService.friendActivityState.collect { stats ->
                 _friendActivityStats.value = stats[userProfileVO.id]
+            }
+        }
+        screenModelScope.launch {
+            friendActivityService.activityLog.collect { events ->
+                _friendActivityEvents.value = events.filter { it.userId == userProfileVO.id }
             }
         }
         screenModelScope.launch {
