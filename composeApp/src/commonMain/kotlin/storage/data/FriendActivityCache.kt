@@ -15,10 +15,12 @@ data class FriendActivityCache(
      * Missing in pre-0.2 records and therefore defaults to schema 1 for migration.
      */
     val schemaVersion: Int = LEGACY_SCHEMA_VERSION,
+    /** Stable keys from imported VRCX events, used to make repeated imports idempotent. */
+    val importedVrcxEventKeys: Set<String> = emptySet(),
 ) {
     companion object {
         const val LEGACY_SCHEMA_VERSION = 1
-        const val CURRENT_SCHEMA_VERSION = 2
+        const val CURRENT_SCHEMA_VERSION = 3
     }
 }
 

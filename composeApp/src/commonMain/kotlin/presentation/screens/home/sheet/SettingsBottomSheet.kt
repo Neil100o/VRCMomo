@@ -24,14 +24,19 @@ import io.github.vrcmteam.vrcm.presentation.compoments.ABottomSheet
 import io.github.vrcmteam.vrcm.presentation.compoments.ToastText
 import io.github.vrcmteam.vrcm.presentation.extensions.onApiFailure
 import io.github.vrcmteam.vrcm.presentation.extensions.openUrl
+import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.readBoundedBytes
 import io.github.vrcmteam.vrcm.presentation.settings.LocalSettingsState
 import io.github.vrcmteam.vrcm.presentation.settings.locale.LanguageTag
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
 import io.github.vrcmteam.vrcm.presentation.settings.theme.ThemeColor
 import io.github.vrcmteam.vrcm.presentation.supports.WebIcons
 import io.github.vrcmteam.vrcm.service.AuthService
+import io.github.vrcmteam.vrcm.service.FriendActivityService
 import io.github.vrcmteam.vrcm.service.VersionService
+import io.github.vrcmteam.vrcm.service.VrcxActivityImportPreview
 import io.github.vrcmteam.vrcm.storage.AccountCacheManager
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.launch
 import org.koin.compose.currentKoinScope
 import org.koin.compose.koinInject
@@ -64,12 +69,80 @@ fun SettingsBottomSheet(
                 BackgroundMonitoringBlock()
             }
             SettingsBlockSurface {
+                VrcxActivityImportBlock()
+            }
+            SettingsBlockSurface {
                 AboutBlock()
             }
             LogoutButton(onDismissRequest)
         }
     }
 }
+
+@Composable
+private fun VrcxActivityImportBlock() {
+    val activityService = koinInject<FriendActivityService>()
+    val scope = rememberCoroutineScope()
+    val localeStrings = strings
+    var preview by remember { mutableStateOf<VrcxActivityImportPreview?>(null) }
+    val picker = rememberFilePickerLauncher(type = FileKitType.File("json")) { file ->
+        if (file != null) {
+            scope.launch {
+                runCatching {
+                    activityService.previewVrcxActivityImport(
+                        file.readBoundedBytes(MAX_VRCX_ACTIVITY_IMPORT_BYTES).decodeToString(),
+                    )
+                }.onSuccess { preview = it }
+                    .onFailure { SharedFlowCentre.toastText.emit(ToastText.Error(localeStrings.vrcxActivityImportInvalid)) }
+            }
+        }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        SettingsSectionTitle(localeStrings.vrcxActivityImportTitle)
+        Text(
+            localeStrings.vrcxActivityImportDescription,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        TextButton(onClick = picker::launch) { Text(localeStrings.vrcxActivityImportChoose) }
+    }
+
+    preview?.let { importPreview ->
+        AlertDialog(
+            onDismissRequest = { preview = null },
+            title = { Text(localeStrings.vrcxActivityImportConfirmTitle) },
+            text = {
+                Text(
+                    localeStrings.vrcxActivityImportConfirmMessage.formatCountPlaceholders(
+                        importPreview.presenceEvents,
+                        importPreview.completedMeetings,
+                        importPreview.involvedFriends,
+                        importPreview.alreadyImportedEvents,
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    activityService.applyVrcxActivityImport(importPreview)
+                    preview = null
+                    scope.launch { SharedFlowCentre.toastText.emit(ToastText.Info(localeStrings.vrcxActivityImportSuccess)) }
+                }) { Text(localeStrings.vrcxActivityImportConfirmTitle) }
+            },
+            dismissButton = {
+                TextButton(onClick = { preview = null }) { Text(localeStrings.backgroundFriendMonitoringCancel) }
+            },
+        )
+    }
+}
+
+private fun String.formatCountPlaceholders(vararg values: Int): String =
+    values.fold(this) { text, value -> text.replaceFirst("%d", value.toString()) }
+
+private const val MAX_VRCX_ACTIVITY_IMPORT_BYTES = 16L * 1024L * 1024L
 
 
 @Composable

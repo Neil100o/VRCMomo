@@ -296,6 +296,13 @@ sealed class LocaleStrings {
     open val friendActivityIntervalWeek: String = "1–7 days"
     open val friendActivityIntervalEarlier: String = "Earlier"
     open val friendActivityIntervalUnknown: String = "No record"
+    open val vrcxActivityImportTitle: String = "VRCX activity import"
+    open val vrcxActivityImportDescription: String = "Import a VRCMomo VRCX activity bridge file. Existing records are merged and duplicate events are skipped."
+    open val vrcxActivityImportChoose: String = "Choose activity export"
+    open val vrcxActivityImportConfirmTitle: String = "Merge VRCX activity history?"
+    open val vrcxActivityImportConfirmMessage: String = "%d presence events and %d completed meetings for %d friends will be merged. %d already imported events will be skipped."
+    open val vrcxActivityImportSuccess: String = "VRCX activity history merged."
+    open val vrcxActivityImportInvalid: String = "This is not a valid VRCMomo VRCX activity export."
 
     // Optional Android foreground monitoring. It is never enabled by default.
     open val backgroundFriendMonitoringTitle: String = "Background friend monitoring"

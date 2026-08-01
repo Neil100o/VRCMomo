@@ -99,6 +99,24 @@ internal class FriendActivityTracker(
         return changed
     }
 
+    /**
+     * Merges historical values without overwriting the live observation fields
+     * maintained by the current mobile monitoring session.
+     */
+    fun mergeImportedStats(imported: Map<String, FriendActivityStats>) {
+        imported.forEach { (userId, incoming) ->
+            val current = statsByFriendId[userId] ?: FriendActivityStats(userId = userId)
+            statsByFriendId[userId] = current.copy(
+                lastSeenTogetherAtMillis = latest(current.lastSeenTogetherAtMillis, incoming.lastSeenTogetherAtMillis),
+                meetingCount = current.meetingCount + incoming.meetingCount,
+                togetherDurationMillis = current.togetherDurationMillis + incoming.togetherDurationMillis,
+                lastOnlineAtMillis = latest(current.lastOnlineAtMillis, incoming.lastOnlineAtMillis),
+                lastOfflineAtMillis = latest(current.lastOfflineAtMillis, incoming.lastOfflineAtMillis),
+                lastActivityAtMillis = latest(current.lastActivityAtMillis, incoming.lastActivityAtMillis),
+            )
+        }
+    }
+
     private fun reconcileMeeting(
         stats: FriendActivityStats,
         friendLocation: String,

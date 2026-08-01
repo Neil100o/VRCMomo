@@ -12,4 +12,4 @@
 Export-VRCXActivity.bat --db "D:\Backup\VRCX.sqlite3" --output "D:\Export\vrcmomo-vrcx-activity-v1.json"
 ```
 
-若存在多个 VRCX 账号，工具会要求选择账号前缀。下一步由 VRCMomo 手机端读取该 JSON、显示统计预览后再导入。
+若存在多个 VRCX 账号，工具会要求选择账号前缀。将 JSON 传到手机后，在 VRCMomo 的“设置 → VRCX 活动数据导入”中选择它；应用会先显示上下线事件、共同游玩和重复事件数量，确认后才合并。重复导入同一事件会自动跳过。

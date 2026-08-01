@@ -36,6 +36,7 @@ class FriendActivityService(
     }
     private var activeAccountUserId: String? = null
     private var tracker = FriendActivityTracker()
+    private var importedVrcxEventKeys: Set<String> = emptySet()
 
     private val _friendActivityState = MutableStateFlow<Map<String, FriendActivityStats>>(emptyMap())
     val friendActivityState: StateFlow<Map<String, FriendActivityStats>> = _friendActivityState.asStateFlow()
@@ -53,7 +54,9 @@ class FriendActivityService(
         if (activeAccountUserId == userId) return@synchronized
         persistLocked()
         activeAccountUserId = userId
-        tracker = FriendActivityTracker(cacheDao.load(userId)?.statsByFriendId.orEmpty())
+        val cache = cacheDao.load(userId)
+        tracker = FriendActivityTracker(cache?.statsByFriendId.orEmpty())
+        importedVrcxEventKeys = cache?.importedVrcxEventKeys.orEmpty()
         publishLocked(save = false)
     }
 
@@ -61,6 +64,7 @@ class FriendActivityService(
         persistLocked()
         activeAccountUserId = null
         tracker = FriendActivityTracker()
+        importedVrcxEventKeys = emptySet()
         _friendActivityState.value = emptyMap()
     }
 
@@ -108,11 +112,29 @@ class FriendActivityService(
         persistSnapshot()
     }
 
+    /** Preview an activity bridge without modifying the current account. */
+    internal fun previewVrcxActivityImport(raw: String): VrcxActivityImportPreview = synchronized(lock) {
+        check(activeAccountUserId != null) { "Sign in before importing activity history" }
+        VrcxActivityImporter.preview(raw, importedVrcxEventKeys)
+    }
+
+    /** Merge only previously unseen VRCX events and persist the resulting account cache. */
+    internal fun applyVrcxActivityImport(preview: VrcxActivityImportPreview) = synchronized(lock) {
+        check(activeAccountUserId != null) { "Sign in before importing activity history" }
+        if (preview.result.acceptedEventKeys.isEmpty()) return@synchronized
+
+        tracker.mergeImportedStats(preview.result.updates)
+        importedVrcxEventKeys = importedVrcxEventKeys + preview.result.acceptedEventKeys
+        publishLocked(save = true)
+    }
+
     private fun persistSnapshot() {
         val pending = synchronized(lock) {
             val owner = activeAccountUserId ?: return@synchronized null
             owner to FriendActivityCache(
-                tracker.snapshotForPersistence(Clock.System.now().toEpochMilliseconds()),
+                statsByFriendId = tracker.snapshotForPersistence(Clock.System.now().toEpochMilliseconds()),
+                schemaVersion = FriendActivityCache.CURRENT_SCHEMA_VERSION,
+                importedVrcxEventKeys = importedVrcxEventKeys,
             )
         } ?: return
         writer.submit(pending.first, pending.second)
@@ -123,7 +145,9 @@ class FriendActivityService(
         writer.submit(
             owner,
             FriendActivityCache(
-                tracker.snapshotForPersistence(Clock.System.now().toEpochMilliseconds()),
+                statsByFriendId = tracker.snapshotForPersistence(Clock.System.now().toEpochMilliseconds()),
+                schemaVersion = FriendActivityCache.CURRENT_SCHEMA_VERSION,
+                importedVrcxEventKeys = importedVrcxEventKeys,
             ),
         )
     }

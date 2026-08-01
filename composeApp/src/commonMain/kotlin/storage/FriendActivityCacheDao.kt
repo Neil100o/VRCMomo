@@ -121,6 +121,9 @@ class FriendActivityCacheDao(
         while (migrated.schemaVersion < FriendActivityCache.CURRENT_SCHEMA_VERSION) {
             migrated = when (migrated.schemaVersion) {
                 FriendActivityCache.LEGACY_SCHEMA_VERSION -> migrated.copy(
+                    schemaVersion = 2,
+                )
+                2 -> migrated.copy(
                     schemaVersion = FriendActivityCache.CURRENT_SCHEMA_VERSION,
                 )
                 else -> return null
