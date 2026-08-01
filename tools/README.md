@@ -9,8 +9,8 @@ It includes the portable VRCMomo bridge history plus future-facing archive data:
 
 - friend presence, locations, social-status, bio, avatar and friendship history;
 - completed shared-session history and the user's own location history;
-- VRCX activity-session records, mutual-relationship graph records, avatar history;
-- cached avatar/world metadata and favorite world/avatar/friend groups;
+- VRCX activity-session records, current friend-history records, and avatar history;
+- cached avatar/world metadata that can support future mobile browsing;
 - non-secret game log records such as portals and video/resource activity.
 
 The export uses the `vrcmomo-vrcx-activity-v3` format. Current VRCMomo imports the supported

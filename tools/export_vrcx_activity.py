@@ -159,17 +159,11 @@ def main() -> int:
                     "friendCurrent": f"{prefix}_friend_log_current",
                     "activitySessions": f"{prefix}_activity_sessions_v2",
                     "activitySyncState": f"{prefix}_activity_sync_state_v2",
-                    "mutualGraphFriends": f"{prefix}_mutual_graph_friends",
-                    "mutualGraphLinks": f"{prefix}_mutual_graph_links",
-                    "mutualGraphMeta": f"{prefix}_mutual_graph_meta",
                     "avatarHistory": f"{prefix}_avatar_history",
                 }),
                 "library": read_known_tables(connection, tables, {
                     "cachedAvatars": "cache_avatar",
                     "cachedWorlds": "cache_world",
-                    "favoriteWorlds": "favorite_world",
-                    "favoriteAvatars": "favorite_avatar",
-                    "favoriteFriends": "favorite_friend",
                 }),
                 "selfGameLog": read_known_tables(connection, tables, {
                     "portalSpawns": "gamelog_portal_spawn",
