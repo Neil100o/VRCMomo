@@ -287,6 +287,15 @@ sealed class LocaleStrings {
     open val friendActivityDurationDay: String = "d"
     open val friendActivityDurationHour: String = "h"
     open val friendActivityDurationMinute: String = "m"
+    open val friendActivityOverviewTitle: String = "Friend activity overview"
+    open val friendActivityOverviewNote: String = "Only activity observed by VRCMomo is counted."
+    open val friendActivityStatusDistribution: String = "Status lights"
+    open val friendActivityIntervalDistribution: String = "Last activity"
+    open val friendActivityIntervalHour: String = "Within 1 hour"
+    open val friendActivityIntervalDay: String = "1–24 hours"
+    open val friendActivityIntervalWeek: String = "1–7 days"
+    open val friendActivityIntervalEarlier: String = "Earlier"
+    open val friendActivityIntervalUnknown: String = "No record"
 
     // Optional Android foreground monitoring. It is never enabled by default.
     open val backgroundFriendMonitoringTitle: String = "Background friend monitoring"

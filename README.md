@@ -111,7 +111,6 @@ A feature-rich cross-platform VRChat friend management application that lets you
 - 🖥️ **Complete Desktop Support** - Full platform support for Windows, macOS, and Linux
 - 📊 **Activity History Records** - Background persistent recording of friend activity history with long-term data storage and query support
 - 📢 **System Notifications** - Native system notification support
-- 🤖 **Smart Assistant** - AI-driven friend activity analysis
 
 <div align="center">
 

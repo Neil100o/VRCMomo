@@ -113,7 +113,6 @@
 - 🖥️ **完整桌面端** - Windows、macOS、Linux 全平台支持
 - 📊 **活动历史记录** - 后台持久化记录好友活动历史，支持长期数据存储和查询
 - 📢 **系统通知** - 原生系统通知支持
-- 🤖 **智能助手** - AI 驱动的好友活动分析
 
 <div align="center">
 
@@ -193,5 +192,4 @@ VRCMomo 在此基础上加入并维护了新的品牌、主题与导航调整、
 [下载最新版本](https://github.com/Neil100o/VRCMoskavis/releases/latest) • [反馈问题](https://github.com/Neil100o/VRCMoskavis/issues) • [功能建议](https://github.com/Neil100o/VRCMoskavis/discussions)
 
 </div>
-
 

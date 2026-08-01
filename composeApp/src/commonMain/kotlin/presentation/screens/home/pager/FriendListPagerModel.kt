@@ -25,6 +25,7 @@ import io.github.vrcmteam.vrcm.presentation.compoments.ToastText
 import io.github.vrcmteam.vrcm.presentation.screens.user.data.UserProfileVo
 import io.github.vrcmteam.vrcm.service.AuthService
 import io.github.vrcmteam.vrcm.service.FavoriteService
+import io.github.vrcmteam.vrcm.service.FriendActivityService
 import io.github.vrcmteam.vrcm.service.FriendService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -61,6 +62,7 @@ class FriendListPagerModel(
     private val friendService: FriendService,
     private val authService: AuthService,
     private val favoriteService: FavoriteService,
+    private val friendActivityService: FriendActivityService,
     private val worldsApi: WorldsApi,
     private val avatarsApi: AvatarsApi,
 ) : ScreenModel {
@@ -86,6 +88,9 @@ class FriendListPagerModel(
 
     private val _friendTotal = MutableStateFlow(friendService.friendMap.size)
     val friendTotal: StateFlow<Int> = _friendTotal.asStateFlow()
+
+    /** Account-local activity captured by [FriendActivityService] for the overview card. */
+    val friendActivityState = friendActivityService.friendActivityState
 
     // 缓存世界数据，以ID为键
     private val favoritedWorldMap: MutableMap<String, FavoritedWorld> = mutableStateMapOf()
