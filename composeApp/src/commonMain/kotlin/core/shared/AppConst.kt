@@ -4,7 +4,7 @@ object AppConst {
     const val APP_NAME = "VRCMomo"
 
     // Keep this in sync with gradle/libs.versions.toml until common BuildConfig generation is introduced.
-    const val APP_VERSION = "0.3.10"
+    const val APP_VERSION = "0.3.11"
 
     const val APP_GITHUB_URL = "https://github.com/Neil100o/VRCMomo"
 
