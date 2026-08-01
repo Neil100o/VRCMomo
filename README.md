@@ -17,63 +17,36 @@
 
 A mobile-first VRChat companion, continued from VRCM, for managing friends, Gallery, notifications, and recent shared play.
 
+> **Current test version: 0.3.8.** Please report reproducible issues with device, Android version, steps and logs through [Issues](https://github.com/Neil100o/VRCMoskavis/issues).
+
 </div>
 
 <div align="center">
 
-## ✨ Core Features
+## ✨ VRCMomo changes over upstream VRCM
 
 </div>
 
-### 🔐 Account Management
-- **Multi-account Support** - Quickly switch between different VRChat accounts
-- **Login Authentication** - Support for email and 2FA login verification
+### Friend activity and relationship history
+- Durable, account-scoped activity records: observed online/offline state, last activity, last meeting, meeting count and shared-play duration survive app upgrades.
+- A filterable local timeline for presence, location, social status, shared play and profile changes; BIO/status changes show before/after values and line diffs.
+- The empty Users search tab shows up to 20 players met in the last 24 hours after local activity data has been collected.
 
-### 👥 Friend System
-- **Friend List** - Real-time view of all friends' online status and activity information
-- **Friend Location** - Track friends' current worlds and rooms
-- **Friend Profile** - View detailed user information, status, and bio
-- **Friend Management** - Complete operations including adding new friends and removing friends
-- **Activity Records** - Persist observed presence, last activity, meetings, and time spent together
+### Android notifications and monitoring
+- Optional native notifications for Boops and favorited friends entering/leaving VRChat.
+- Optional foreground monitoring and battery-optimization guidance to improve background recording reliability.
+- In-app activity log retention/cleanup controls that preserve relationship totals.
 
-### 🔍 Search Functionality
-- **User Search** - Quickly find VRChat users by username
-- **World Search** - Discover and search various worlds in VRChat
+### Boop, avatar and data migration additions
+- Default-emoji Boop selection, received-Boop in-app reaction card, and notification recovery after opening the app.
+- Separate owned-avatar section with editing for a creator's avatar name, description and cover information.
+- Read-only VRCX activity exporter plus Android merge import for personal presence, location, status, BIO, avatar, friendship and completed shared-session history. Credentials and cookies are excluded.
 
-### 🌍 World Features
-- **World Details** - View detailed world information, descriptions, tags, and preview images
-- **World Favorites** - Favorite preferred worlds with support for multiple collection groups
-- **World Browsing** - Browse popular and recommended worlds
-- **Room Invitations** - Invite yourself to rooms
+### Product identity and mobile UI maintenance
+- Independent VRCMomo name, icon, 0.x version line and APK naming.
+- Dark/light themes, multiple color schemes, and ongoing mobile navigation, presentation and stability maintenance.
 
-### 👥 Group Features
-- **Group Profiles** - View group descriptions, icons, banners, and core details
-- **Members and Posts** - Browse members, announcements, and posts with paging
-- **Gallery and Instances** - Browse group Gallery items and visible group instance states
-
-### 🔔 Notification System
-- **Real-time Notifications** - Receive friend requests, invitations, group notifications, and other types of notifications
-- **Notification Management** - Display in chronological order with support for marking as read and deletion
-- **Friend Requests** - Handle friend requests, accept or decline invitations
-- **Native System Notifications** - Android local notifications for Boops and favorited friends entering or leaving VRChat
-
-### 👤 Profile and Avatar Management
-- **Profile Editing** - Edit your own status, bio, and related profile details
-- **Uploaded Avatar Management** - Browse your uploaded avatars separately and edit their name, description, and cover image
-
-### 🎨 Interface Experience
-- **Modern Design** - Follows Material Design principles
-- **Multi-theme Support** - Switch between dark/light themes and various color themes
-- **Internationalization** - Support for multiple language interfaces
-- **Smooth Animations** - Shared element transitions and elegant interactive animations
-
-### 🖼️ VRChat+ Gallery
-- **Photo Browsing** - View all photos taken in-game
-- **Photo Download** - Save favorite photos to local device
-- **Zoom Preview** - Support for zooming and detailed photo viewing
-
-  <img src="image/Gallery-1.png" width="201" height="437"  alt="Gallery-1"/>
-  <img src="image/Gallery-2.png" width="201" height="437"  alt="Gallery-2"/>
+> **Attribution:** This section intentionally lists only VRCMomo additions or maintenance. Accounts, friend/world browsing, favorites, baseline groups/notifications, VRChat+ Gallery, relationship graph and mutual-friend features are primarily upstream VRCM work.
 
 <div align="center">
 
@@ -82,28 +55,6 @@ A mobile-first VRChat companion, continued from VRCM, for managing friends, Gall
 </div>
 
 - ✅ **Android** - Current primary testing and maintenance platform
-
-<div align="center">
-
-## 🖥️ Interface Preview
-
-</div>
-
-### Multi-platform Preview:
-
-<div align="center">
-
-![MultiPlatformPreview.png](image/MultiPlatformPreview.png)
-
-</div>
-
-### UI Interface Preview:
-
-<div align="center">
-
-![UIPreview.png](image/UIPreview.png)
-
-</div>
 
 <div align="center">
 
