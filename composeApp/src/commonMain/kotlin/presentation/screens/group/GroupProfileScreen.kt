@@ -123,7 +123,11 @@ class GroupProfileScreen(
         val posts by screenModel.posts.collectAsState()
         val postAuthors by screenModel.postAuthors.collectAsState()
         val postsLoading by screenModel.postsLoading.collectAsState()
+        val postsLoadingMore by screenModel.postsLoadingMore.collectAsState()
+        val postsCanLoadMore by screenModel.postsCanLoadMore.collectAsState()
         val membersLoading by screenModel.membersLoading.collectAsState()
+        val membersLoadingMore by screenModel.membersLoadingMore.collectAsState()
+        val membersCanLoadMore by screenModel.membersCanLoadMore.collectAsState()
         val groupInstances by screenModel.groupInstances.collectAsState()
         val isActionLoading by screenModel.isActionLoading.collectAsState()
         var selectedTabIndex by remember { mutableStateOf(0) }
@@ -156,8 +160,22 @@ class GroupProfileScreen(
                 )
                 when (selectedTabIndex) {
                     0 -> DetailsContent(group = group, owner = owner, instances = groupInstances)
-                    1 -> PostsContent(posts = posts, roles = group.roles, postAuthors = postAuthors, isLoading = postsLoading)
-                    2 -> MembersContent(members = members, isLoading = membersLoading)
+                    1 -> PostsContent(
+                        posts = posts,
+                        roles = group.roles,
+                        postAuthors = postAuthors,
+                        isLoading = postsLoading,
+                        canLoadMore = postsCanLoadMore,
+                        isLoadingMore = postsLoadingMore,
+                        onLoadMore = screenModel::loadMorePosts,
+                    )
+                    2 -> MembersContent(
+                        members = members,
+                        isLoading = membersLoading,
+                        canLoadMore = membersCanLoadMore,
+                        isLoadingMore = membersLoadingMore,
+                        onLoadMore = screenModel::loadMoreMembers,
+                    )
                     else -> GalleriesContent(group = group, galleryImages = galleryImages)
                 }
                 Spacer(modifier = Modifier.height(32.dp))
@@ -678,7 +696,10 @@ private fun PostsContent(
     posts: List<GroupPost>,
     roles: List<Role>,
     postAuthors: Map<String, String>,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    canLoadMore: Boolean = false,
+    isLoadingMore: Boolean = false,
+    onLoadMore: () -> Unit = {},
 ) {
     if (isLoading) {
         Box(
@@ -706,6 +727,11 @@ private fun PostsContent(
         posts.forEach { post ->
             PostCard(post = post, roles = roles, authorName = postAuthors[post.authorId])
         }
+        GroupLoadMoreButton(
+            visible = canLoadMore,
+            isLoading = isLoadingMore,
+            onClick = onLoadMore,
+        )
     }
 }
 
@@ -766,7 +792,13 @@ private fun PostCard(post: GroupPost, roles: List<Role>, authorName: String? = n
 }
 
 @Composable
-private fun MembersContent(members: List<GroupMember>, isLoading: Boolean = false) {
+private fun MembersContent(
+    members: List<GroupMember>,
+    isLoading: Boolean = false,
+    canLoadMore: Boolean = false,
+    isLoadingMore: Boolean = false,
+    onLoadMore: () -> Unit = {},
+) {
     val currentNavigator = currentNavigator
     val users = remember(members) { members.mapNotNull { it.user } }
 
@@ -802,6 +834,32 @@ private fun MembersContent(members: List<GroupMember>, isLoading: Boolean = fals
                 )
             }
         )
+        item {
+            GroupLoadMoreButton(
+                visible = canLoadMore,
+                isLoading = isLoadingMore,
+                onClick = onLoadMore,
+            )
+        }
+    }
+}
+
+@Composable
+private fun GroupLoadMoreButton(
+    visible: Boolean,
+    isLoading: Boolean,
+    onClick: () -> Unit,
+) {
+    if (!visible) return
+    Box(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (isLoading) {
+            CircularProgressIndicator(modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
+        } else {
+            TextButton(onClick = onClick) { Text("LOAD MORE") }
+        }
     }
 }
 

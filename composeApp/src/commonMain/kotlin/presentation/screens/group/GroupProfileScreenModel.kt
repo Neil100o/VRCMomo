@@ -54,6 +54,15 @@ class GroupProfileScreenModel(
 
     private val _membersLoading = MutableStateFlow(false)
     val membersLoading: StateFlow<Boolean> = _membersLoading.asStateFlow()
+    private val _membersLoadingMore = MutableStateFlow(false)
+    val membersLoadingMore: StateFlow<Boolean> = _membersLoadingMore.asStateFlow()
+    private val _membersCanLoadMore = MutableStateFlow(false)
+    val membersCanLoadMore: StateFlow<Boolean> = _membersCanLoadMore.asStateFlow()
+
+    private val _postsLoadingMore = MutableStateFlow(false)
+    val postsLoadingMore: StateFlow<Boolean> = _postsLoadingMore.asStateFlow()
+    private val _postsCanLoadMore = MutableStateFlow(false)
+    val postsCanLoadMore: StateFlow<Boolean> = _postsCanLoadMore.asStateFlow()
 
     private val _groupInstances = MutableStateFlow<List<InstanceData>>(emptyList())
     val groupInstances: StateFlow<List<InstanceData>> = _groupInstances.asStateFlow()
@@ -72,7 +81,9 @@ class GroupProfileScreenModel(
         _posts.value = emptyList()
         _postAuthors.value = emptyMap()
         _postsLoading.value = true
+        _postsCanLoadMore.value = false
         _membersLoading.value = true
+        _membersCanLoadMore.value = false
         _groupInstances.value = emptyList()
         val groupId = groupProfileVo.groupId
         if (_isLoading.value || groupId.isBlank()) {
@@ -142,15 +153,29 @@ class GroupProfileScreenModel(
         }
     }
 
+    fun loadMoreMembers() {
+        val groupId = _groupProfileState.value?.groupId ?: return
+        if (_membersLoadingMore.value || !_membersCanLoadMore.value) return
+        _membersLoadingMore.value = true
+        screenModelScope.launch(Dispatchers.IO) {
+            authService.reTryAuthCatching {
+                groupsApi.getGroupMembers(groupId = groupId, n = MEMBER_PAGE_SIZE, offset = _members.value.size)
+            }.onSuccess { page ->
+                _members.value = (_members.value + page).distinctBy { it.userId }
+                _membersCanLoadMore.value = page.size >= MEMBER_PAGE_SIZE
+            }.onFailure { logger.error(it.message.orEmpty()) }
+            _membersLoadingMore.value = false
+        }
+    }
+
     private suspend fun loadMembers(groupId: String) {
         _membersLoading.value = true
         authService.reTryAuthCatching {
-            groupsApi.getGroupMembers(groupId = groupId, n = 24, offset = 0)
-        }.onSuccess {
-            _members.value = it
-        }.onFailure {
-            logger.error(it.message.orEmpty())
-        }
+            groupsApi.getGroupMembers(groupId = groupId, n = MEMBER_PAGE_SIZE, offset = 0)
+        }.onSuccess { page ->
+            _members.value = page
+            _membersCanLoadMore.value = page.size >= MEMBER_PAGE_SIZE
+        }.onFailure { logger.error(it.message.orEmpty()) }
         _membersLoading.value = false
     }
 
@@ -164,36 +189,49 @@ class GroupProfileScreenModel(
         }
     }
 
+    fun loadMorePosts() {
+        val groupId = _groupProfileState.value?.groupId ?: return
+        if (_postsLoadingMore.value || !_postsCanLoadMore.value) return
+        _postsLoadingMore.value = true
+        screenModelScope.launch(Dispatchers.IO) {
+            authService.reTryAuthCatching {
+                groupsApi.getGroupPosts(groupId = groupId, n = POST_PAGE_SIZE, offset = _posts.value.size)
+            }.onSuccess { page ->
+                _posts.value = (_posts.value + page.posts).distinctBy { it.id }
+                _postsCanLoadMore.value = page.posts.size >= POST_PAGE_SIZE
+                resolvePostAuthors(page.posts)
+            }.onFailure { logger.error(it.message.orEmpty()) }
+            _postsLoadingMore.value = false
+        }
+    }
+
     private suspend fun loadPosts(groupId: String) {
         _postsLoading.value = true
         authService.reTryAuthCatching {
-            groupsApi.getGroupPosts(groupId = groupId, n = 20, offset = 0)
+            groupsApi.getGroupPosts(groupId = groupId, n = POST_PAGE_SIZE, offset = 0)
         }.onSuccess { postData ->
             _posts.value = postData.posts
-            val authorMap = mutableMapOf<String, String>()
-            val authorIds = postData.posts
-                .mapNotNull { it.authorId.takeIf { id -> id.isNotBlank() } }
-                .distinct()
-            // 用有限并发请求获取作者名（避免 429）
-            coroutineScope {
-                authorIds.chunked(5).forEach { chunk ->
-                    chunk.map { userId ->
-                        async {
-                            authService.reTryAuthCatching {
-                                usersApi.fetchUser(userId)
-                            }.getOrNull()?.displayName?.let { name -> userId to name }
-                        }
-                    }.awaitAll().forEach { result ->
-                        result?.let { (id, name) -> authorMap[id] = name }
-                    }
-                    // 增量更新 UI
-                    _postAuthors.value = authorMap.toMap()
-                }
-            }
-        }.onFailure {
-            logger.error(it.message.orEmpty())
-        }
+            _postsCanLoadMore.value = postData.posts.size >= POST_PAGE_SIZE
+            resolvePostAuthors(postData.posts)
+        }.onFailure { logger.error(it.message.orEmpty()) }
         _postsLoading.value = false
+    }
+
+    private suspend fun resolvePostAuthors(posts: List<GroupPost>) {
+        val authorMap = _postAuthors.value.toMutableMap()
+        val authorIds = posts.mapNotNull { it.authorId.takeIf(String::isNotBlank) }
+            .distinct().filterNot(authorMap::containsKey)
+        coroutineScope {
+            authorIds.chunked(5).forEach { chunk ->
+                chunk.map { userId ->
+                    async {
+                        authService.reTryAuthCatching { usersApi.fetchUser(userId) }
+                            .getOrNull()?.displayName?.let { userId to it }
+                    }
+                }.awaitAll().forEach { result -> result?.let { (id, name) -> authorMap[id] = name } }
+                _postAuthors.value = authorMap.toMap()
+            }
+        }
     }
 
     private suspend fun loadGroupInstances(groupId: String) {
@@ -221,6 +259,11 @@ class GroupProfileScreenModel(
             }
         }
         _galleryImages.value = imagesMap
+    }
+
+    private companion object {
+        const val MEMBER_PAGE_SIZE = 24
+        const val POST_PAGE_SIZE = 20
     }
 
     private suspend fun handleError(tag: String, error: Throwable) {
