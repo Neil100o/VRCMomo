@@ -38,25 +38,34 @@ class FriendActivityCacheDao(
     fun load(ownerUserId: String): FriendActivityCache? = synchronized(lock) {
         val file = accountFile(ownerUserId)
         if (file != null && fileSystem.exists(file)) {
-            decode(runCatching { fileSystem.read(file) { readUtf8() } }.getOrNull())
-                ?.let { return@synchronized it }
+            val raw = runCatching { fileSystem.read(file) { readUtf8() } }.getOrNull()
+            decode(raw)?.let { cached ->
+                return@synchronized migrateLoadedCache(file, raw, cached)
+            }
         }
 
-        val legacy = decode(settings.getStringOrNull(legacyKey(ownerUserId)))
-            ?: return@synchronized null
-        if (file != null && writeFile(file, legacy)) {
+        val legacyRaw = settings.getStringOrNull(legacyKey(ownerUserId))
+        val legacy = decode(legacyRaw) ?: return@synchronized null
+        val migrated = migrate(legacy)
+        if (file != null && migrated != null && writeFile(file, migrated)) {
+            // Keep the Settings value until the durable file write succeeds.
             settings.remove(legacyKey(ownerUserId))
         }
-        legacy
+        migrated ?: legacy
     }
 
     fun save(ownerUserId: String, cache: FriendActivityCache) = synchronized(lock) {
         val file = accountFile(ownerUserId)
-        if (file == null) {
-            settings.putString(legacyKey(ownerUserId), encode(cache))
+        // An older build must never overwrite a record produced by a newer schema.
+        if (storedSchemaVersion(file, ownerUserId)?.let { it > FriendActivityCache.CURRENT_SCHEMA_VERSION } == true) {
             return@synchronized
         }
-        if (writeFile(file, cache)) {
+        val normalized = migrate(cache) ?: return@synchronized
+        if (file == null) {
+            settings.putString(legacyKey(ownerUserId), encode(normalized))
+            return@synchronized
+        }
+        if (writeFile(file, normalized)) {
             settings.remove(legacyKey(ownerUserId))
         }
     }
@@ -88,6 +97,55 @@ class FriendActivityCacheDao(
     }
 
     internal fun storageFile(ownerUserId: String): Path? = accountFile(ownerUserId)
+
+    private fun migrateLoadedCache(
+        file: Path,
+        raw: String?,
+        cache: FriendActivityCache,
+    ): FriendActivityCache {
+        val migrated = migrate(cache) ?: return cache
+        if (migrated.schemaVersion != cache.schemaVersion) {
+            backupBeforeMigration(file, raw, cache.schemaVersion)
+            writeFile(file, migrated)
+        }
+        return migrated
+    }
+
+    /**
+     * Each schema step is explicit. Never remove or rename a stored field without adding a step
+     * that carries its value forward.
+     */
+    private fun migrate(cache: FriendActivityCache): FriendActivityCache? {
+        if (cache.schemaVersion > FriendActivityCache.CURRENT_SCHEMA_VERSION) return null
+        var migrated = cache
+        while (migrated.schemaVersion < FriendActivityCache.CURRENT_SCHEMA_VERSION) {
+            migrated = when (migrated.schemaVersion) {
+                FriendActivityCache.LEGACY_SCHEMA_VERSION -> migrated.copy(
+                    schemaVersion = FriendActivityCache.CURRENT_SCHEMA_VERSION,
+                )
+                else -> return null
+            }
+        }
+        return migrated
+    }
+
+    private fun storedSchemaVersion(file: Path?, ownerUserId: String): Int? {
+        val raw = when {
+            file != null && fileSystem.exists(file) ->
+                runCatching { fileSystem.read(file) { readUtf8() } }.getOrNull()
+            else -> settings.getStringOrNull(legacyKey(ownerUserId))
+        }
+        return decode(raw)?.schemaVersion
+    }
+
+    private fun backupBeforeMigration(file: Path, raw: String?, sourceSchema: Int) {
+        if (raw == null) return
+        val backup = (file.toString() + ".v$sourceSchema.backup").toPath()
+        if (fileSystem.exists(backup)) return
+        runCatching {
+            fileSystem.write(backup) { writeUtf8(raw) }
+        }
+    }
 
     private fun writeFile(file: Path, cache: FriendActivityCache): Boolean = runCatching {
         file.parent?.let(fileSystem::createDirectories)
