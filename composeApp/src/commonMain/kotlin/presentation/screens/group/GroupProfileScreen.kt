@@ -45,6 +45,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -93,6 +94,7 @@ import io.github.vrcmteam.vrcm.presentation.extensions.currentNavigator
 import io.github.vrcmteam.vrcm.presentation.extensions.enableIf
 import io.github.vrcmteam.vrcm.presentation.extensions.getInsetPadding
 import io.github.vrcmteam.vrcm.presentation.extensions.ignoredFormat
+import io.github.vrcmteam.vrcm.presentation.extensions.simpleClickable
 import io.github.vrcmteam.vrcm.presentation.screens.group.data.GroupProfileVo
 import io.github.vrcmteam.vrcm.presentation.screens.gallery.ImagePreviewDialog
 import io.github.vrcmteam.vrcm.presentation.screens.user.LinksRow
@@ -110,7 +112,6 @@ class GroupProfileScreen(
     private val sharedSuffixKey: String = "",
 ) : Screen {
 
-    @OptIn(ExperimentalSharedTransitionApi::class)
     @Composable
     override fun Content() {
         val currentNavigator = currentNavigator
@@ -125,93 +126,151 @@ class GroupProfileScreen(
         val membersLoading by screenModel.membersLoading.collectAsState()
         val groupInstances by screenModel.groupInstances.collectAsState()
         val isActionLoading by screenModel.isActionLoading.collectAsState()
+        var selectedTabIndex by remember { mutableStateOf(0) }
 
         LaunchedEffect(groupProfileVo.groupId) {
             screenModel.refreshGroupData(groupProfileVo)
         }
-
         val group = groupState ?: groupProfileVo
-        val scrollState = rememberScrollState()
-        var selectedTabIndex by remember { mutableStateOf(0) }
 
         CompositionLocalProvider(LocalSharedSuffixKey provides sharedSuffixKey) {
-            BoxWithConstraints(
-                modifier = Modifier.fillMaxSize()
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .verticalScroll(rememberScrollState()),
             ) {
-                val bannerHeight = maxWidth * 9f / 16f
-                val offsetDp = with(LocalDensity.current) { scrollState.value.toDp() }
-                val remainingDistance = bannerHeight - offsetDp
-                val ratio = ((remainingDistance / bannerHeight).coerceIn(0f, 1f)).let {
-                    FastOutSlowInEasing.transform(it)
+                GroupOperationsStage(
+                    group = group,
+                    onReturn = currentNavigator::pop,
+                )
+                GroupHeaderInfo(
+                    group = group,
+                    isActionLoading = isActionLoading,
+                    onJoin = screenModel::joinGroup,
+                    onLeave = screenModel::leaveGroup,
+                )
+                GroupSectionRail(
+                    selectedIndex = selectedTabIndex,
+                    onSelect = { selectedTabIndex = it },
+                )
+                when (selectedTabIndex) {
+                    0 -> DetailsContent(group = group, owner = owner, instances = groupInstances)
+                    1 -> PostsContent(posts = posts, roles = group.roles, postAuthors = postAuthors, isLoading = postsLoading)
+                    2 -> MembersContent(members = members, isLoading = membersLoading)
+                    else -> GalleriesContent(group = group, galleryImages = galleryImages)
                 }
-                val topBarHeight = 64.dp
-                val sysTopPadding = getInsetPadding(WindowInsets::getTop)
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(MaterialTheme.colorScheme.surface)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .verticalScroll(scrollState)
-                    ) {
-                        GroupBanner(
-                            group = group,
-                            bannerHeight = bannerHeight
-                        )
-                        GroupHeaderInfo(
-                            group = group,
-                            isActionLoading = isActionLoading,
-                            onJoin = { screenModel.joinGroup() },
-                            onLeave = { screenModel.leaveGroup() }
-                        )
-                        TabRow(
-                            selectedTabIndex = selectedTabIndex,
-                            modifier = Modifier.fillMaxWidth(),
-                            indicator = {
-                                TabRowDefaults.PrimaryIndicator(
-                                    modifier = Modifier.tabIndicatorOffset(it[selectedTabIndex]),
-                                    width = 28.dp,
-                                    shape = RoundedCornerShape(4.dp)
-                                )
-                            },
-                        ) {
-                            val tabs = listOf(strings.groupTabDetails, strings.groupTabPosts, strings.groupTabMembers, strings.groupTabGallery)
-                            tabs.forEachIndexed { index, title ->
-                                Tab(
-                                    selected = selectedTabIndex == index,
-                                    onClick = { selectedTabIndex = index },
-                                    text = { Text(text = title, maxLines = 1) }
-                                )
-                            }
-                        }
-                        when (selectedTabIndex) {
-                            0 -> DetailsContent(group = group, owner = owner, instances = groupInstances)
-                            1 -> PostsContent(posts = posts, roles = group.roles, postAuthors = postAuthors, isLoading = postsLoading)
-                            2 -> MembersContent(members = members, isLoading = membersLoading)
-                            else -> GalleriesContent(group = group, galleryImages = galleryImages)
-                        }
-                        Spacer(modifier = Modifier.height(24.dp))
-                    }
-                    TopMenuBar(
-                        topBarHeight = topBarHeight,
-                        sysTopPadding = sysTopPadding,
-                        offsetDp = 0.dp,
-                        ratio = ratio,
-                        onReturn = { currentNavigator.pop() },
-                        onMenu = null
-                    )
-                    CollapsingTitleRow(
-                        group = group,
-                        membershipStatus = group.membershipStatus,
-                        scrollPx = scrollState.value.toFloat(),
-                        bannerHeight = bannerHeight,
-                        topBarHeight = topBarHeight,
-                        sysTopPadding = sysTopPadding
-                    )
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+}
 
+@Composable
+private fun GroupOperationsStage(
+    group: GroupProfileVo,
+    onReturn: () -> Unit,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(272.dp)
+            .background(Color.Black),
+    ) {
+        GroupBanner(group = group, bannerHeight = 272.dp)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color.Black.copy(alpha = 0.18f), Color.Black.copy(alpha = 0.86f)),
+                    )
+                )
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = getInsetPadding(WindowInsets::getTop) + 4.dp,
+                    bottom = 18.dp,
+                ),
+        ) {
+            TextButton(onClick = onReturn, contentPadding = PaddingValues(horizontal = 0.dp, vertical = 4.dp)) {
+                Text("?  BACK", color = Color.White, style = MaterialTheme.typography.labelLarge)
+            }
+            Spacer(modifier = Modifier.weight(1f))
+            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                GroupIcon(
+                    iconUrl = group.iconUrl,
+                    modifier = Modifier.background(Color.Black.copy(alpha = 0.25f), RoundedCornerShape(4.dp)),
+                    size = 58.dp,
+                )
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "GROUP / ${group.shortCode.ifBlank { group.groupId.takeLast(6) }}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text = group.name,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        text = "${group.memberCount} ${strings.groupMembers}  ?  ${group.onlineMemberCount} ${strings.groupOnlineMembers}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color.White.copy(alpha = 0.76f),
+                    )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GroupSectionRail(
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+) {
+    val tabs = listOf(
+        strings.groupTabDetails,
+        strings.groupTabPosts,
+        strings.groupTabMembers,
+        strings.groupTabGallery,
+    )
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        tabs.forEachIndexed { index, title ->
+            val selected = selectedIndex == index
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(2.dp))
+                    .background(if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                    .simpleClickable { onSelect(index) }
+                    .padding(horizontal = 8.dp, vertical = 10.dp),
+            ) {
+                Text(
+                    text = "0${index + 1}",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.outline,
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
     }
