@@ -13,6 +13,8 @@ data class NotificationItemData(
     val link: String?,
     val type: String,
     val actions: List<ActionData>,
+    /** Whether VRChat has acknowledged this notification as seen. */
+    val seen: Boolean? = null,
     /** The selected emoji metadata for a received VRChat Boop, when supplied by the API. */
     val boopEmojiId: String? = null,
     val boopEmojiVersion: Int? = null,
@@ -64,6 +66,7 @@ data class NotificationItemData(
         link = "user:${n.senderUserId}",
         type = n.type,
         actions = emptyList(),
+        seen = n.seen,
         boopEmojiId = n.boopDetail()?.emojiId,
         boopEmojiVersion = n.boopDetail()?.emojiVersion,
         boopInventoryItemId = n.boopDetail()?.inventoryItemId,
@@ -85,12 +88,17 @@ data class NotificationItemData(
                 icon = responses.icon,
             )
         },
+        seen = n.seen,
         boopEmojiId = n.data.emojiId,
         boopEmojiVersion = n.data.emojiVersion,
         boopInventoryItemId = n.data.inventoryItemId,
     )
 
 }
+
+/** Boops that VRChat has not yet acknowledged are safe to surface after a cold app start. */
+internal val NotificationItemData.isUnreadBoop: Boolean
+    get() = type == "boop" && seen == false
 
 internal enum class NotificationResponseTarget {
     BOOP_USER_API,

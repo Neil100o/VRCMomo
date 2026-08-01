@@ -20,6 +20,7 @@ import io.github.vrcmteam.vrcm.presentation.screens.home.data.BoopNotificationRe
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.NotificationItemData
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.NotificationResponseTarget
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.NotificationUserPresentation
+import io.github.vrcmteam.vrcm.presentation.screens.home.data.isUnreadBoop
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.responseTarget
 import io.github.vrcmteam.vrcm.presentation.screens.home.pager.FriendLocationPagerModel
 import io.github.vrcmteam.vrcm.service.AuthService
@@ -144,6 +145,7 @@ class HomeScreenModel(
             val mergedItems = legacyItems.map { legacy ->
                 val v2 = v2ById[legacy.id]
                 if (v2 == null) legacy else legacy.copy(
+                    seen = v2.seen,
                     boopEmojiId = v2.boopEmojiId,
                     boopEmojiVersion = v2.boopEmojiVersion,
                     boopInventoryItemId = v2.boopInventoryItemId,
@@ -179,6 +181,12 @@ class HomeScreenModel(
         if (!notificationSnapshotInitialized) {
             knownNotificationIds += items.map { it.id }
             notificationSnapshotInitialized = true
+            // A Boop can arrive while Android has stopped the app. Do not silently discard
+            // unread server notifications just because this is the first local snapshot.
+            val unreadBoops = items.filter { it.isUnreadBoop }
+            unreadBoops.forEach(pendingReceivedBoops::add)
+            unreadBoops.forEach(::markBoopSeen)
+            showNextReceivedBoopIfNeeded()
         } else {
             val newBoops = items.asSequence()
                 .filter { it.type == NotificationType.Boop.value }
@@ -188,10 +196,19 @@ class HomeScreenModel(
             newBoops.forEach { notification ->
                 pendingReceivedBoops.add(notification)
                 socialNotificationService.notifyBoop(notification)
+                markBoopSeen(notification)
             }
             showNextReceivedBoopIfNeeded()
         }
         _notifications.value = items
+    }
+
+    private fun markBoopSeen(notification: NotificationItemData) {
+        screenModelScope.launch(Dispatchers.IO) {
+            authService.reTryAuthCatching {
+                notificationApi.markNotificationAsRead(notification.id)
+            }.onFailure { logger.warn("Could not mark Boop ${notification.id} as seen: ${it.message}") }
+        }
     }
 
     private fun showNextReceivedBoopIfNeeded() {

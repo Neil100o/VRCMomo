@@ -8,6 +8,7 @@ import io.github.vrcmteam.vrcm.network.websocket.data.type.NotificationEvents
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.BoopNotificationResolver
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.NotificationItemData
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.NotificationUserPresentation
+import io.github.vrcmteam.vrcm.presentation.screens.home.data.isUnreadBoop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -74,6 +75,7 @@ class IncomingBoopNotificationService(
             val boopItems = legacyBoops.map { legacy ->
                 val v2 = v2Notifications[legacy.id]
                 if (v2 == null) legacy else legacy.copy(
+                    seen = v2.seen,
                     boopEmojiId = v2.boopEmojiId,
                     boopEmojiVersion = v2.boopEmojiVersion,
                     boopInventoryItemId = v2.boopInventoryItemId,
@@ -95,12 +97,29 @@ class IncomingBoopNotificationService(
             if (!initialized || seedOnly) {
                 knownNotificationIds += boops.map { it.id }
                 initialized = true
+                // The foreground monitor may be started after the Boop was delivered. Surface
+                // unread notifications once instead of treating them as permanently "old".
+                boops.filter { it.isUnreadBoop }
+                    .sortedBy { it.createdAt }
+                    .forEach { boop ->
+                        socialNotificationService.notifyBoop(boop)
+                        markSeen(boop.id)
+                    }
                 return
             }
             boops.asSequence()
                 .filter { knownNotificationIds.add(it.id) }
                 .sortedBy { it.createdAt }
-                .forEach(socialNotificationService::notifyBoop)
+                .forEach { boop ->
+                    socialNotificationService.notifyBoop(boop)
+                    markSeen(boop.id)
+                }
+        }
+    }
+
+    private suspend fun markSeen(notificationId: String) {
+        authService.reTryAuthCatching {
+            notificationApi.markNotificationAsRead(notificationId)
         }
     }
 }
