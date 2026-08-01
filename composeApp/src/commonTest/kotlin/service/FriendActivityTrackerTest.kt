@@ -7,6 +7,14 @@ import kotlin.test.assertNull
 
 class FriendActivityTrackerTest {
     @Test
+    fun `bio diff reports removed and added lines`() {
+        val diff = friendBioDiff("Hello\nOld line\nSame", "Hello\nNew line\nSame")
+
+        assertEquals(listOf("Old line", "New line"), diff.map { it.text })
+        assertEquals(listOf(false, true), diff.map { it.added })
+    }
+
+    @Test
     fun `same instance starts one observed meeting and accumulates only observed duration`() {
         val tracker = FriendActivityTracker()
         val instance = "wrld_home:12345~private(abc)"

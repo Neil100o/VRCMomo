@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -217,7 +218,16 @@ private fun FriendActivityLogSheet(
                                 Text("${event.displayName.ifBlank { event.userId }} ${event.type.activityLabel(localeStrings)}")
                             },
                             supportingContent = {
-                                Text(Instant.fromEpochMilliseconds(event.occurredAtMillis).toString().replace('T', ' ').removeSuffix("Z"))
+                                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Text(Instant.fromEpochMilliseconds(event.occurredAtMillis).toString().replace('T', ' ').removeSuffix("Z"))
+                                    event.diffLines.forEach { line ->
+                                        Text(
+                                            text = if (line.added) "+ ${line.text}" else "- ${line.text}",
+                                            color = if (line.added) DiffAddedGreen else DiffRemovedRed,
+                                            style = MaterialTheme.typography.bodySmall,
+                                        )
+                                    }
+                                }
                             },
                         )
                     }
@@ -236,7 +246,11 @@ private fun FriendActivityEventType.activityLabel(localeStrings: io.github.vrcmt
         FriendActivityEventType.Left -> localeStrings.friendActivityEventLeft
         FriendActivityEventType.LocationChanged -> localeStrings.friendActivityEventLocationChanged
         FriendActivityEventType.StatusChanged -> localeStrings.friendActivityEventStatusChanged
+        FriendActivityEventType.ProfileChanged -> localeStrings.friendActivityEventProfileChanged
     }
+
+private val DiffAddedGreen = Color(0xFF43A047)
+private val DiffRemovedRed = Color(0xFFE53935)
 
 @Composable
 private fun VrcxActivityImportBlock() {

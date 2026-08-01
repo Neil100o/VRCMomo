@@ -4,6 +4,7 @@ import io.github.vrcmteam.vrcm.network.api.friends.date.FriendData
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEventType
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityDiffLine
 
 internal data class FriendActivityObservation(
     val userId: String,
@@ -82,9 +83,19 @@ internal class FriendActivityTracker(
                     if (wasInGame && isInGame && previousLocation != friend.location) {
                         appendEvent(friend.userId, name, FriendActivityEventType.LocationChanged, nowMillis)
                     }
-                    if (previousStatus != friend.status) {
-                        appendEvent(friend.userId, name, FriendActivityEventType.StatusChanged, nowMillis)
-                    }
+                if (previousStatus != friend.status) {
+                    appendEvent(friend.userId, name, FriendActivityEventType.StatusChanged, nowMillis)
+                }
+                val profileDiff = friendBioDiff(existing?.lastKnownFriend?.bio, friend.friendData?.bio)
+                if (profileDiff.isNotEmpty()) {
+                    appendEvent(
+                        userId = friend.userId,
+                        displayName = name,
+                        type = FriendActivityEventType.ProfileChanged,
+                        occurredAtMillis = nowMillis,
+                        diffLines = profileDiff,
+                    )
+                }
                 }
                 if (existing?.activeTogetherSinceMillis == null && next.activeTogetherSinceMillis != null) {
                     appendEvent(friend.userId, name, FriendActivityEventType.Met, nowMillis)
@@ -186,8 +197,9 @@ internal class FriendActivityTracker(
         displayName: String,
         type: FriendActivityEventType,
         occurredAtMillis: Long,
+        diffLines: List<FriendActivityDiffLine> = emptyList(),
     ) {
-        activityEvents.add(0, FriendActivityEvent(userId, displayName, type, occurredAtMillis))
+        activityEvents.add(0, FriendActivityEvent(userId, displayName, type, occurredAtMillis, diffLines))
     }
 
     fun pruneEventsBefore(cutoffMillis: Long): Boolean {
@@ -202,3 +214,39 @@ internal class FriendActivityTracker(
         return true
     }
 }
+
+/** A compact line diff for profile bios, retaining only lines that were actually changed. */
+internal fun friendBioDiff(before: String?, after: String?): List<FriendActivityDiffLine> {
+    val oldLines = before.orEmpty().lines()
+    val newLines = after.orEmpty().lines()
+    if (oldLines == newLines) return emptyList()
+
+    val lcs = Array(oldLines.size + 1) { IntArray(newLines.size + 1) }
+    for (oldIndex in oldLines.indices.reversed()) {
+        for (newIndex in newLines.indices.reversed()) {
+            lcs[oldIndex][newIndex] = if (oldLines[oldIndex] == newLines[newIndex]) {
+                lcs[oldIndex + 1][newIndex + 1] + 1
+            } else {
+                maxOf(lcs[oldIndex + 1][newIndex], lcs[oldIndex][newIndex + 1])
+            }
+        }
+    }
+    val result = mutableListOf<FriendActivityDiffLine>()
+    var oldIndex = 0
+    var newIndex = 0
+    while (oldIndex < oldLines.size || newIndex < newLines.size) {
+        when {
+            oldIndex < oldLines.size && newIndex < newLines.size && oldLines[oldIndex] == newLines[newIndex] -> {
+                oldIndex++
+                newIndex++
+            }
+            newIndex < newLines.size && (oldIndex == oldLines.size || lcs[oldIndex][newIndex + 1] > lcs[oldIndex + 1][newIndex]) -> {
+                result += FriendActivityDiffLine(added = true, text = newLines[newIndex++])
+            }
+            else -> result += FriendActivityDiffLine(added = false, text = oldLines[oldIndex++])
+        }
+    }
+    return result.take(MAX_PROFILE_DIFF_LINES)
+}
+
+private const val MAX_PROFILE_DIFF_LINES = 200
