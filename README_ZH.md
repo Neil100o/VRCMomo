@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 # <img src="image/Logo.png" width="50" height="50"  alt="logo"/> VRCMomo
 
@@ -8,8 +8,8 @@
 
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub release](https://img.shields.io/github/release/Neil100o/VRCMoskavis.svg)](https://github.com/Neil100o/VRCMoskavis/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/Neil100o/VRCMoskavis/total?color=6451f1)](https://github.com/Neil100o/VRCMoskavis/releases/latest)
+[![GitHub release](https://img.shields.io/github/release/Neil100o/VRCMomo.svg)](https://github.com/Neil100o/VRCMomo/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Neil100o/VRCMomo/total?color=6451f1)](https://github.com/Neil100o/VRCMomo/releases/latest)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-blue.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.10.3-blue)](https://www.jetbrains.com/lp/compose-multiplatform/)
 
@@ -17,7 +17,7 @@
 
 一个基于 VRCM 延续开发的移动端 VRChat Companion，帮助你在手机上管理好友、相册、通知与最近共同游玩记录。
 
-> **当前测试版本：0.3.8**。欢迎通过 [Issues](https://github.com/Neil100o/VRCMoskavis/issues) 反馈问题、设备信息和复现步骤。
+> **当前测试版本：0.3.8**。欢迎通过 [Issues](https://github.com/Neil100o/VRCMomo/issues) 反馈问题、设备信息和复现步骤。
 
 ## 🧪 测试版下载
 
@@ -155,6 +155,6 @@ VRCMomo 在此基础上加入并维护了新的品牌、主题与导航调整、
 
 **如果这个项目对您有帮助，请给我们一个 ⭐**
 
-[下载最新版本](https://github.com/Neil100o/VRCMoskavis/releases/latest) • [反馈问题](https://github.com/Neil100o/VRCMoskavis/issues) • [功能建议](https://github.com/Neil100o/VRCMoskavis/discussions)
+[下载最新版本](https://github.com/Neil100o/VRCMomo/releases/latest) • [反馈问题](https://github.com/Neil100o/VRCMomo/issues) • [功能建议](https://github.com/Neil100o/VRCMomo/discussions)
 
 </div>

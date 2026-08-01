@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 # <img src="image/Logo.png" width="50" height="50"  alt="logo"/> VRCMomo
 
@@ -8,8 +8,8 @@
 
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub release](https://img.shields.io/github/release/Neil100o/VRCMoskavis.svg)](https://github.com/Neil100o/VRCMoskavis/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/Neil100o/VRCMoskavis/total?color=6451f1)](https://github.com/Neil100o/VRCMoskavis/releases/latest)
+[![GitHub release](https://img.shields.io/github/release/Neil100o/VRCMomo.svg)](https://github.com/Neil100o/VRCMomo/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Neil100o/VRCMomo/total?color=6451f1)](https://github.com/Neil100o/VRCMomo/releases/latest)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-blue.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.10.3-blue)](https://www.jetbrains.com/lp/compose-multiplatform/)
 
@@ -17,7 +17,7 @@
 
 A mobile-first VRChat companion, continued from VRCM, for managing friends, Gallery, notifications, and recent shared play.
 
-> **Current test version: 0.3.8.** Please report reproducible issues with device, Android version, steps and logs through [Issues](https://github.com/Neil100o/VRCMoskavis/issues).
+> **Current test version: 0.3.8.** Please report reproducible issues with device, Android version, steps and logs through [Issues](https://github.com/Neil100o/VRCMomo/issues).
 
 ## 🧪 Test downloads
 
@@ -153,6 +153,6 @@ Contributions of code, bug reports, or feature suggestions are welcome! Please c
 
 **If this project is helpful to you, please give us a ⭐**
 
-[Download Latest Release](https://github.com/Neil100o/VRCMoskavis/releases/latest) • [Report Issues](https://github.com/Neil100o/VRCMoskavis/issues) • [Feature Requests](https://github.com/Neil100o/VRCMoskavis/discussions)
+[Download Latest Release](https://github.com/Neil100o/VRCMomo/releases/latest) • [Report Issues](https://github.com/Neil100o/VRCMomo/issues) • [Feature Requests](https://github.com/Neil100o/VRCMomo/discussions)
 
 </div>

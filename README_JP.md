@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 # <img src="image/Logo.png" width="50" height="50"  alt="logo"/> VRCMomo
 
@@ -8,8 +8,8 @@
 
 
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub release](https://img.shields.io/github/release/Neil100o/VRCMoskavis.svg)](https://github.com/Neil100o/VRCMoskavis/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/Neil100o/VRCMoskavis/total?color=6451f1)](https://github.com/Neil100o/VRCMoskavis/releases/latest)
+[![GitHub release](https://img.shields.io/github/release/Neil100o/VRCMomo.svg)](https://github.com/Neil100o/VRCMomo/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Neil100o/VRCMomo/total?color=6451f1)](https://github.com/Neil100o/VRCMomo/releases/latest)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.2-blue.svg?logo=kotlin)](https://kotlinlang.org)
 [![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.10.3-blue)](https://www.jetbrains.com/lp/compose-multiplatform/)
 
@@ -17,7 +17,7 @@
 
 VRCM を基盤として継続開発している、Android 優先の VRChat モバイル Companion です。
 
-> **現在のテスト版：0.3.8**。端末・Android バージョン・再現手順・ログを添えて [Issues](https://github.com/Neil100o/VRCMoskavis/issues) へ報告してください。
+> **現在のテスト版：0.3.8**。端末・Android バージョン・再現手順・ログを添えて [Issues](https://github.com/Neil100o/VRCMomo/issues) へ報告してください。
 
 ## 🧪 テスト版のダウンロード
 
@@ -137,6 +137,6 @@ VRCM Team とすべての上流貢献者に感謝します。元の履歴と貢�
 
 **このプロジェクトがお役に立てば、⭐をお願いします**
 
-[最新版をダウンロード](https://github.com/Neil100o/VRCMoskavis/releases/latest) • [問題を報告](https://github.com/Neil100o/VRCMoskavis/issues) • [機能提案](https://github.com/Neil100o/VRCMoskavis/discussions)
+[最新版をダウンロード](https://github.com/Neil100o/VRCMomo/releases/latest) • [問題を報告](https://github.com/Neil100o/VRCMomo/issues) • [機能提案](https://github.com/Neil100o/VRCMomo/discussions)
 
 </div>

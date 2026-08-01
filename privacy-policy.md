@@ -1,4 +1,4 @@
-# Privacy Policy for VRCMomo
+﻿# Privacy Policy for VRCMomo
 
 **Last Updated:** October 23, 2025
 
@@ -33,4 +33,4 @@ If we ever change our data practices, we will update this policy and notify user
 ## 6. Contact Us
 
 If you have questions about this policy, contact us at:  
-**https://github.com/Neil100o/VRCMoskavis/issues**
+**https://github.com/Neil100o/VRCMomo/issues**
