@@ -31,10 +31,23 @@ class FavoriteService(
     // 收藏限制信息缓存
     private var _favoriteLimits: FavoriteLimits? = null
 
+    /**
+     * The service can be constructed before the persisted authentication cookie is
+     * restored.  Keep all startup work beneath a SupervisorJob so a failed remote
+     * request (for example a temporary 401) can never terminate the process.
+     */
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     init {
-        CoroutineScope(Dispatchers.Default).launch {
-            SharedFlowCentre.authed.collect {
+        serviceScope.launch {
+            SharedFlowCentre.currentSession.collect { session ->
                 _favoritesByGroup.clear()
+                _favoriteLimits = null
+
+                // Do not query an authenticated endpoint until a usable session
+                // exists. StateFlow also covers a session restored before this
+                // singleton was created.
+                if (session != null) loadFavoriteLimitsSafely()
             }
         }
     }
@@ -44,17 +57,17 @@ class FavoriteService(
         _favoritesByGroup.getOrPut(favoriteType) { MutableStateFlow(mutableMapOf()) }
 
 
-    init {
-        CoroutineScope(Job()).launch(Dispatchers.IO) {
-            loadFavoriteLimits()
-        }
-    }
-
     /**
      * 加载收藏限制信息
      */
-    private suspend fun loadFavoriteLimits() {
-        _favoriteLimits = favoriteApi.getFavoriteLimits()
+    private suspend fun loadFavoriteLimitsSafely() {
+        withContext(Dispatchers.IO) {
+            runCatching { favoriteApi.getFavoriteLimits() }
+                .onSuccess { _favoriteLimits = it }
+            // Limits only control UI capacity hints.  Authentication recovery and
+            // later session refreshes will try again, so intentionally keep the
+            // previous safe defaults rather than surfacing a startup-fatal error.
+        }
     }
 
     /**
@@ -212,4 +225,4 @@ class FavoriteService(
     fun getFavoriteByFavoriteId(favoriteType: FavoriteType, favoriteId: String): FavoriteData? =
         favoritesByGroup(favoriteType).value.values.flatten().firstOrNull { it.favoriteId == favoriteId }
 
-} 
+}
