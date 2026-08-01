@@ -19,6 +19,7 @@ class SettingsModel(
                 languageTag = it.languageTag.tag,
                 isBackgroundFriendMonitoringEnabled = it.isBackgroundFriendMonitoringEnabled,
                 isSystemNotificationsEnabled = it.isSystemNotificationsEnabled,
+                activityLogRetentionDays = it.activityLogRetentionDays,
             )
         }
     }
@@ -39,6 +40,7 @@ class SettingsModel(
                 languageTag = languageTag,
                 isBackgroundFriendMonitoringEnabled = settings.isBackgroundFriendMonitoringEnabled,
                 isSystemNotificationsEnabled = settings.isSystemNotificationsEnabled,
+                activityLogRetentionDays = settings.activityLogRetentionDays,
             )
         }
 }

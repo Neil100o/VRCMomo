@@ -130,6 +130,7 @@ private fun FriendActivityLogBlock() {
     val activityService = koinInject<FriendActivityService>()
     val events by activityService.activityLog.collectAsState()
     val localeStrings = strings
+    var currentSettings by LocalSettingsState.current
     var open by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -141,7 +142,26 @@ private fun FriendActivityLogBlock() {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        SettingsItem(localeStrings.friendActivityLogRetention) {
+            listOf<Int?>(null, 30, 90, 180, 365).forEach { days ->
+                SettingsChoiceButton(
+                    selected = currentSettings.activityLogRetentionDays == days,
+                    onClick = {
+                        currentSettings = currentSettings.copy(activityLogRetentionDays = days)
+                        activityService.setActivityLogRetentionDays(days)
+                    },
+                ) {
+                    Text(days?.let { "$it ${localeStrings.friendActivityLogRetentionDaysSuffix}" } ?: localeStrings.friendActivityLogKeepForever)
+                }
+            }
+        }
         TextButton(onClick = { open = true }) { Text(localeStrings.friendActivityLogOpen) }
+        TextButton(onClick = activityService::clearActivityLog) { Text(localeStrings.friendActivityLogClear) }
+        Text(
+            localeStrings.friendActivityLogClearDescription,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
     if (open) {
         FriendActivityLogSheet(events = events, onDismissRequest = { open = false })

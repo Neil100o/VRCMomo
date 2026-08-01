@@ -21,6 +21,9 @@ class SettingsDao(
                     DaoKeys.Settings.SYSTEM_NOTIFICATIONS_ENABLED_KEY,
                     true,
                 ),
+                activityLogRetentionDays = settingsSettings.getIntOrNull(
+                    DaoKeys.Settings.ACTIVITY_LOG_RETENTION_DAYS_KEY,
+                ),
             )
         }
         set(value) {
@@ -44,6 +47,9 @@ class SettingsDao(
                 DaoKeys.Settings.SYSTEM_NOTIFICATIONS_ENABLED_KEY,
                 value.isSystemNotificationsEnabled,
             )
+            value.activityLogRetentionDays?.let {
+                settingsSettings.putInt(DaoKeys.Settings.ACTIVITY_LOG_RETENTION_DAYS_KEY, it)
+            } ?: settingsSettings.remove(DaoKeys.Settings.ACTIVITY_LOG_RETENTION_DAYS_KEY)
         }
 
     var rememberVersion: String?

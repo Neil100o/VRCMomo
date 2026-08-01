@@ -27,7 +27,6 @@ internal class FriendActivityTracker(
     private var selfInstanceId: String? = null
     private val activityEvents = initialEvents
         .sortedByDescending(FriendActivityEvent::occurredAtMillis)
-        .take(MAX_ACTIVITY_EVENTS)
         .toMutableList()
 
     val snapshot: Map<String, FriendActivityStats>
@@ -189,10 +188,17 @@ internal class FriendActivityTracker(
         occurredAtMillis: Long,
     ) {
         activityEvents.add(0, FriendActivityEvent(userId, displayName, type, occurredAtMillis))
-        if (activityEvents.size > MAX_ACTIVITY_EVENTS) activityEvents.removeLast()
     }
 
-    private companion object {
-        const val MAX_ACTIVITY_EVENTS = 500
+    fun pruneEventsBefore(cutoffMillis: Long): Boolean {
+        val before = activityEvents.size
+        activityEvents.removeAll { it.occurredAtMillis < cutoffMillis }
+        return activityEvents.size != before
+    }
+
+    fun clearEvents(): Boolean {
+        if (activityEvents.isEmpty()) return false
+        activityEvents.clear()
+        return true
     }
 }

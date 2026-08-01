@@ -3,6 +3,8 @@ package io.github.vrcmteam.vrcm.storage
 import com.russhwolf.settings.Settings
 import io.github.vrcmteam.vrcm.AppPlatform
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityCache
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import okio.FileSystem
 import okio.Path
@@ -35,12 +37,20 @@ class FriendActivityCacheDao(
         ownerUserId.replace(Regex("[^A-Za-z0-9_-]"), "_") + ".json",
     )
 
+    private fun eventFile(ownerUserId: String, index: Int): Path? = storageDirectory?.resolve(
+        ownerUserId.replace(Regex("[^A-Za-z0-9_-]"), "_") + ".events.$index.json",
+    )
+
     fun load(ownerUserId: String): FriendActivityCache? = synchronized(lock) {
         val file = accountFile(ownerUserId)
         if (file != null && fileSystem.exists(file)) {
             val raw = runCatching { fileSystem.read(file) { readUtf8() } }.getOrNull()
             decode(raw)?.let { cached ->
-                return@synchronized migrateLoadedCache(file, raw, cached)
+                val migrated = migrateLoadedCache(file, raw, cached)
+                return@synchronized migrated.copy(
+                    activityEvents = (migrated.activityEvents + loadEventChunks(ownerUserId, migrated.eventChunkCount))
+                        .sortedByDescending(FriendActivityEvent::occurredAtMillis),
+                )
             }
         }
 
@@ -65,7 +75,11 @@ class FriendActivityCacheDao(
             settings.putString(legacyKey(ownerUserId), encode(normalized))
             return@synchronized
         }
-        if (writeFile(file, normalized)) {
+        val chunks = normalized.activityEvents.chunked(EVENTS_PER_FILE)
+        if (!writeEventChunks(ownerUserId, chunks)) return@synchronized
+        val primary = normalized.copy(activityEvents = emptyList(), eventChunkCount = chunks.size)
+        if (writeFile(file, primary)) {
+            removeStaleEventChunks(ownerUserId, chunks.size)
             settings.remove(legacyKey(ownerUserId))
         }
     }
@@ -78,6 +92,7 @@ class FriendActivityCacheDao(
                 if (fileSystem.exists(temp)) fileSystem.delete(temp)
             }
         }
+        removeStaleEventChunks(ownerUserId, keepCount = 0)
         settings.remove(legacyKey(ownerUserId))
     }
 
@@ -127,6 +142,9 @@ class FriendActivityCacheDao(
                     schemaVersion = 3,
                 )
                 3 -> migrated.copy(
+                    schemaVersion = 4,
+                )
+                4 -> migrated.copy(
                     schemaVersion = FriendActivityCache.CURRENT_SCHEMA_VERSION,
                 )
                 else -> return null
@@ -169,5 +187,47 @@ class FriendActivityCacheDao(
 
     private fun decode(raw: String?): FriendActivityCache? = raw?.let {
         runCatching { json.decodeFromString<FriendActivityCache>(it) }.getOrNull()
+    }
+
+    private fun loadEventChunks(ownerUserId: String, count: Int): List<FriendActivityEvent> =
+        (0 until count).flatMap { index ->
+            eventFile(ownerUserId, index)
+                ?.takeIf(fileSystem::exists)
+                ?.let { file ->
+                    runCatching {
+                        json.decodeFromString(ListSerializer(FriendActivityEvent.serializer()), fileSystem.read(file) { readUtf8() })
+                    }.getOrDefault(emptyList())
+                }.orEmpty()
+        }
+
+    private fun writeEventChunks(ownerUserId: String, chunks: List<List<FriendActivityEvent>>): Boolean = runCatching {
+        chunks.forEachIndexed { index, events ->
+            val file = requireNotNull(eventFile(ownerUserId, index))
+            file.parent?.let(fileSystem::createDirectories)
+            val temp = (file.toString() + ".tmp").toPath()
+            fileSystem.write(temp) { writeUtf8(json.encodeToString(ListSerializer(FriendActivityEvent.serializer()), events)) }
+            runCatching { fileSystem.atomicMove(temp, file) }.getOrElse {
+                if (fileSystem.exists(file)) fileSystem.delete(file)
+                fileSystem.atomicMove(temp, file)
+            }
+        }
+        true
+    }.getOrDefault(false)
+
+    private fun removeStaleEventChunks(ownerUserId: String, keepCount: Int) {
+        val directory = storageDirectory ?: return
+        val prefix = ownerUserId.replace(Regex("[^A-Za-z0-9_-]"), "_") + ".events."
+        runCatching {
+            if (fileSystem.exists(directory)) {
+                fileSystem.list(directory)
+                    .filter { file -> file.name.startsWith(prefix) }
+                    .filter { file -> file.name.substringAfter(prefix).substringBefore('.').toIntOrNull()?.let { it >= keepCount } == true }
+                    .forEach(fileSystem::delete)
+            }
+        }
+    }
+
+    private companion object {
+        const val EVENTS_PER_FILE = 500
     }
 }

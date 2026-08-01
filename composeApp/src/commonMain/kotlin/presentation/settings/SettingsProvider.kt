@@ -59,6 +59,7 @@ val LocalSettingsState: ProvidableCompositionLocal<MutableState<SettingsVo>> =
                 languageTag = LanguageTag.Default,
                 isBackgroundFriendMonitoringEnabled = false,
                 isSystemNotificationsEnabled = true,
+                activityLogRetentionDays = null,
             )
         )
     }

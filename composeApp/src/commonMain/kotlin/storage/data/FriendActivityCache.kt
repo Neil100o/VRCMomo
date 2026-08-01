@@ -19,10 +19,12 @@ data class FriendActivityCache(
     val importedVrcxEventKeys: Set<String> = emptySet(),
     /** Newest-first local event timeline, capped by [FriendActivityTracker] before persistence. */
     val activityEvents: List<FriendActivityEvent> = emptyList(),
+    /** Number of 500-event files written beside the account cache. */
+    val eventChunkCount: Int = 0,
 ) {
     companion object {
         const val LEGACY_SCHEMA_VERSION = 1
-        const val CURRENT_SCHEMA_VERSION = 4
+        const val CURRENT_SCHEMA_VERSION = 5
     }
 }
 

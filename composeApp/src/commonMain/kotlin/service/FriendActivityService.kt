@@ -5,6 +5,7 @@ import io.github.vrcmteam.vrcm.storage.FriendActivityCacheDao
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityCache
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
+import io.github.vrcmteam.vrcm.storage.SettingsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -29,6 +30,7 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 class FriendActivityService(
     private val cacheDao: FriendActivityCacheDao,
+    private val settingsDao: SettingsDao? = null,
 ) {
     private val lock = Any()
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
@@ -59,6 +61,7 @@ class FriendActivityService(
         activeAccountUserId = userId
         val cache = cacheDao.load(userId)
         tracker = FriendActivityTracker(cache?.statsByFriendId.orEmpty(), cache?.activityEvents.orEmpty())
+        pruneEventsLocked()
         importedVrcxEventKeys = cache?.importedVrcxEventKeys.orEmpty()
         publishLocked(save = false)
     }
@@ -116,6 +119,19 @@ class FriendActivityService(
         persistSnapshot()
     }
 
+    /** Deletes only timeline entries; relationship totals and imported history remain intact. */
+    fun clearActivityLog() = synchronized(lock) {
+        if (tracker.clearEvents()) publishLocked(save = true)
+    }
+
+    fun setActivityLogRetentionDays(days: Int?) = synchronized(lock) {
+        require(days == null || days > 0)
+        if (days != null) {
+            val cutoff = Clock.System.now().toEpochMilliseconds() - days * MILLIS_PER_DAY
+            if (tracker.pruneEventsBefore(cutoff)) publishLocked(save = true)
+        }
+    }
+
     /** Preview an activity bridge without modifying the current account. */
     internal fun previewVrcxActivityImport(raw: String): VrcxActivityImportPreview = synchronized(lock) {
         check(activeAccountUserId != null) { "Sign in before importing activity history" }
@@ -134,6 +150,7 @@ class FriendActivityService(
 
     private fun persistSnapshot() {
         val pending = synchronized(lock) {
+            pruneEventsLocked()
             val owner = activeAccountUserId ?: return@synchronized null
             owner to FriendActivityCache(
                 statsByFriendId = tracker.snapshotForPersistence(Clock.System.now().toEpochMilliseconds()),
@@ -158,6 +175,11 @@ class FriendActivityService(
         )
     }
 
+    private fun pruneEventsLocked() {
+        val days = settingsDao?.settings?.activityLogRetentionDays ?: return
+        tracker.pruneEventsBefore(Clock.System.now().toEpochMilliseconds() - days * MILLIS_PER_DAY)
+    }
+
     private fun publishLocked(save: Boolean) {
         val snapshot = tracker.snapshot
         _friendActivityState.value = snapshot
@@ -172,5 +194,6 @@ class FriendActivityService(
 
     private companion object {
         const val PERSIST_INTERVAL_MILLIS = 30_000L
+        const val MILLIS_PER_DAY = 24L * 60L * 60L * 1_000L
     }
 }

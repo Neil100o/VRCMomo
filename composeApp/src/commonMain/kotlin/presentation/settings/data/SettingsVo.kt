@@ -9,4 +9,5 @@ data class SettingsVo(
     val themeColor: ThemeColor,
     val isBackgroundFriendMonitoringEnabled: Boolean = false,
     val isSystemNotificationsEnabled: Boolean = true,
+    val activityLogRetentionDays: Int? = null,
 )

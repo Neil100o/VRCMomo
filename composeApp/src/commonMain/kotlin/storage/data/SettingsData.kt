@@ -9,4 +9,6 @@ data class SettingsData(
     val languageTag: String?,
     val isBackgroundFriendMonitoringEnabled: Boolean = false,
     val isSystemNotificationsEnabled: Boolean = true,
+    /** Null keeps all activity-log files indefinitely. */
+    val activityLogRetentionDays: Int? = null,
 )
