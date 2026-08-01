@@ -1,5 +1,6 @@
 package io.github.vrcmteam.vrcm.storage.data
 
+import io.github.vrcmteam.vrcm.network.api.friends.date.FriendData
 import kotlinx.serialization.Serializable
 
 /**
@@ -25,6 +26,8 @@ data class FriendActivityStats(
     val activeTogetherInstanceId: String? = null,
     val lastObservedLocation: String? = null,
     val lastObservedStatus: String? = null,
+    /** Last observed public friend profile fields for offline recent-player rendering. */
+    val lastKnownFriend: FriendData? = null,
 ) {
     fun clearRuntimeObservation(): FriendActivityStats = copy(
         activeTogetherSinceMillis = null,

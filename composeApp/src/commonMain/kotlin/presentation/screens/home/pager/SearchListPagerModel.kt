@@ -3,6 +3,7 @@ package io.github.vrcmteam.vrcm.presentation.screens.home.pager
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.vrcmteam.vrcm.core.shared.SharedFlowCentre
+import io.github.vrcmteam.vrcm.network.api.friends.date.FriendData
 import io.github.vrcmteam.vrcm.network.api.groups.GroupsApi
 import io.github.vrcmteam.vrcm.network.api.groups.data.LimitedGroup
 import io.github.vrcmteam.vrcm.network.api.users.UsersApi
@@ -12,6 +13,7 @@ import io.github.vrcmteam.vrcm.network.api.worlds.data.WorldData
 import io.github.vrcmteam.vrcm.presentation.extensions.onApiFailure
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.WorldSearchOptions
 import io.github.vrcmteam.vrcm.service.AuthService
+import io.github.vrcmteam.vrcm.service.FriendActivityService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -26,15 +28,19 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.core.logger.Logger
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 /**
  * 搜索页面的ViewModel
  */
+@OptIn(ExperimentalTime::class)
 class SearchListPagerModel(
     private val usersApi: UsersApi,
     private val worldsApi: WorldsApi,
     private val groupsApi: GroupsApi,
     private val authService: AuthService,
+    private val friendActivityService: FriendActivityService,
     private val logger: Logger
 ) : ScreenModel {
 
@@ -92,6 +98,11 @@ class SearchListPagerModel(
                     _groupSearchList.value = emptyList()
                     resetGroupPaging()
                 }
+            }
+        }
+        screenModelScope.launch {
+            friendActivityService.friendActivityState.collect {
+                refreshRecentPlayersIfVisible()
             }
         }
     }
@@ -234,6 +245,12 @@ class SearchListPagerModel(
         requestKey: SearchRequestKey,
         generation: Long,
     ): Boolean {
+        if (name.isBlank()) {
+            if (isCurrentRequest(requestKey, generation)) {
+                _userSearchList.value = recentPlayers()
+            }
+            return true
+        }
         return authService.reTryAuthCatching {
             usersApi.searchUser(name)
         }.onSuccess {
@@ -244,6 +261,39 @@ class SearchListPagerModel(
             logger.error(it)
         }.isSuccess
     }
+
+    private fun refreshRecentPlayersIfVisible() {
+        if (searchType.value == 0 && searchText.value.isBlank()) {
+            _userSearchList.value = recentPlayers()
+        }
+    }
+
+    private fun recentPlayers(): List<SearchUserData> = friendActivityService
+        .recentPlayersSince(
+            cutoffMillis = Clock.System.now().toEpochMilliseconds() - RECENT_PLAYER_WINDOW_MILLIS,
+            limit = RECENT_PLAYER_LIMIT,
+        )
+        .map { friend -> friend.toSearchUserData() }
+
+    private fun FriendData.toSearchUserData(): SearchUserData = SearchUserData(
+        bio = bio.orEmpty(),
+        bioLinks = bioLinks,
+        currentAvatarImageUrl = currentAvatarImageUrl,
+        currentAvatarTags = currentAvatarTags,
+        currentAvatarThumbnailImageUrl = currentAvatarThumbnailImageUrl.orEmpty(),
+        developerType = developerType,
+        displayName = displayName,
+        id = id,
+        isFriend = isFriend,
+        lastPlatform = lastPlatform,
+        profilePicOverride = profilePicOverride,
+        pronouns = pronouns,
+        status = status,
+        statusDescription = statusDescription,
+        tags = tags,
+        userIcon = userIcon,
+        lastLogin = lastLogin,
+    )
 
     /**
      * 搜索世界
@@ -375,6 +425,8 @@ class SearchListPagerModel(
     private companion object {
         const val GROUP_SEARCH_TYPE = 3
         const val GROUP_PAGE_SIZE = 20
+        const val RECENT_PLAYER_LIMIT = 20
+        const val RECENT_PLAYER_WINDOW_MILLIS = 24L * 60L * 60L * 1_000L
     }
 }
 

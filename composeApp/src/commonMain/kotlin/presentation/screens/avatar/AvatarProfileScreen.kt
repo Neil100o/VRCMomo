@@ -9,6 +9,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -50,6 +53,8 @@ class AvatarProfileScreen(
         val navigator = currentNavigator
         val screenModel: AvatarProfileScreenModel = koinScreenModel()
         val refreshedAvatar by screenModel.avatarProfileState.collectAsState()
+        val isSaving by screenModel.isSaving.collectAsState()
+        var showEditDialog by remember { mutableStateOf(false) }
 
         LaunchedEffect(avatarProfileVo.avatarId) {
             screenModel.refreshAvatarData(avatarProfileVo)
@@ -67,8 +72,21 @@ class AvatarProfileScreen(
                 AvatarProfileContent(
                     avatarProfileVo = displayedAvatar,
                     contentMinHeight = contentMinHeight,
+                    canEdit = screenModel.canEdit(displayedAvatar),
+                    onEdit = { showEditDialog = true },
                 )
             }
+        }
+        if (showEditDialog) {
+            AvatarEditDialog(
+                avatar = displayedAvatar,
+                isSaving = isSaving,
+                onDismiss = { if (!isSaving) showEditDialog = false },
+                onSave = { name, imageUrl ->
+                    screenModel.updateAvatar(displayedAvatar, name, imageUrl)
+                    showEditDialog = false
+                },
+            )
         }
     }
 }
@@ -78,8 +96,17 @@ class AvatarProfileScreen(
 private fun AvatarProfileContent(
     avatarProfileVo: AvatarProfileVo,
     contentMinHeight: Dp,
+    canEdit: Boolean,
+    onEdit: () -> Unit,
 ) {
     val navigator = currentNavigator
+
+    if (canEdit) {
+        FilledTonalButton(onClick = onEdit, modifier = Modifier.fillMaxWidth()) {
+            Text("Edit avatar")
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+    }
 
     // 名称
     SelectionContainer {
@@ -307,4 +334,46 @@ private fun ratingColor(rating: String?): androidx.compose.ui.graphics.Color {
         "verypoor" -> MaterialTheme.colorScheme.error
         else -> MaterialTheme.colorScheme.outline
     }
+}
+
+@Composable
+private fun AvatarEditDialog(
+    avatar: AvatarProfileVo,
+    isSaving: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (String, String?) -> Unit,
+) {
+    var name by remember(avatar.avatarId) { mutableStateOf(avatar.avatarName) }
+    var imageUrl by remember(avatar.avatarId) { mutableStateOf(avatar.avatarImageUrl.orEmpty()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit avatar") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Name") },
+                    singleLine = true,
+                )
+                OutlinedTextField(
+                    value = imageUrl,
+                    onValueChange = { imageUrl = it },
+                    label = { Text("Cover FileID or URL") },
+                    supportingText = { Text("VRChat accepts an image FileID or URL here.") },
+                    singleLine = true,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                enabled = name.isNotBlank() && !isSaving,
+                onClick = { onSave(name, imageUrl) },
+            ) { Text(if (isSaving) "Saving?" else "Save") }
+        },
+        dismissButton = {
+            TextButton(enabled = !isSaving, onClick = onDismiss) { Text("Cancel") }
+        },
+    )
 }

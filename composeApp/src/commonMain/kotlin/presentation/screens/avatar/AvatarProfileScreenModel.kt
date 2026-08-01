@@ -5,6 +5,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import io.github.vrcmteam.vrcm.core.shared.SharedFlowCentre
 import io.github.vrcmteam.vrcm.network.api.avatars.AvatarsApi
 import io.github.vrcmteam.vrcm.network.api.avatars.data.AvatarData
+import io.github.vrcmteam.vrcm.network.api.avatars.data.AvatarUpdateData
 import io.github.vrcmteam.vrcm.presentation.compoments.ToastText
 import io.github.vrcmteam.vrcm.presentation.screens.avatar.data.AvatarProfileVo
 import io.github.vrcmteam.vrcm.service.AuthService
@@ -32,6 +33,8 @@ internal class NetworkAvatarProfileLoader(
 class AvatarProfileScreenModel internal constructor(
     private val avatarProfileLoader: AvatarProfileLoader,
     private val requestDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val avatarsApi: AvatarsApi? = null,
+    private val authService: AuthService? = null,
 ) : ScreenModel {
 
     private val _avatarProfileState = MutableStateFlow<AvatarProfileVo?>(null)
@@ -41,6 +44,41 @@ class AvatarProfileScreenModel internal constructor(
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val latestRequestToken = MutableStateFlow(0L)
+
+    private val _isSaving = MutableStateFlow(false)
+    val isSaving: StateFlow<Boolean> = _isSaving.asStateFlow()
+
+    fun canEdit(avatar: AvatarProfileVo): Boolean =
+        avatar.authorId.isNotBlank() && avatar.authorId == authService?.accountDto()?.userId
+
+    fun updateAvatar(avatar: AvatarProfileVo, name: String, imageUrl: String?) {
+        val api = avatarsApi
+        val auth = authService
+        if (api == null || auth == null || !canEdit(avatar)) {
+            screenModelScope.launch {
+                SharedFlowCentre.toastText.emit(ToastText.Error("Only the avatar owner can edit this avatar"))
+            }
+            return
+        }
+        _isSaving.value = true
+        screenModelScope.launch(requestDispatcher) {
+            auth.reTryAuthCatching {
+                api.updateAvatar(
+                    avatar.avatarId,
+                    AvatarUpdateData(
+                        name = name.trim().takeIf { it.isNotEmpty() },
+                        imageUrl = imageUrl?.trim()?.takeIf { it.isNotEmpty() },
+                    )
+                )
+            }.onSuccess {
+                _avatarProfileState.value = AvatarProfileVo(it)
+                SharedFlowCentre.toastText.emit(ToastText.Success("Avatar updated"))
+            }.onFailure {
+                SharedFlowCentre.toastText.emit(ToastText.Error(it.message ?: "Failed to update avatar"))
+            }
+            _isSaving.value = false
+        }
+    }
 
     fun refreshAvatarData(avatarProfileVo: AvatarProfileVo) {
         val requestToken = latestRequestToken.updateAndGet { it + 1 }

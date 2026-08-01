@@ -14,6 +14,7 @@ class AndroidAppPlatform(val context: Context) : AppPlatform {
     override val name: String = "Android"
     override val version: String = Build.VERSION.SDK_INT.toString()
     override val type: AppPlatformType = AppPlatformType.Android
+    override val persistentDataDirectory: String = context.filesDir.absolutePath
     override val supportsBackgroundFriendMonitoring: Boolean = true
     override val supportsBatteryOptimizationSettings: Boolean =
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.M

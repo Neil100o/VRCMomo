@@ -9,6 +9,9 @@ interface AppPlatform: KoinComponent {
     val version: String
     val type: AppPlatformType
 
+    /** App-private, non-cache directory for durable VRCMomo data. */
+    val persistentDataDirectory: String
+
     /** Background friend monitoring is intentionally opt-in and platform-specific. */
     val supportsBackgroundFriendMonitoring: Boolean
         get() = false

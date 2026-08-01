@@ -1,5 +1,6 @@
 package io.github.vrcmteam.vrcm.service
 
+import io.github.vrcmteam.vrcm.network.api.friends.date.FriendData
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
 
 internal data class FriendActivityObservation(
@@ -7,6 +8,7 @@ internal data class FriendActivityObservation(
     val location: String,
     val status: String,
     val lastActivityAtMillis: Long?,
+    val friendData: FriendData? = null,
 )
 
 /**
@@ -33,7 +35,9 @@ internal class FriendActivityTracker(
             val existing = statsByFriendId[friend.userId]
             val previousLocation = existing?.lastObservedLocation
             val previousStatus = existing?.lastObservedStatus
-            var next = existing ?: FriendActivityStats(userId = friend.userId)
+            var next = (existing ?: FriendActivityStats(userId = friend.userId)).copy(
+                lastKnownFriend = friend.friendData ?: existing?.lastKnownFriend,
+            )
 
             if (previousLocation == null && previousStatus == null) {
                 // First observation is a baseline, not an invented online/offline transition.
@@ -68,6 +72,16 @@ internal class FriendActivityTracker(
         }
         return changed
     }
+
+    fun snapshotForPersistence(nowMillis: Long): Map<String, FriendActivityStats> =
+        statsByFriendId.mapValues { (_, stats) ->
+            val activeSince = stats.activeTogetherSinceMillis
+            if (activeSince == null) stats else stats.copy(
+                togetherDurationMillis = stats.togetherDurationMillis +
+                    (nowMillis - activeSince).coerceAtLeast(0),
+                activeTogetherSinceMillis = nowMillis,
+            )
+        }
 
     fun updateSelfInstance(instanceId: String?, nowMillis: Long): Boolean {
         val normalized = instanceId.normalizedInstanceId()

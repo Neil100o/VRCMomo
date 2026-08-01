@@ -10,6 +10,7 @@ import io.github.vrcmteam.vrcm.network.api.worlds.WorldsApi
 import io.github.vrcmteam.vrcm.presentation.screens.home.compoments.SortOption
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.WorldSearchOptions
 import io.github.vrcmteam.vrcm.service.AuthService
+import io.github.vrcmteam.vrcm.service.FriendActivityService
 import io.github.vrcmteam.vrcm.service.data.AccountDto
 import io.github.vrcmteam.vrcm.storage.AccountDao
 import io.github.vrcmteam.vrcm.storage.AccountCacheManager
@@ -522,6 +523,7 @@ private fun createFixture(
             worldsApi = WorldsApi(client),
             groupsApi = GroupsApi(client),
             authService = authService,
+            friendActivityService = FriendActivityService(FriendActivityCacheDao(MapSettings())),
             logger = logger,
         ),
         client = client,
