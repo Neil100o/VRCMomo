@@ -19,6 +19,12 @@ VRCM を基盤として継続開発している、Android 優先の VRChat モ�
 
 > **現在のテスト版：0.3.8**。端末・Android バージョン・再現手順・ログを添えて [Issues](https://github.com/Neil100o/VRCMoskavis/issues) へ報告してください。
 
+## 🧪 テスト版のダウンロード
+
+- **Android APK：**[VRCMomo-v0.3.8.apk](downloads/VRCMomo-v0.3.8.apk) — Android 端末へダウンロードし、確認画面でブラウザまたはファイルマネージャーからのインストールを許可して導入してください。
+- **任意の VRCX エクスポーター（Windows）：**[VRCMomo-VRCX-Activity-Export.exe](downloads/VRCMomo-VRCX-Activity-Export.exe) — VRCX を使っている PC で実行し、生成された JSON を VRCMomo の設定画面から読み込みます。
+- プライバシー境界とテスト時の注意は [downloads/README.md](downloads/README.md) を確認してください。これらは安定版ではありません。
+
 </div>
 
 <div align="center">

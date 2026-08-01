@@ -19,6 +19,12 @@
 
 > **当前测试版本：0.3.8**。欢迎通过 [Issues](https://github.com/Neil100o/VRCMoskavis/issues) 反馈问题、设备信息和复现步骤。
 
+## 🧪 测试版下载
+
+- **Android 安装包：**[VRCMomo-v0.3.8.apk](downloads/VRCMomo-v0.3.8.apk) —— 下载到 Android 设备；系统提示时，允许浏览器或文件管理器安装未知来源应用后安装。
+- **可选 VRCX 导出工具（Windows）：**[VRCMomo-VRCX-Activity-Export.exe](downloads/VRCMomo-VRCX-Activity-Export.exe) —— 在安装了 VRCX 的电脑上运行，再从 VRCMomo 设置页导入生成的 JSON 文件。
+- 隐私边界和测试注意事项见 [downloads/README.md](downloads/README.md)。以上均为测试文件，不是稳定发行版。
+
 </div>
 
 <div align="center">

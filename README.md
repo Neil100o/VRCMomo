@@ -19,6 +19,12 @@ A mobile-first VRChat companion, continued from VRCM, for managing friends, Gall
 
 > **Current test version: 0.3.8.** Please report reproducible issues with device, Android version, steps and logs through [Issues](https://github.com/Neil100o/VRCMoskavis/issues).
 
+## 🧪 Test downloads
+
+- **Android APK:** [VRCMomo-v0.3.8.apk](downloads/VRCMomo-v0.3.8.apk) — download it to an Android device, allow installation from the browser/file manager when Android asks, then install.
+- **Optional VRCX exporter (Windows):** [VRCMomo-VRCX-Activity-Export.exe](downloads/VRCMomo-VRCX-Activity-Export.exe) — run it on the computer with VRCX, then import its JSON file from VRCMomo settings.
+- See [downloads/README.md](downloads/README.md) for privacy boundaries and testing notes. These are test files, not a stable release.
+
 </div>
 
 <div align="center">
