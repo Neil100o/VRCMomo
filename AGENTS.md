@@ -60,4 +60,3 @@ APK output: `composeApp/build/outputs/apk/debug/VRCMomo-v<version>.apk`.
 - `docs/DEVELOPMENT_MAP.md`: build, storage, API and feature ownership map.
 - `docs/CODE_STANDARDS.md`: Kotlin/KMP/Compose review checklist and refactoring limits.
 - `docs/VRCX_JIRAI_FEATURE_REVIEW.md`: source attribution and feature-boundary review.
-
