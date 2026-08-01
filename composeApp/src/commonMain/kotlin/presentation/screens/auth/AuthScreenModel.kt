@@ -111,13 +111,19 @@ class AuthScreenModel(
             .getOrNull()
     }.await() == true
 
-    fun tryCheckVersion(onCheckVersion:(VersionVo) -> Unit)=
-         screenModelScope.launch(Dispatchers.IO) {
-            versionService.checkVersion(true)
-                .onAuthFailure()
-                .map { VersionVo(it.tagName, it.htmlUrl, it.body, it.hasNewVersion) }
-                .getOrElse { VersionVo() }
-                .also(onCheckVersion)
+    /**
+     * Update checks are optional. They must not be presented as an authentication failure
+     * or interrupt startup when GitHub's shared public API limit is exhausted.
+     */
+    fun tryCheckVersion(onCheckVersion: (VersionVo) -> Unit) =
+        screenModelScope.launch {
+            val version = withContext(Dispatchers.IO) {
+                versionService.checkVersion(true)
+                    .onFailure { logger.warn("Version check skipped: ${it.message ?: "unknown error"}") }
+                    .map { VersionVo(it.tagName, it.htmlUrl, it.body, it.hasNewVersion) }
+                    .getOrElse { VersionVo() }
+            }
+            onCheckVersion(version)
         }
 
 

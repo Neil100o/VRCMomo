@@ -6,6 +6,8 @@ import io.github.vrcmteam.vrcm.network.supports.VRCApiException
 import io.github.vrcmteam.vrcm.service.data.VersionDto
 import io.github.vrcmteam.vrcm.storage.SettingsDao
 
+private val GITHUB_OPTIONAL_UPDATE_CODES = setOf(403, 404, 429)
+
 class VersionService(
     private val gitHubApi: GitHubApi,
     private val settingsDao: SettingsDao,
@@ -36,23 +38,25 @@ class VersionService(
 
                 else -> {
                     val error = it.exceptionOrNull()!!
-                    if (error is VRCApiException && error.code == 404) {
-                        // GitHub returns 404 when the repository has no published Release yet.
-                        // That is a normal "no update available" state, not an auth failure.
-                        Result.success(
-                            VersionDto(
-                                tagName = AppConst.APP_VERSION,
-                                htmlUrl = AppConst.APP_GITHUB_URL,
-                                body = "",
-                                hasNewVersion = false,
-                            )
-                        )
+                    if (error is VRCApiException && error.code in GITHUB_OPTIONAL_UPDATE_CODES) {
+                        // GitHub's public API is shared by all users behind the same network address.
+                        // A missing release, rate limit, or temporary GitHub refusal must never affect login.
+                        noUpdateAvailable()
                     } else {
                         Result.failure(error)
                     }
                 }
             }
         }
+
+    private fun noUpdateAvailable(): Result<VersionDto> = Result.success(
+        VersionDto(
+            tagName = AppConst.APP_VERSION,
+            htmlUrl = AppConst.APP_GITHUB_URL,
+            body = "",
+            hasNewVersion = false,
+        )
+    )
 
     fun rememberVersion(version: String?) {
         settingsDao.rememberVersion = version
