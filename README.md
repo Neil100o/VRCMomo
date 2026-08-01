@@ -3,7 +3,7 @@
 # <img src="image/Logo.png" width="50" height="50"  alt="logo"/> VRCMomo
 
 <!-- Language Selection -->
-**🌐 Languages / 语言 / 言語:**  
+**Languages / 语言 / 言語:**
 [English](README.md) • [中文](README_ZH.md) • [日本語](README_JP.md)
 
 
@@ -19,7 +19,7 @@ A mobile-first VRChat companion, continued from VRCM, for managing friends, Gall
 
 > **Current test version: 0.3.8.** Please report reproducible issues with device, Android version, steps and logs through [Issues](https://github.com/Neil100o/VRCMomo/issues).
 
-## 🧪 Test downloads
+## Test downloads
 
 - **Android APK:** [VRCMomo-v0.3.8.apk](downloads/VRCMomo-v0.3.8.apk) — download it to an Android device, allow installation from the browser/file manager when Android asks, then install.
 - **Optional VRCX exporter (Windows):** [VRCMomo-VRCX-Activity-Export.exe](downloads/VRCMomo-VRCX-Activity-Export.exe) — run it on the computer with VRCX, then import its JSON file from VRCMomo settings.
@@ -29,7 +29,7 @@ A mobile-first VRChat companion, continued from VRCM, for managing friends, Gall
 
 <div align="center">
 
-## ✨ VRCMomo changes over upstream VRCM
+## VRCMomo changes over upstream VRCM
 
 </div>
 
@@ -56,25 +56,25 @@ A mobile-first VRChat companion, continued from VRCM, for managing friends, Gall
 
 <div align="center">
 
-## 📱 Platform Support
+## Platform Support
 
 </div>
 
-- ✅ **Android** - Current primary testing and maintenance platform
+- **Android** - Current primary testing and maintenance platform
 
 <div align="center">
 
-## 📋 Development Roadmap
+## Development Roadmap
 
 </div>
 
 ### Current Focus
-- 📱 **Mobile Stability** - Prioritize Android device fixes, background monitoring, and notification reliability
-- 🧪 **Community Testing** - Improve the existing friend, group, Gallery, and profile features from real-world feedback
+- **Mobile Stability** - Prioritize Android device fixes, background monitoring, and notification reliability
+- **Community Testing** - Improve the existing friend, group, Gallery, and profile features from real-world feedback
 
 <div align="center">
 
-## 🛠️ Technical Architecture
+## Technical Architecture
 
 </div>
 
@@ -98,7 +98,7 @@ A mobile-first VRChat companion, continued from VRCM, for managing friends, Gall
 
 <div align="center">
 
-## ⚠️ Disclaimer
+## Disclaimer
 
 </div>
 
@@ -110,7 +110,7 @@ A mobile-first VRChat companion, continued from VRCM, for managing friends, Gall
 
 <div align="center">
 
-## 🙏 Attribution and Project Origin
+## Attribution and Project Origin
 
 </div>
 
@@ -133,7 +133,7 @@ For the planned review of VRCX and VRCX-jirai-inspired features, see [VRCX-jirai
 
 <div align="center">
 
-## 📄 License
+## License
 
 </div>
 
@@ -141,7 +141,7 @@ This project is open source under the [MIT License](LICENSE).
 
 <div align="center">
 
-## 🤝 Contributing
+## Contributing
 
 </div>
 

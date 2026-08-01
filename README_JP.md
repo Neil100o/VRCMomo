@@ -3,7 +3,7 @@
 # <img src="image/Logo.png" width="50" height="50"  alt="logo"/> VRCMomo
 
 <!-- Language Selection -->
-**🌐 Languages / 语言 / 言語:**  
+**Languages / 语言 / 言語:**
 [English](README.md) • [中文](README_ZH.md) • [日本語](README_JP.md)
 
 
@@ -19,7 +19,7 @@ VRCM を基盤として継続開発している、Android 優先の VRChat モ�
 
 > **現在のテスト版：0.3.8**。端末・Android バージョン・再現手順・ログを添えて [Issues](https://github.com/Neil100o/VRCMomo/issues) へ報告してください。
 
-## 🧪 テスト版のダウンロード
+## テスト版のダウンロード
 
 - **Android APK：**[VRCMomo-v0.3.8.apk](downloads/VRCMomo-v0.3.8.apk) — Android 端末へダウンロードし、確認画面でブラウザまたはファイルマネージャーからのインストールを許可して導入してください。
 - **任意の VRCX エクスポーター（Windows）：**[VRCMomo-VRCX-Activity-Export.exe](downloads/VRCMomo-VRCX-Activity-Export.exe) — VRCX を使っている PC で実行し、生成された JSON を VRCMomo の設定画面から読み込みます。
@@ -29,7 +29,7 @@ VRCM を基盤として継続開発している、Android 優先の VRChat モ�
 
 <div align="center">
 
-## ✨ 上流 VRCM からの VRCMomo 差分
+## 上流 VRCM からの VRCMomo 差分
 
 </div>
 
@@ -56,15 +56,15 @@ VRCM を基盤として継続開発している、Android 優先の VRChat モ�
 
 <div align="center">
 
-## 📱 プラットフォーム対応
+## プラットフォーム対応
 
 </div>
 
-- ✅ **Android** - 現在の主要テスト・保守対象
+- **Android** - 現在の主要テスト・保守対象
 
 <div align="center">
 
-## 🛠️ 技術アーキテクチャ
+## 技術アーキテクチャ
 
 </div>
 
@@ -88,7 +88,7 @@ VRCM を基盤として継続開発している、Android 優先の VRChat モ�
 
 <div align="center">
 
-## 🙏 プロジェクトの出典と謝辞
+## プロジェクトの出典と謝辞
 
 </div>
 
@@ -105,7 +105,7 @@ VRCM Team とすべての上流貢献者に感謝します。元の履歴と貢�
 
 <div align="center">
 
-## ⚠️ 免責事項
+## 免責事項
 
 </div>
 
@@ -117,7 +117,7 @@ VRCM Team とすべての上流貢献者に感謝します。元の履歴と貢�
 
 <div align="center">
 
-## 📄 ライセンス
+## ライセンス
 
 </div>
 
@@ -125,7 +125,7 @@ VRCM Team とすべての上流貢献者に感謝します。元の履歴と貢�
 
 <div align="center">
 
-## 🤝 貢献
+## 貢献
 
 </div>
 
