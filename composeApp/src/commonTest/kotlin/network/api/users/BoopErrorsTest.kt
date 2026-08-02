@@ -18,11 +18,22 @@ class BoopErrorsTest {
     }
 
     @Test
-    fun doesNotHideOtherRateLimitFailures() {
+    fun identifiesCooldownWhenTheServerUsesDifferentMessageText() {
         val error = VRCApiException(
             description = "Too Many Requests",
             code = 429,
             bodyText = "{\"error\":{\"message\":\"Rate limit exceeded\",\"status_code\":429}}",
+        )
+
+        assertTrue(error.isBoopAlreadySentError())
+    }
+
+    @Test
+    fun ignoresNon429Failures() {
+        val error = VRCApiException(
+            description = "Forbidden",
+            code = 403,
+            bodyText = "{\"error\":{\"message\":\"Forbidden\"}}",
         )
 
         assertFalse(error.isBoopAlreadySentError())

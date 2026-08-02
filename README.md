@@ -17,7 +17,7 @@
 
 A mobile-first VRChat companion, continued from VRCM, for managing friends, Gallery, notifications, and recent shared play.
 
-> **Current test version: 0.3.15.** Please report reproducible issues with device, Android version, steps and logs through [Issues](https://github.com/Neil100o/VRCMomo/issues).
+> **Current test version: 0.3.16.** Please report reproducible issues with device, Android version, steps and logs through [Issues](https://github.com/Neil100o/VRCMomo/issues).
 
 ## Test downloads
 

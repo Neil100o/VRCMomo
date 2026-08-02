@@ -17,7 +17,7 @@
 
 VRCM を基盤として継続開発している、Android 優先の VRChat モバイル Companion です。
 
-> **現在のテスト版：0.3.15**。端末・Android バージョン・再現手順・ログを添えて [Issues](https://github.com/Neil100o/VRCMomo/issues) へ報告してください。
+> **現在のテスト版：0.3.16**。端末・Android バージョン・再現手順・ログを添えて [Issues](https://github.com/Neil100o/VRCMomo/issues) へ報告してください。
 
 ## テスト版のダウンロード
 

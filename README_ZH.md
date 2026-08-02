@@ -17,7 +17,7 @@
 
 一个基于 VRCM 延续开发的移动端 VRChat Companion，帮助你在手机上管理好友、相册、通知与最近共同游玩记录。
 
-> **当前测试版本：0.3.15**。欢迎通过 [Issues](https://github.com/Neil100o/VRCMomo/issues) 反馈问题、设备信息和复现步骤。
+> **当前测试版本：0.3.16**。欢迎通过 [Issues](https://github.com/Neil100o/VRCMomo/issues) 反馈问题、设备信息和复现步骤。
 
 ## 测试版下载
 
