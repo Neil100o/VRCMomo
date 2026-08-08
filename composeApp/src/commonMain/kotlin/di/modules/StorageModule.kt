@@ -12,6 +12,9 @@ import io.github.vrcmteam.vrcm.storage.FriendNetworkCacheDao
 import io.github.vrcmteam.vrcm.storage.FriendActivityCacheDao
 import io.github.vrcmteam.vrcm.storage.SettingsDao
 import io.github.vrcmteam.vrcm.storage.UserProfileCacheDao
+import io.github.vrcmteam.vrcm.storage.buildVrcmomoActivityDatabase
+import io.github.vrcmteam.vrcm.storage.RoomFriendActivityMirror
+import io.github.vrcmteam.vrcm.storage.platformVrcmomoActivityDatabaseBuilder
 import io.ktor.client.plugins.cookies.*
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
@@ -33,6 +36,10 @@ internal val storageModule: Module = module {
         )
     }
     single { UserProfileCacheDao(get { parametersOf(DaoKeys.UserProfileCache.NAME) }) }
+    // Kept separate from the live JSON DAO during the staged migration.
+    single { buildVrcmomoActivityDatabase(platformVrcmomoActivityDatabaseBuilder(get<AppPlatform>())) }
+    single { get<io.github.vrcmteam.vrcm.storage.VrcmomoActivityDatabase>().friendActivitySnapshotDao() }
+    singleOf(::RoomFriendActivityMirror)
     singleOf(::AccountCacheManager)
     singleOf(::PersistentCookiesStorage) bind CookiesStorage::class
 }

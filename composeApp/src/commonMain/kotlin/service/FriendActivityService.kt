@@ -2,6 +2,7 @@ package io.github.vrcmteam.vrcm.service
 
 import io.github.vrcmteam.vrcm.network.api.friends.date.FriendData
 import io.github.vrcmteam.vrcm.storage.FriendActivityCacheDao
+import io.github.vrcmteam.vrcm.storage.RoomFriendActivityMirror
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityCache
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
@@ -31,11 +32,14 @@ import kotlin.time.ExperimentalTime
 class FriendActivityService(
     private val cacheDao: FriendActivityCacheDao,
     private val settingsDao: SettingsDao? = null,
+    private val sqliteMirror: RoomFriendActivityMirror? = null,
 ) {
     private val lock = Any()
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private val writer = ConflatedAccountCacheWriter<FriendActivityCache>(serviceScope) { owner, cache ->
         cacheDao.save(owner, cache)
+        // Keep a non-authoritative SQLite mirror while the old archive remains the safe fallback.
+        sqliteMirror?.mirror(owner, cache)
     }
     private var activeAccountUserId: String? = null
     private var tracker = FriendActivityTracker()

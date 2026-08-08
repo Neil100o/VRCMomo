@@ -9,6 +9,8 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.kotlinxSerialization)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.androidxRoom)
 }
 
 kotlin {
@@ -39,6 +41,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.exifinterface)
             implementation(libs.zxing.android.embedded)
+            implementation(libs.androidx.sqlite.framework)
 
             implementation(libs.koin.androidx.compose)
 
@@ -51,6 +54,7 @@ kotlin {
 
         iosMain.dependencies {
             implementation(libs.stately.common)
+            implementation(libs.androidx.sqlite.bundled)
             implementation(libs.ktor.client.darwin)
         }
 
@@ -62,6 +66,7 @@ kotlin {
             implementation(compose.desktop.currentOs)
 
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.androidx.sqlite.bundled)
         }
 
         val desktopTest by getting
@@ -112,6 +117,7 @@ kotlin {
             implementation(libs.voyager.screenModel)
             implementation(libs.voyager.transitions)
             implementation(libs.voyager.koin)
+            implementation(libs.androidx.room.runtime)
         }
 
         commonTest.dependencies {
@@ -121,6 +127,18 @@ kotlin {
             implementation(libs.multiplatform.settings.test)
         }
     }
+}
+
+dependencies {
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspDesktop", libs.androidx.room.compiler)
+    add("kspIosX64", libs.androidx.room.compiler)
+    add("kspIosArm64", libs.androidx.room.compiler)
+    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 android {
