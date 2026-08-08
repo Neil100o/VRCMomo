@@ -1,6 +1,9 @@
 package io.github.vrcmteam.vrcm.storage
 
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityCache
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -36,4 +39,16 @@ class RoomFriendActivityMirror internal constructor(
             json.decodeFromString(FriendActivityCache.serializer(), payload)
         }
     }.getOrNull()
+
+    /** Used only by the existing synchronous account activation and delete paths. */
+    fun loadBlocking(ownerUserId: String): FriendActivityCache? =
+        runBlocking(Dispatchers.IO) { load(ownerUserId) }
+
+    fun deleteBlocking(ownerUserId: String) {
+        runBlocking(Dispatchers.IO) { runCatching { dao.delete(ownerUserId) } }
+    }
+
+    fun deleteAllBlocking() {
+        runBlocking(Dispatchers.IO) { runCatching { dao.deleteAll() } }
+    }
 }

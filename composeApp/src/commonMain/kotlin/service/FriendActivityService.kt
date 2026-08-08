@@ -64,11 +64,13 @@ class FriendActivityService(
         if (activeAccountUserId == userId) return@synchronized
         persistLocked()
         activeAccountUserId = userId
-        val cache = cacheDao.load(userId)
+        // Prefer the proven JSON archive; SQLite is a recovery fallback during the staged migration.
+        val cache = cacheDao.load(userId) ?: sqliteMirror?.loadBlocking(userId)
         tracker = FriendActivityTracker(cache?.statsByFriendId.orEmpty(), cache?.activityEvents.orEmpty())
         pruneEventsLocked()
         importedVrcxEventKeys = cache?.importedVrcxEventKeys.orEmpty()
         importedVrcmomoEventKeys = cache?.importedVrcmomoEventKeys.orEmpty()
+        cache?.let { loaded -> serviceScope.launch { sqliteMirror?.mirror(userId, loaded) } }
         publishLocked(save = false)
     }
 

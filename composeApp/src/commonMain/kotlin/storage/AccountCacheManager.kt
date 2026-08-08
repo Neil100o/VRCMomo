@@ -12,6 +12,7 @@ class AccountCacheManager(
     private val friendListCacheDao: FriendListCacheDao,
     private val userProfileCacheDao: UserProfileCacheDao,
     private val friendActivityCacheDao: FriendActivityCacheDao,
+    private val friendActivitySqliteMirror: RoomFriendActivityMirror? = null,
 ) {
     private val lock = Any()
     private var globalGeneration = 0L
@@ -42,6 +43,7 @@ class AccountCacheManager(
         accountGenerations[userId] = (accountGenerations[userId] ?: 0L) + 1L
         friendListCacheDao.clear(userId)
         friendActivityCacheDao.clear(userId)
+        friendActivitySqliteMirror?.deleteBlocking(userId)
         userProfileCacheDao.clearOwner(userId)
     }
 
@@ -50,6 +52,7 @@ class AccountCacheManager(
         accountGenerations.clear()
         friendListCacheDao.clearAll()
         friendActivityCacheDao.clearAll()
+        friendActivitySqliteMirror?.deleteAllBlocking()
         userProfileCacheDao.clearAll()
     }
 }
