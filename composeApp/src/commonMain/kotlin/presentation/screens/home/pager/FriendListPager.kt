@@ -8,6 +8,8 @@ import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -24,6 +26,7 @@ import io.github.vrcmteam.vrcm.presentation.compoments.SearchTabType
 import io.github.vrcmteam.vrcm.presentation.compoments.StandardSearchList
 import io.github.vrcmteam.vrcm.presentation.extensions.currentNavigator
 import io.github.vrcmteam.vrcm.presentation.extensions.simpleClickable
+import io.github.vrcmteam.vrcm.presentation.screens.home.FriendActivityOverviewScreen
 import io.github.vrcmteam.vrcm.presentation.screens.home.compoments.GroupOptionsUI
 import io.github.vrcmteam.vrcm.presentation.screens.user.FriendNetworkScreen
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
@@ -94,7 +97,7 @@ object FriendListPager : Pager {
             doRefresh = friendListPagerModel::refreshCurrentTabCacheData,
             headerContent = {
                 if (selectedTabIndex == SearchTabType.USER.index) {
-                    RelationshipHubCard()
+                    FriendToolsCards()
                 }
             },
             userList = filteredFriends,
@@ -227,18 +230,43 @@ private fun FriendSortModeRow(
 }
 
 @Composable
-private fun RelationshipHubCard() {
+private fun FriendToolsCards() {
     val navigator = currentNavigator
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        FriendToolCard(
+            title = strings.relationshipHubTitle,
+            description = strings.relationshipHubDescription,
+            action = strings.relationshipHubAction,
+            icon = rememberVectorPainter(AppIcons.Groups),
+            onClick = {
+                if (navigator.size <= 1) navigator.push(FriendNetworkScreen)
+            },
+        )
+        FriendToolCard(
+            title = strings.friendActivityLogTitle,
+            description = strings.friendActivityLogDescription,
+            action = strings.friendActivityLogOpen,
+            icon = rememberVectorPainter(Icons.Filled.History),
+            onClick = {
+                if (navigator.size <= 1) navigator.push(FriendActivityOverviewScreen)
+            },
+        )
+    }
+}
 
+@Composable
+private fun FriendToolCard(
+    title: String,
+    description: String,
+    action: String,
+    icon: Painter,
+    onClick: () -> Unit,
+) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-            .simpleClickable {
-                if (navigator.size <= 1) {
-                    navigator.push(FriendNetworkScreen)
-                }
-            },
+            .padding(horizontal = 16.dp)
+            .simpleClickable(onClick = onClick),
         shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.secondaryContainer,
         contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
@@ -257,26 +285,24 @@ private fun RelationshipHubCard() {
             ) {
                 Icon(
                     modifier = Modifier.padding(9.dp),
-                    painter = rememberVectorPainter(AppIcons.Groups),
+                    painter = icon,
                     contentDescription = null,
                 )
             }
             Column(modifier = Modifier.weight(1f)) {
+                Text(text = title, style = MaterialTheme.typography.titleSmall)
                 Text(
-                    text = strings.relationshipHubTitle,
-                    style = MaterialTheme.typography.titleSmall,
-                )
-                Text(
-                    text = strings.relationshipHubDescription,
+                    text = description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.78f),
                 )
             }
             Text(
-                text = strings.relationshipHubAction,
+                text = action,
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
             )
         }
     }
 }
+
