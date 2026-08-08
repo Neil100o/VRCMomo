@@ -1,6 +1,7 @@
 package io.github.vrcmteam.vrcm.storage
 
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityCache
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.runBlocking
@@ -18,6 +19,7 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 class RoomFriendActivityMirror internal constructor(
     private val dao: FriendActivitySnapshotDao,
+    private val indexDao: FriendActivityIndexDao,
 ) {
     private val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 
@@ -31,6 +33,29 @@ class RoomFriendActivityMirror internal constructor(
                     updatedAtMillis = Clock.System.now().toEpochMilliseconds(),
                 ),
             )
+            indexDao.deleteSummaries(ownerUserId)
+            indexDao.deleteEvents(ownerUserId)
+            indexDao.upsertSummaries(cache.statsByFriendId.values.map { stats ->
+                FriendActivitySummaryEntity(
+                    ownerUserId = ownerUserId,
+                    friendUserId = stats.userId,
+                    lastSeenTogetherAtMillis = stats.lastSeenTogetherAtMillis,
+                    meetingCount = stats.meetingCount,
+                    togetherDurationMillis = stats.togetherDurationMillis,
+                    lastOnlineAtMillis = stats.lastOnlineAtMillis,
+                    lastOfflineAtMillis = stats.lastOfflineAtMillis,
+                    lastActivityAtMillis = stats.lastActivityAtMillis,
+                )
+            })
+            indexDao.insertEvents(cache.activityEvents.map { event ->
+                FriendActivityEventEntity(
+                    ownerUserId = ownerUserId,
+                    friendUserId = event.userId,
+                    occurredAtMillis = event.occurredAtMillis,
+                    eventType = event.type.name,
+                    payloadJson = json.encodeToString(FriendActivityEvent.serializer(), event),
+                )
+            })
         }
     }
 
@@ -45,10 +70,10 @@ class RoomFriendActivityMirror internal constructor(
         runBlocking(Dispatchers.IO) { load(ownerUserId) }
 
     fun deleteBlocking(ownerUserId: String) {
-        runBlocking(Dispatchers.IO) { runCatching { dao.delete(ownerUserId) } }
+        runBlocking(Dispatchers.IO) { runCatching { dao.delete(ownerUserId); indexDao.deleteSummaries(ownerUserId); indexDao.deleteEvents(ownerUserId) } }
     }
 
     fun deleteAllBlocking() {
-        runBlocking(Dispatchers.IO) { runCatching { dao.deleteAll() } }
+        runBlocking(Dispatchers.IO) { runCatching { dao.deleteAll(); indexDao.deleteAllSummaries(); indexDao.deleteAllEvents() } }
     }
 }

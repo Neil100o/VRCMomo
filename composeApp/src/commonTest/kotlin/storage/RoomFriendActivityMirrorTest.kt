@@ -14,7 +14,8 @@ class RoomFriendActivityMirrorTest {
     @Test
     fun `mirrored snapshot preserves momo specific activity fields`() = runTest {
         val dao = FakeSnapshotDao()
-        val mirror = RoomFriendActivityMirror(dao)
+        val indexDao = FakeIndexDao()
+        val mirror = RoomFriendActivityMirror(dao, indexDao)
         val source = FriendActivityCache(
             statsByFriendId = mapOf(
                 "usr_friend" to FriendActivityStats(
@@ -41,6 +42,37 @@ class RoomFriendActivityMirrorTest {
         val restored = assertNotNull(mirror.load("usr_owner"))
 
         assertEquals(source, restored)
+        assertEquals(1, indexDao.events.size)
+        assertEquals(4, indexDao.summaries.getValue("usr_friend").meetingCount)
+    }
+
+    private class FakeIndexDao : FriendActivityIndexDao {
+        val summaries = mutableMapOf<String, FriendActivitySummaryEntity>()
+        val events = mutableListOf<FriendActivityEventEntity>()
+
+        override suspend fun deleteSummaries(ownerUserId: String) {
+            summaries.entries.removeAll { it.value.ownerUserId == ownerUserId }
+        }
+
+        override suspend fun deleteEvents(ownerUserId: String) {
+            events.removeAll { it.ownerUserId == ownerUserId }
+        }
+
+        override suspend fun deleteAllSummaries() {
+            summaries.clear()
+        }
+
+        override suspend fun deleteAllEvents() {
+            events.clear()
+        }
+
+        override suspend fun insertEvents(events: List<FriendActivityEventEntity>) {
+            this.events += events
+        }
+
+        override suspend fun upsertSummaries(summaries: List<FriendActivitySummaryEntity>) {
+            summaries.forEach { this.summaries[it.friendUserId] = it }
+        }
     }
 
     private class FakeSnapshotDao : FriendActivitySnapshotDao {

@@ -39,6 +39,7 @@ internal val storageModule: Module = module {
     // Kept separate from the live JSON DAO during the staged migration.
     single { buildVrcmomoActivityDatabase(platformVrcmomoActivityDatabaseBuilder(get<AppPlatform>())) }
     single { get<io.github.vrcmteam.vrcm.storage.VrcmomoActivityDatabase>().friendActivitySnapshotDao() }
+    single { get<io.github.vrcmteam.vrcm.storage.VrcmomoActivityDatabase>().friendActivityIndexDao() }
     singleOf(::RoomFriendActivityMirror)
     singleOf(::AccountCacheManager)
     singleOf(::PersistentCookiesStorage) bind CookiesStorage::class

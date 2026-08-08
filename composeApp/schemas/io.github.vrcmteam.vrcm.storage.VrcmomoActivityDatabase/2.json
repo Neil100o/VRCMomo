@@ -1,0 +1,177 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "64fbe8c78eddc423111148849e053441",
+    "entities": [
+      {
+        "tableName": "momo_friend_activity_snapshots",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ownerUserId` TEXT NOT NULL, `schemaVersion` INTEGER NOT NULL, `payloadJson` TEXT NOT NULL, `updatedAtMillis` INTEGER NOT NULL, PRIMARY KEY(`ownerUserId`))",
+        "fields": [
+          {
+            "fieldPath": "ownerUserId",
+            "columnName": "ownerUserId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "schemaVersion",
+            "columnName": "schemaVersion",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadJson",
+            "columnName": "payloadJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAtMillis",
+            "columnName": "updatedAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "ownerUserId"
+          ]
+        }
+      },
+      {
+        "tableName": "momo_friend_activity_summaries",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`ownerUserId` TEXT NOT NULL, `friendUserId` TEXT NOT NULL, `lastSeenTogetherAtMillis` INTEGER, `meetingCount` INTEGER NOT NULL, `togetherDurationMillis` INTEGER NOT NULL, `lastOnlineAtMillis` INTEGER, `lastOfflineAtMillis` INTEGER, `lastActivityAtMillis` INTEGER, PRIMARY KEY(`ownerUserId`, `friendUserId`))",
+        "fields": [
+          {
+            "fieldPath": "ownerUserId",
+            "columnName": "ownerUserId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "friendUserId",
+            "columnName": "friendUserId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSeenTogetherAtMillis",
+            "columnName": "lastSeenTogetherAtMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "meetingCount",
+            "columnName": "meetingCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "togetherDurationMillis",
+            "columnName": "togetherDurationMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastOnlineAtMillis",
+            "columnName": "lastOnlineAtMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastOfflineAtMillis",
+            "columnName": "lastOfflineAtMillis",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "lastActivityAtMillis",
+            "columnName": "lastActivityAtMillis",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "ownerUserId",
+            "friendUserId"
+          ]
+        }
+      },
+      {
+        "tableName": "momo_friend_activity_events",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `ownerUserId` TEXT NOT NULL, `friendUserId` TEXT NOT NULL, `occurredAtMillis` INTEGER NOT NULL, `eventType` TEXT NOT NULL, `payloadJson` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ownerUserId",
+            "columnName": "ownerUserId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "friendUserId",
+            "columnName": "friendUserId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "occurredAtMillis",
+            "columnName": "occurredAtMillis",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "eventType",
+            "columnName": "eventType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payloadJson",
+            "columnName": "payloadJson",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_momo_friend_activity_events_ownerUserId_occurredAtMillis",
+            "unique": false,
+            "columnNames": [
+              "ownerUserId",
+              "occurredAtMillis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_momo_friend_activity_events_ownerUserId_occurredAtMillis` ON `${TABLE_NAME}` (`ownerUserId`, `occurredAtMillis`)"
+          },
+          {
+            "name": "index_momo_friend_activity_events_ownerUserId_friendUserId_occurredAtMillis",
+            "unique": false,
+            "columnNames": [
+              "ownerUserId",
+              "friendUserId",
+              "occurredAtMillis"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_momo_friend_activity_events_ownerUserId_friendUserId_occurredAtMillis` ON `${TABLE_NAME}` (`ownerUserId`, `friendUserId`, `occurredAtMillis`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '64fbe8c78eddc423111148849e053441')"
+    ]
+  }
+}
