@@ -69,6 +69,7 @@ fun SettingsBottomSheet(
     isVisible: Boolean,
     onDismissRequest: () -> Unit,
 ) {
+    var destination by remember { mutableStateOf<SettingsDestination?>(null) }
     ABottomSheet(
         isVisible = isVisible,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
@@ -82,32 +83,118 @@ fun SettingsBottomSheet(
                 .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            SettingsBlockSurface {
-                AppearanceBlock()
+            if (destination == null) {
+                SettingsOverview(onOpen = { destination = it })
+                LogoutButton(onDismissRequest)
+            } else {
+                SettingsDetail(
+                    destination = requireNotNull(destination),
+                    onBack = { destination = null },
+                )
             }
-            SettingsBlockSurface {
-                SystemNotificationsBlock()
-            }
-            SettingsBlockSurface {
-                BackgroundMonitoringBlock()
-            }
-            SettingsBlockSurface {
-                VrcxLanSyncBlock()
-            }
-            SettingsBlockSurface {
-                VrcxActivityImportBlock()
-            }
-            SettingsBlockSurface {
-                FriendActivityLogBlock()
-            }
-            SettingsBlockSurface {
-                AboutBlock()
-            }
-            LogoutButton(onDismissRequest)
         }
     }
 }
 
+private enum class SettingsDestination {
+    Appearance,
+    Notifications,
+    BackgroundAndSync,
+    ActivityData,
+    About,
+}
+
+@Composable
+private fun SettingsOverview(
+    onOpen: (SettingsDestination) -> Unit,
+) {
+    val currentSettings by LocalSettingsState.current
+    val localeStrings = strings
+    SettingsBlockSurface {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            SettingsSectionTitle(localeStrings.settingsOverviewTitle)
+            SettingsNavigationRow(
+                title = localeStrings.settingsCategoryAppearance,
+                summary = listOf(currentSettings.languageTag.displayName, currentSettings.themeColor.name)
+                    .filter(String::isNotBlank).joinToString(" · "),
+                onClick = { onOpen(SettingsDestination.Appearance) },
+            )
+            SettingsDivider()
+            SettingsNavigationRow(
+                title = localeStrings.settingsCategoryNotifications,
+                summary = if (currentSettings.isSystemNotificationsEnabled) localeStrings.settingsEnabled else localeStrings.settingsDisabled,
+                onClick = { onOpen(SettingsDestination.Notifications) },
+            )
+            SettingsDivider()
+            SettingsNavigationRow(
+                title = localeStrings.settingsCategoryBackground,
+                summary = if (currentSettings.isBackgroundFriendMonitoringEnabled) localeStrings.settingsBackgroundEnabled else localeStrings.settingsBackgroundDisabled,
+                onClick = { onOpen(SettingsDestination.BackgroundAndSync) },
+            )
+            SettingsDivider()
+            SettingsNavigationRow(
+                title = localeStrings.settingsCategoryData,
+                summary = currentSettings.activityLogRetentionDays?.let { "$it ${localeStrings.friendActivityLogRetentionDaysSuffix}" }
+                    ?: localeStrings.friendActivityLogKeepForever,
+                onClick = { onOpen(SettingsDestination.ActivityData) },
+            )
+            SettingsDivider()
+            SettingsNavigationRow(
+                title = localeStrings.settingsCategoryAbout,
+                summary = AppConst.APP_VERSION,
+                onClick = { onOpen(SettingsDestination.About) },
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsDetail(
+    destination: SettingsDestination,
+    onBack: () -> Unit,
+) {
+    val localeStrings = strings
+    TextButton(onClick = onBack, contentPadding = PaddingValues(horizontal = 4.dp)) {
+        Text("‹ ${localeStrings.settingsBack}")
+    }
+    SettingsBlockSurface {
+        when (destination) {
+            SettingsDestination.Appearance -> AppearanceBlock()
+            SettingsDestination.Notifications -> SystemNotificationsBlock()
+            SettingsDestination.BackgroundAndSync -> Column {
+                BackgroundMonitoringBlock()
+                SettingsDivider()
+                VrcxLanSyncBlock()
+                SettingsDivider()
+                VrcxActivityImportBlock()
+            }
+            SettingsDestination.ActivityData -> FriendActivityLogBlock()
+            SettingsDestination.About -> AboutBlock()
+        }
+    }
+}
+
+@Composable
+private fun SettingsNavigationRow(
+    title: String,
+    summary: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Text(summary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Text("›", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
 @Composable
 private fun SystemNotificationsBlock() {
     var currentSettings by LocalSettingsState.current
@@ -639,7 +726,7 @@ private fun AppearanceBlock() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        SettingsSectionTitle(AppConst.APP_NAME)
+        SettingsSectionTitle(strings.settingsCategoryAppearance)
         SettingsItem(strings.stettingLanguage) {
             LanguageTag.entries.forEach { language ->
                 SettingsChoiceButton(

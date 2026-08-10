@@ -791,9 +791,6 @@ private fun ColumnScope.ProfileContent(
     UserPronouns(pronouns = currentUser.pronouns)
     // status
     UserStatusRow(canCopy = true, user = currentUser,)
-    if (currentUser.isFriend && !currentUser.isSelf) {
-        RelationshipStatsCard(friendActivityStats, friendActivityEvents)
-    }
     // LanguagesRow && LinksRow
     LangAndLinkRow(currentUser)
 
@@ -842,6 +839,10 @@ private fun ColumnScope.ProfileContent(
         userProfileVO = currentUser
     )
 
+    // Relationship history stays directly below the introduction, before groups and collections.
+    if (currentUser.isFriend && !currentUser.isSelf) {
+        RelationshipStatsCard(friendActivityStats, friendActivityEvents)
+    }
     if (!currentUser.isSelf) {
         UserGroupsSection(
             groups = mutualGroups,
