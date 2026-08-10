@@ -309,6 +309,7 @@ internal object LocaleStringsZhHans : LocaleStrings() {
     override val friendActivityStatusTimeline = "社交状态时间分布"
     override val friendActivityHeatmap = "活动时间图"
     override val friendActivityHeatmapDescription = "最近 30 天；颜色越深代表该时段记录到的活动事件越多。"
+    override val friendActivityHeatmapWeekdays = listOf("一", "二", "三", "四", "五", "六", "日")
     override val friendActivityNotEnoughData = "该好友暂时没有足够的已记录活动数据。"
     override val friendActivityLogRetention = "自动清理"
     override val friendActivityLogKeepForever = "永久保留"

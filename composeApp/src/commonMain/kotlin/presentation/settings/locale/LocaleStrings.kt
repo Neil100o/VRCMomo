@@ -323,6 +323,7 @@ sealed class LocaleStrings {
     open val friendActivityStatusTimeline: String = "Status time distribution"
     open val friendActivityHeatmap: String = "Activity time map"
     open val friendActivityHeatmapDescription: String = "Last 30 days; darker cells mean more recorded activity events."
+    open val friendActivityHeatmapWeekdays: List<String> = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
     open val friendActivityNotEnoughData: String = "Not enough recorded activity for this friend yet."
     open val friendActivityLogRetention: String = "Automatic cleanup"
     open val friendActivityLogKeepForever: String = "Keep forever"

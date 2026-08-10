@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
@@ -580,19 +581,43 @@ private fun FriendActivityHeatmap(
         style = MaterialTheme.typography.bodySmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
     )
+
     if (maximum == 0) return
-    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Spacer(Modifier.width(30.dp))
+            repeat(HEATMAP_HOURS) { hour ->
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                    if (hour % HEATMAP_HOUR_LABEL_INTERVAL == 0) {
+                        Text(
+                            text = "%02d".format(hour),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                        )
+                    }
+                }
+            }
+        }
         repeat(HEATMAP_DAYS) { day ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(2.dp),
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+                Text(
+                    text = localeStrings.friendActivityHeatmapWeekdays.getOrElse(day) { "" },
+                    modifier = Modifier.width(28.dp),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.End,
+                )
                 repeat(HEATMAP_HOURS) { hour ->
                     val count = cells[day * HEATMAP_HOURS + hour]
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(10.dp)
+                            .height(12.dp)
                             .clip(MaterialTheme.shapes.extraSmall)
                             .background(
                                 if (count == 0) MaterialTheme.colorScheme.surfaceVariant
@@ -668,6 +693,7 @@ private fun statusColor(status: String) = when (status.lowercase()) {
 
 private const val HEATMAP_DAYS = 7
 private const val HEATMAP_HOURS = 24
+private const val HEATMAP_HOUR_LABEL_INTERVAL = 6
 private const val ACTIVITY_CHART_RANGE_MILLIS = 30L * 24L * 60L * 60L * 1_000L
 private const val ACTIVITY_CHART_REFRESH_WINDOW = 5L * 60L * 1_000L
 
