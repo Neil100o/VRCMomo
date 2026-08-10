@@ -18,6 +18,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.context.GlobalContext
@@ -75,27 +77,27 @@ class FriendActivityForegroundService : Service() {
         val lanBridgeClient = koin.get<LanActivityBridgeClient>()
         val activityService = koin.get<FriendActivityService>()
         serviceScope.launch {
-            while (isActive) {
-                delay(LAN_SYNC_INTERVAL_MILLIS)
-                if (!settingsDao.settings.isLanSyncAutoEnabled || SharedFlowCentre.currentSession.value == null) continue
-                runCatching {
-                    val pairing = LanBridgePairing.fromInput(
-                        settingsDao.lanBridgeUrl.orEmpty(),
-                        settingsDao.lanBridgeToken.orEmpty(),
-                    )
-                    val preview = activityService.previewVrcxActivityImport(lanBridgeClient.fetchVrcxActivity(pairing))
-                    activityService.applyVrcxActivityImport(preview)
-                    lanBridgeClient.uploadVrcmomoActivity(pairing, activityService.exportLanActivitySync())
-                }.onSuccess {
-                    settingsDao.lanSyncStatus = LanSyncStatus(
-                        lastSuccessAtMillis = Clock.System.now().toEpochMilliseconds(),
-                        lastDirection = "automatic",
-                    )
-                }.onFailure { error ->
-                    settingsDao.lanSyncStatus = settingsDao.lanSyncStatus.copy(
-                        lastError = error.message?.take(MAX_SYNC_ERROR_LENGTH) ?: "自动同步失败",
-                    )
-                }
+            // A launch-time sync is enough for cross-device history and avoids waking the
+            // radio every few minutes while friend monitoring is otherwise idle.
+            SharedFlowCentre.currentSession.filterNotNull().first()
+            if (!settingsDao.settings.isLanSyncAutoEnabled) return@launch
+            runCatching {
+                val pairing = LanBridgePairing.fromInput(
+                    settingsDao.lanBridgeUrl.orEmpty(),
+                    settingsDao.lanBridgeToken.orEmpty(),
+                )
+                val preview = activityService.previewVrcxActivityImport(lanBridgeClient.fetchVrcxActivity(pairing))
+                activityService.applyVrcxActivityImport(preview)
+                lanBridgeClient.uploadVrcmomoActivity(pairing, activityService.exportLanActivitySync())
+            }.onSuccess {
+                settingsDao.lanSyncStatus = LanSyncStatus(
+                    lastSuccessAtMillis = Clock.System.now().toEpochMilliseconds(),
+                    lastDirection = "automatic",
+                )
+            }.onFailure { error ->
+                settingsDao.lanSyncStatus = settingsDao.lanSyncStatus.copy(
+                    lastError = error.message?.take(MAX_SYNC_ERROR_LENGTH) ?: "自动同步失败",
+                )
             }
         }
         serviceScope.launch {
@@ -139,7 +141,6 @@ class FriendActivityForegroundService : Service() {
         const val NOTIFICATION_ID = 0x4D4F4D4F
         const val AUTH_RETRY_DELAY_MILLIS = 30_000L
         const val FRIEND_REFRESH_INTERVAL_MILLIS = 120_000L
-        const val LAN_SYNC_INTERVAL_MILLIS = 15 * 60_000L
         const val MAX_SYNC_ERROR_LENGTH = 160
     }
 }

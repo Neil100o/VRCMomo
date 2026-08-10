@@ -38,5 +38,7 @@
 
 Discovery returns a short-lived pairing URL from the locally running bridge. If exactly one bridge is found, Android pairs and pulls the import preview immediately; if multiple are found, each discovered bridge has its own connect action. QR scanning follows the same pairing path. Do not add credential or VRChat-cookie transfer to this flow.
 
+When `isLanSyncAutoEnabled` is on, Android performs one pull-and-upload cycle after the foreground monitoring service receives an authenticated session. It does not run on a repeating timer; the implementation is in `src/androidMain/kotlin/service/FriendActivityForegroundService.kt`.
+
 ## Attribution
 The original VRCM application structure and VRCM-authored features remain credited to the VRCM team. VRCMomo-specific UI, branding, friend activity persistence, notification/background work, and avatar editing are fork modifications.
