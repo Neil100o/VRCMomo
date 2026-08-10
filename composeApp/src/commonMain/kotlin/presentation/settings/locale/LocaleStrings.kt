@@ -337,6 +337,11 @@ sealed class LocaleStrings {
     open val vrcxLanUploadNow: String = "Send phone history to PC"
     open val vrcxLanUploadSuccess: String = "Phone activity history was sent to the paired PC."
     open val vrcxLanUploadFailed: String = "Could not send phone activity history to the paired PC."
+    open val vrcxLanSyncNever: String = "No successful LAN sync yet"
+    open val vrcxLanSyncLastSuccess: String = "Last sync: %s · %s"
+    open val vrcxLanSyncLastError: String = "Last issue: %s"
+    open val vrcxLanSyncDirectionDownload: String = "PC → phone"
+    open val vrcxLanSyncDirectionUpload: String = "phone → PC"
 
     // Optional Android foreground monitoring. It is never enabled by default.
     open val backgroundFriendMonitoringTitle: String = "Background friend monitoring"

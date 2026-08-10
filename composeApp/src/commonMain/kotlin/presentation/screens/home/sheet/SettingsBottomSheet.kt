@@ -56,6 +56,9 @@ import presentation.screens.auth.data.VersionVo
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
+import io.github.vrcmteam.vrcm.storage.data.LanSyncStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -317,6 +320,7 @@ private fun String.worldIdOrNull(): String? =
 private val DiffAddedGreen = Color(0xFF43A047)
 private val DiffRemovedRed = Color(0xFFE53935)
 
+@OptIn(ExperimentalTime::class)
 @Composable
 private fun VrcxLanSyncBlock() {
     val activityService = koinInject<FriendActivityService>()
@@ -327,6 +331,7 @@ private fun VrcxLanSyncBlock() {
     var bridgeUrl by remember { mutableStateOf(settingsDao.lanBridgeUrl.orEmpty()) }
     var bridgeToken by remember { mutableStateOf(settingsDao.lanBridgeToken.orEmpty()) }
     var isSyncing by remember { mutableStateOf(false) }
+    var syncStatus by remember { mutableStateOf(settingsDao.lanSyncStatus) }
     var preview by remember { mutableStateOf<VrcxActivityImportPreview?>(null) }
 
     Column(
@@ -339,6 +344,23 @@ private fun VrcxLanSyncBlock() {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        Text(
+            syncStatus.lastSuccessAtMillis?.let {
+                localeStrings.vrcxLanSyncLastSuccess.format(
+                    Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).ignoredFormat,
+                    syncStatus.lastDirection.orEmpty(),
+                )
+            } ?: localeStrings.vrcxLanSyncNever,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        syncStatus.lastError?.let { error ->
+            Text(
+                localeStrings.vrcxLanSyncLastError.format(error),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
         OutlinedTextField(
             value = bridgeUrl,
             onValueChange = { bridgeUrl = it },
@@ -365,7 +387,12 @@ private fun VrcxLanSyncBlock() {
                         val raw = bridgeClient.fetchVrcxActivity(pairing)
                         activityService.previewVrcxActivityImport(raw)
                     }.onSuccess { preview = it }
-                        .onFailure { SharedFlowCentre.toastText.emit(ToastText.Error(localeStrings.vrcxLanSyncFailed)) }
+                        .onFailure {
+                            val error = localeStrings.vrcxLanSyncFailed
+                            syncStatus = syncStatus.copy(lastError = error)
+                            settingsDao.lanSyncStatus = syncStatus
+                            SharedFlowCentre.toastText.emit(ToastText.Error(error))
+                        }
                     isSyncing = false
                 }
             },
@@ -383,9 +410,17 @@ private fun VrcxLanSyncBlock() {
                         settingsDao.lanBridgeToken = pairing.token
                         bridgeClient.uploadVrcmomoActivity(pairing, activityService.exportLanActivitySync())
                     }.onSuccess {
+                        syncStatus = LanSyncStatus(
+                            lastSuccessAtMillis = Clock.System.now().toEpochMilliseconds(),
+                            lastDirection = localeStrings.vrcxLanSyncDirectionUpload,
+                        )
+                        settingsDao.lanSyncStatus = syncStatus
                         SharedFlowCentre.toastText.emit(ToastText.Info(localeStrings.vrcxLanUploadSuccess))
                     }.onFailure {
-                        SharedFlowCentre.toastText.emit(ToastText.Error(localeStrings.vrcxLanUploadFailed))
+                        val error = localeStrings.vrcxLanUploadFailed
+                        syncStatus = syncStatus.copy(lastError = error)
+                        settingsDao.lanSyncStatus = syncStatus
+                        SharedFlowCentre.toastText.emit(ToastText.Error(error))
                     }
                     isSyncing = false
                 }
@@ -410,6 +445,11 @@ private fun VrcxLanSyncBlock() {
             confirmButton = {
                 TextButton(onClick = {
                     activityService.applyVrcxActivityImport(importPreview)
+                    syncStatus = LanSyncStatus(
+                        lastSuccessAtMillis = Clock.System.now().toEpochMilliseconds(),
+                        lastDirection = localeStrings.vrcxLanSyncDirectionDownload,
+                    )
+                    settingsDao.lanSyncStatus = syncStatus
                     preview = null
                     scope.launch { SharedFlowCentre.toastText.emit(ToastText.Info(localeStrings.vrcxActivityImportSuccess)) }
                 }) { Text(localeStrings.vrcxActivityImportConfirmTitle) }

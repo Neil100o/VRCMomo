@@ -71,6 +71,9 @@ object DaoKeys{
         const val ACTIVITY_LOG_RETENTION_DAYS_KEY = "${PREFIX}.activityLogRetentionDays"
         const val LAN_BRIDGE_URL_KEY = "${PREFIX}.lanBridgeUrl"
         const val LAN_BRIDGE_TOKEN_KEY = "${PREFIX}.lanBridgeToken"
+        const val LAN_SYNC_LAST_SUCCESS_AT_KEY = "${PREFIX}.lanSyncLastSuccessAt"
+        const val LAN_SYNC_LAST_DIRECTION_KEY = "${PREFIX}.lanSyncLastDirection"
+        const val LAN_SYNC_LAST_ERROR_KEY = "${PREFIX}.lanSyncLastError"
 
     }
 
