@@ -354,7 +354,7 @@ private fun VrcxLanSyncBlock() {
             modifier = Modifier.fillMaxWidth(),
         )
         Button(
-            enabled = !isSyncing && bridgeUrl.isNotBlank() && bridgeToken.isNotBlank(),
+            enabled = !isSyncing && bridgeUrl.isNotBlank() && (bridgeToken.isNotBlank() || bridgeUrl.contains("token=")),
             onClick = {
                 scope.launch {
                     isSyncing = true
