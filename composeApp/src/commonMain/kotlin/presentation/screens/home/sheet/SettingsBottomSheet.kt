@@ -39,6 +39,8 @@ import io.github.vrcmteam.vrcm.service.AuthService
 import io.github.vrcmteam.vrcm.service.FriendActivityService
 import io.github.vrcmteam.vrcm.service.LanActivityBridgeClient
 import io.github.vrcmteam.vrcm.service.LanBridgePairing
+import io.github.vrcmteam.vrcm.service.LanBridgeCandidate
+import io.github.vrcmteam.vrcm.service.discoverLanBridges
 import io.github.vrcmteam.vrcm.service.VersionService
 import io.github.vrcmteam.vrcm.service.VrcxActivityImportPreview
 import io.github.vrcmteam.vrcm.network.api.worlds.WorldsApi
@@ -332,6 +334,8 @@ private fun VrcxLanSyncBlock() {
     var bridgeUrl by remember { mutableStateOf(settingsDao.lanBridgeUrl.orEmpty()) }
     var bridgeToken by remember { mutableStateOf(settingsDao.lanBridgeToken.orEmpty()) }
     var isSyncing by remember { mutableStateOf(false) }
+    var isDiscovering by remember { mutableStateOf(false) }
+    var discoveredBridges by remember { mutableStateOf<List<LanBridgeCandidate>>(emptyList()) }
     var syncStatus by remember { mutableStateOf(settingsDao.lanSyncStatus) }
     var preview by remember { mutableStateOf<VrcxActivityImportPreview?>(null) }
 
@@ -388,6 +392,28 @@ private fun VrcxLanSyncBlock() {
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        OutlinedButton(
+            enabled = !isDiscovering,
+            onClick = {
+                scope.launch {
+                    isDiscovering = true
+                    discoveredBridges = discoverLanBridges()
+                    isDiscovering = false
+                }
+            },
+        ) { Text(if (isDiscovering) localeStrings.vrcxLanDiscovering else localeStrings.vrcxLanDiscover) }
+        discoveredBridges.forEach { candidate ->
+            TextButton(onClick = { bridgeUrl = candidate.baseUrl }) {
+                Text(localeStrings.vrcxLanDiscoveredAddress.format(candidate.baseUrl))
+            }
+        }
+        if (!isDiscovering && discoveredBridges.isEmpty()) {
+            Text(
+                localeStrings.vrcxLanDiscoveryHint,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         OutlinedTextField(
             value = bridgeUrl,
             onValueChange = { bridgeUrl = it },

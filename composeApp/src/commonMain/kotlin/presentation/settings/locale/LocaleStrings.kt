@@ -345,6 +345,10 @@ sealed class LocaleStrings {
     open val vrcxLanSyncDirectionAutomatic: String = "automatic two-way"
     open val vrcxLanAutoSync: String = "Automatic LAN sync"
     open val vrcxLanAutoSyncDescription: String = "When Android background monitoring is active, sync at a low frequency while the paired PC is reachable."
+    open val vrcxLanDiscover: String = "Find nearby PC"
+    open val vrcxLanDiscovering: String = "Searching…"
+    open val vrcxLanDiscoveredAddress: String = "Use %s"
+    open val vrcxLanDiscoveryHint: String = "Keep the PC bridge open and connected to the same local network. Discovery never transfers the pairing token."
 
     // Optional Android foreground monitoring. It is never enabled by default.
     open val backgroundFriendMonitoringTitle: String = "Background friend monitoring"

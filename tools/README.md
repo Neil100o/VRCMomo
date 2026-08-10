@@ -35,10 +35,10 @@ Export-VRCXActivity.bat --db "D:\Backup\VRCX.sqlite3" --output "D:\Export\vrcmom
 `vrcmomo_lan_bridge.py` is the first local-network bridge for a computer running VRCX and a paired VRCMomo phone. It reads VRCX activity only through the existing exporter; it never modifies `VRCX.sqlite3`.
 
 ```text
-python vrcmomo_lan_bridge.py
+Start-VRCMomoLanBridge.bat
 ```
 
-It prints a pairing URL containing a temporary token. Keep the window open while syncing. The current foundation exposes the paired VRCX export endpoint and stores validated phone uploads in `vrcmomo-lan-inbox`; the VRCMomo in-app pairing and automatic sync UI are the next stage.
+It installs the small QR helper once if needed, then prints both a scanable terminal QR code and a pairing URL containing a temporary token. Keep the window open while syncing. The current foundation exposes the paired VRCX export endpoint and stores validated phone uploads in `vrcmomo-lan-inbox`; the VRCMomo in-app pairing and automatic sync UI are the next stage.
 
 For a non-default database:
 
