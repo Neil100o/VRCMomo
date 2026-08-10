@@ -99,12 +99,13 @@ class BridgeState:
 
 
 class DiscoveryResponder(threading.Thread):
-    """Answers LAN address discovery without ever exposing the pairing token."""
+    """Answers LAN discovery with the current short-lived pairing link."""
 
-    def __init__(self, bridge_port: int, discovery_port: int) -> None:
+    def __init__(self, bridge_port: int, discovery_port: int, token: str) -> None:
         super().__init__(name="vrcmomo-lan-discovery", daemon=True)
         self.bridge_port = bridge_port
         self.discovery_port = discovery_port
+        self.token = token
         self._socket: socket.socket | None = None
 
     def run(self) -> None:
@@ -123,6 +124,7 @@ class DiscoveryResponder(threading.Thread):
                     "service": "vrcmomo-lan-bridge",
                     "protocol": 1,
                     "port": self.bridge_port,
+                    "pairingUrl": f"http://{local_ip()}:{self.bridge_port}/v1/health?token={self.token}",
                 }).encode("utf-8")
                 udp.sendto(response, address)
 
@@ -211,7 +213,7 @@ def main() -> int:
     token = secrets.token_urlsafe(24)
     state = BridgeState(args.db.resolve(), args.account_prefix, args.inbox.resolve(), token)
     server = BridgeServer(("0.0.0.0", args.port), state)
-    discovery = None if args.no_discovery else DiscoveryResponder(args.port, args.discovery_port)
+    discovery = None if args.no_discovery else DiscoveryResponder(args.port, args.discovery_port, token)
     discovery and discovery.start()
     address = local_ip()
     print("VRCMomo LAN Bridge is running. Keep this window open while syncing.")
@@ -220,7 +222,7 @@ def main() -> int:
     print_pairing_qr(pairing_url)
     print("VRCX is read-only. Mobile uploads are stored in the local inbox, never written into VRCX.")
     if discovery:
-        print(f"LAN address discovery is active on UDP {args.discovery_port}; it never broadcasts the pairing token.")
+        print(f"LAN pairing discovery is active on UDP {args.discovery_port}.")
     try:
         server.serve_forever()
     except KeyboardInterrupt:

@@ -9,11 +9,13 @@ internal data class LanBridgeDiscoveryResponse(
     val service: String,
     val protocol: Int,
     val port: Int,
+    val pairingUrl: String? = null,
 )
 
 internal data class LanBridgeCandidate(
     val baseUrl: String,
+    val pairingUrl: String? = null,
 )
 
-/** Finds bridge addresses only. Pairing tokens are intentionally never broadcast over the LAN. */
+/** Finds local bridges and, when supported, returns their short-lived pairing link. */
 internal expect suspend fun discoverLanBridges(): List<LanBridgeCandidate>

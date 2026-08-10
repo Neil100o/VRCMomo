@@ -27,6 +27,8 @@ This is the short entry point for future maintenance. Read this file first, then
 | Boop | `network/api/users/UsersApi.kt` | `presentation/components/BoopSelector.kt` |
 | Avatar ownership / edit | `network/api/avatars/` | `presentation/screens/avatar/` |
 | VRCX migration | `tools/export_vrcx_activity.py` | `service/VrcxActivityImport.kt` |
+| LAN VRCX sync / pairing | `tools/vrcmomo_lan_bridge.py` | `service/LanActivityBridgeClient.kt`, `service/LanBridgeDiscovery.kt`, `presentation/screens/home/sheet/SettingsBottomSheet.kt` |
+| Android LAN discovery / QR scan | `src/androidMain/kotlin/service/LanBridgeDiscovery.android.kt` | `LanBridgeQrScanner.android.kt`, `AndroidManifest.xml` |
 | Persistent data migration | `storage/data/` | `storage/FriendActivityCacheDao.kt` |
 | README / contribution credit | `README_ZH.md` | `docs/DEVELOPMENT_MAP.md` |
 

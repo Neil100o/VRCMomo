@@ -347,8 +347,8 @@ sealed class LocaleStrings {
     open val vrcxLanAutoSyncDescription: String = "When Android background monitoring is active, sync at a low frequency while the paired PC is reachable."
     open val vrcxLanDiscover: String = "Find nearby PC"
     open val vrcxLanDiscovering: String = "Searching…"
-    open val vrcxLanDiscoveredAddress: String = "Use %s"
-    open val vrcxLanDiscoveryHint: String = "Keep the PC bridge open and connected to the same local network. Discovery never transfers the pairing token."
+    open val vrcxLanDiscoveredAddress: String = "Connect to %s"
+    open val vrcxLanDiscoveryHint: String = "Keep the PC bridge open and connected to the same local network."
     open val vrcxLanScanQr: String = "Scan pairing QR code"
     open val vrcxLanPaired: String = "Paired with %s"
 

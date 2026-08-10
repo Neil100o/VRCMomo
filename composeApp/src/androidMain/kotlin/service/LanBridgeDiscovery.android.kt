@@ -30,7 +30,10 @@ internal actual suspend fun discoverLanBridges(): List<LanBridgeCandidate> = wit
             val response = runCatching { discoveryJson.decodeFromString<LanBridgeDiscoveryResponse>(payload) }.getOrNull()
                 ?: continue
             if (response.service != "vrcmomo-lan-bridge" || response.protocol != 1 || response.port !in 1..65535) continue
-            candidates += LanBridgeCandidate("http://${reply.address.hostAddress}:${response.port}")
+            candidates += LanBridgeCandidate(
+                baseUrl = "http://${reply.address.hostAddress}:${response.port}",
+                pairingUrl = response.pairingUrl,
+            )
         }
     }
     candidates.toList()

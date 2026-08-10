@@ -25,5 +25,18 @@
 - Search integration: `presentation/screens/home/pager/SearchListPagerModel.kt`
 - VRCX bridge: `tools/export_vrcx_activity.py` (read-only SQLite export) and `service/VrcxActivityImport.kt` (Android merge). Bridge v2 carries presence, locations, social status, BIO diffs, avatar changes, friendship history and completed shared sessions. Credentials, cookies, notes and moderation data are excluded.
 
+## LAN VRCX sync
+- PC bridge launcher: `tools/Start-VRCMomoLanBridge.bat`
+- PC bridge server and UDP discovery responder: `tools/vrcmomo_lan_bridge.py`
+- Optional PC dependency list: `tools/requirements-lan-bridge.txt`
+- Shared pairing parser and HTTP client: `service/LanActivityBridgeClient.kt`
+- Shared UDP discovery contract: `service/LanBridgeDiscovery.kt`
+- Android subnet broadcast discovery: `src/androidMain/kotlin/service/LanBridgeDiscovery.android.kt`
+- Android QR scanner: `src/androidMain/kotlin/service/LanBridgeQrScanner.android.kt`
+- Settings UI and import confirmation: `presentation/screens/home/sheet/SettingsBottomSheet.kt`
+- Persisted pair and last-sync state: `storage/SettingsDao.kt`, `storage/data/LanSyncStatus.kt`
+
+Discovery returns a short-lived pairing URL from the locally running bridge. If exactly one bridge is found, Android pairs and pulls the import preview immediately; if multiple are found, each discovered bridge has its own connect action. QR scanning follows the same pairing path. Do not add credential or VRChat-cookie transfer to this flow.
+
 ## Attribution
 The original VRCM application structure and VRCM-authored features remain credited to the VRCM team. VRCMomo-specific UI, branding, friend activity persistence, notification/background work, and avatar editing are fork modifications.

@@ -421,17 +421,26 @@ private fun VrcxLanSyncBlock() {
             onClick = {
                 scope.launch {
                     isDiscovering = true
-                    discoveredBridges = discoverLanBridges()
+                    val found = discoverLanBridges()
+                    discoveredBridges = found
                     isDiscovering = false
+                    found.singleOrNull()?.pairingUrl?.let { pairFromQrAndPreview(it) }
                 }
             },
         ) { Text(if (isDiscovering) localeStrings.vrcxLanDiscovering else localeStrings.vrcxLanDiscover) }
         discoveredBridges.forEach { candidate ->
-            Text(
-                localeStrings.vrcxLanDiscoveredAddress.format(candidate.baseUrl),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
+            if (candidate.pairingUrl != null) {
+                TextButton(
+                    enabled = !isSyncing,
+                    onClick = { scope.launch { pairFromQrAndPreview(candidate.pairingUrl) } },
+                ) { Text(localeStrings.vrcxLanDiscoveredAddress.format(candidate.baseUrl)) }
+            } else {
+                Text(
+                    localeStrings.vrcxLanDiscoveredAddress.format(candidate.baseUrl),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
         }
         LanBridgeQrScanButton(
             label = localeStrings.vrcxLanScanQr,
