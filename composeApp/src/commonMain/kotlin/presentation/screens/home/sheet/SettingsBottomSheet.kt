@@ -339,6 +339,29 @@ private fun VrcxLanSyncBlock() {
     var discoveredBridges by remember { mutableStateOf<List<LanBridgeCandidate>>(emptyList()) }
     var syncStatus by remember { mutableStateOf(settingsDao.lanSyncStatus) }
     var preview by remember { mutableStateOf<VrcxActivityImportPreview?>(null) }
+    val isPaired = bridgeUrl.isNotBlank() && bridgeToken.isNotBlank()
+
+    suspend fun pairFromQrAndPreview(rawUrl: String) {
+        isSyncing = true
+        runCatching {
+            val pairing = LanBridgePairing.fromInput(rawUrl, fallbackToken = "")
+            bridgeUrl = pairing.baseUrl
+            bridgeToken = pairing.token
+            settingsDao.lanBridgeUrl = pairing.baseUrl
+            settingsDao.lanBridgeToken = pairing.token
+            activityService.previewVrcxActivityImport(bridgeClient.fetchVrcxActivity(pairing))
+        }.onSuccess { imported ->
+            preview = imported
+            syncStatus = syncStatus.copy(lastError = null)
+            settingsDao.lanSyncStatus = syncStatus
+        }.onFailure {
+            val error = localeStrings.vrcxLanSyncFailed
+            syncStatus = syncStatus.copy(lastError = error)
+            settingsDao.lanSyncStatus = syncStatus
+            SharedFlowCentre.toastText.emit(ToastText.Error(error))
+        }
+        isSyncing = false
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -404,16 +427,17 @@ private fun VrcxLanSyncBlock() {
             },
         ) { Text(if (isDiscovering) localeStrings.vrcxLanDiscovering else localeStrings.vrcxLanDiscover) }
         discoveredBridges.forEach { candidate ->
-            TextButton(onClick = { bridgeUrl = candidate.baseUrl }) {
-                Text(localeStrings.vrcxLanDiscoveredAddress.format(candidate.baseUrl))
-            }
+            Text(
+                localeStrings.vrcxLanDiscoveredAddress.format(candidate.baseUrl),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         LanBridgeQrScanButton(
             label = localeStrings.vrcxLanScanQr,
             enabled = !isSyncing,
             onScanned = { scannedUrl ->
-                bridgeUrl = scannedUrl
-                bridgeToken = ""
+                scope.launch { pairFromQrAndPreview(scannedUrl) }
             },
         )
         if (!isDiscovering && discoveredBridges.isEmpty()) {
@@ -423,22 +447,15 @@ private fun VrcxLanSyncBlock() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
-        OutlinedTextField(
-            value = bridgeUrl,
-            onValueChange = { bridgeUrl = it },
-            label = { Text(localeStrings.vrcxLanSyncAddress) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        OutlinedTextField(
-            value = bridgeToken,
-            onValueChange = { bridgeToken = it },
-            label = { Text(localeStrings.vrcxLanSyncToken) },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        if (isPaired) {
+            Text(
+                localeStrings.vrcxLanPaired.format(bridgeUrl),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+            )
+        }
         Button(
-            enabled = !isSyncing && bridgeUrl.isNotBlank() && (bridgeToken.isNotBlank() || bridgeUrl.contains("token=")),
+            enabled = !isSyncing && isPaired,
             onClick = {
                 scope.launch {
                     isSyncing = true
@@ -462,7 +479,7 @@ private fun VrcxLanSyncBlock() {
             Text(if (isSyncing) localeStrings.vrcxLanSyncing else localeStrings.vrcxLanSyncNow)
         }
         OutlinedButton(
-            enabled = !isSyncing && bridgeUrl.isNotBlank() && (bridgeToken.isNotBlank() || bridgeUrl.contains("token=")),
+            enabled = !isSyncing && isPaired,
             onClick = {
                 scope.launch {
                     isSyncing = true

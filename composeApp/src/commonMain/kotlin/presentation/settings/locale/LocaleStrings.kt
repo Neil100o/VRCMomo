@@ -350,6 +350,7 @@ sealed class LocaleStrings {
     open val vrcxLanDiscoveredAddress: String = "Use %s"
     open val vrcxLanDiscoveryHint: String = "Keep the PC bridge open and connected to the same local network. Discovery never transfers the pairing token."
     open val vrcxLanScanQr: String = "Scan pairing QR code"
+    open val vrcxLanPaired: String = "Paired with %s"
 
     // Optional Android foreground monitoring. It is never enabled by default.
     open val backgroundFriendMonitoringTitle: String = "Background friend monitoring"
