@@ -69,6 +69,8 @@ object DaoKeys{
         const val BACKGROUND_FRIEND_MONITORING_ENABLED_KEY = "${PREFIX}.backgroundFriendMonitoringEnabled"
         const val SYSTEM_NOTIFICATIONS_ENABLED_KEY = "${PREFIX}.systemNotificationsEnabled"
         const val ACTIVITY_LOG_RETENTION_DAYS_KEY = "${PREFIX}.activityLogRetentionDays"
+        const val LAN_BRIDGE_URL_KEY = "${PREFIX}.lanBridgeUrl"
+        const val LAN_BRIDGE_TOKEN_KEY = "${PREFIX}.lanBridgeToken"
 
     }
 

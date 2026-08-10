@@ -52,6 +52,18 @@ class SettingsDao(
             } ?: settingsSettings.remove(DaoKeys.Settings.ACTIVITY_LOG_RETENTION_DAYS_KEY)
         }
 
+    var lanBridgeUrl: String?
+        get() = settingsSettings.getStringOrNull(DaoKeys.Settings.LAN_BRIDGE_URL_KEY)
+        set(value) = value?.trim().takeUnless { it.isNullOrEmpty() }?.let {
+            settingsSettings.putString(DaoKeys.Settings.LAN_BRIDGE_URL_KEY, it)
+        } ?: settingsSettings.remove(DaoKeys.Settings.LAN_BRIDGE_URL_KEY)
+
+    var lanBridgeToken: String?
+        get() = settingsSettings.getStringOrNull(DaoKeys.Settings.LAN_BRIDGE_TOKEN_KEY)
+        set(value) = value?.trim().takeUnless { it.isNullOrEmpty() }?.let {
+            settingsSettings.putString(DaoKeys.Settings.LAN_BRIDGE_TOKEN_KEY, it)
+        } ?: settingsSettings.remove(DaoKeys.Settings.LAN_BRIDGE_TOKEN_KEY)
+
     var rememberVersion: String?
         get() = settingsSettings.getStringOrNull(DaoKeys.Settings.REMEMBER_VERSION_KEY)
         set(value) = value.let {

@@ -327,6 +327,13 @@ sealed class LocaleStrings {
     open val vrcxActivityImportConfirmMessage: String = "%d presence events and %d completed meetings for %d friends will be merged. %d already imported events will be skipped."
     open val vrcxActivityImportSuccess: String = "VRCX activity history merged."
     open val vrcxActivityImportInvalid: String = "This is not a valid VRCMomo VRCX activity export."
+    open val vrcxLanSyncTitle: String = "VRCX LAN sync"
+    open val vrcxLanSyncDescription: String = "While on the same local network, fetch and merge activity history from your paired PC bridge."
+    open val vrcxLanSyncAddress: String = "Pairing URL or PC address"
+    open val vrcxLanSyncToken: String = "Pairing token"
+    open val vrcxLanSyncNow: String = "Sync from PC"
+    open val vrcxLanSyncing: String = "Syncing…"
+    open val vrcxLanSyncFailed: String = "Could not reach the paired PC bridge."
 
     // Optional Android foreground monitoring. It is never enabled by default.
     open val backgroundFriendMonitoringTitle: String = "Background friend monitoring"

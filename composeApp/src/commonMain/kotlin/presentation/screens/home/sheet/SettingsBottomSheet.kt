@@ -37,12 +37,15 @@ import io.github.vrcmteam.vrcm.presentation.settings.theme.ThemeColor
 import io.github.vrcmteam.vrcm.presentation.supports.WebIcons
 import io.github.vrcmteam.vrcm.service.AuthService
 import io.github.vrcmteam.vrcm.service.FriendActivityService
+import io.github.vrcmteam.vrcm.service.LanActivityBridgeClient
+import io.github.vrcmteam.vrcm.service.LanBridgePairing
 import io.github.vrcmteam.vrcm.service.VersionService
 import io.github.vrcmteam.vrcm.service.VrcxActivityImportPreview
 import io.github.vrcmteam.vrcm.network.api.worlds.WorldsApi
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEventType
 import io.github.vrcmteam.vrcm.storage.AccountCacheManager
+import io.github.vrcmteam.vrcm.storage.SettingsDao
 import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.coroutines.launch
@@ -81,6 +84,9 @@ fun SettingsBottomSheet(
             }
             SettingsBlockSurface {
                 BackgroundMonitoringBlock()
+            }
+            SettingsBlockSurface {
+                VrcxLanSyncBlock()
             }
             SettingsBlockSurface {
                 VrcxActivityImportBlock()
@@ -310,6 +316,91 @@ private fun String.worldIdOrNull(): String? =
 
 private val DiffAddedGreen = Color(0xFF43A047)
 private val DiffRemovedRed = Color(0xFFE53935)
+
+@Composable
+private fun VrcxLanSyncBlock() {
+    val activityService = koinInject<FriendActivityService>()
+    val bridgeClient = koinInject<LanActivityBridgeClient>()
+    val settingsDao = koinInject<SettingsDao>()
+    val scope = rememberCoroutineScope()
+    val localeStrings = strings
+    var bridgeUrl by remember { mutableStateOf(settingsDao.lanBridgeUrl.orEmpty()) }
+    var bridgeToken by remember { mutableStateOf(settingsDao.lanBridgeToken.orEmpty()) }
+    var isSyncing by remember { mutableStateOf(false) }
+    var preview by remember { mutableStateOf<VrcxActivityImportPreview?>(null) }
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        SettingsSectionTitle(localeStrings.vrcxLanSyncTitle)
+        Text(
+            localeStrings.vrcxLanSyncDescription,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        OutlinedTextField(
+            value = bridgeUrl,
+            onValueChange = { bridgeUrl = it },
+            label = { Text(localeStrings.vrcxLanSyncAddress) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        OutlinedTextField(
+            value = bridgeToken,
+            onValueChange = { bridgeToken = it },
+            label = { Text(localeStrings.vrcxLanSyncToken) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Button(
+            enabled = !isSyncing && bridgeUrl.isNotBlank() && bridgeToken.isNotBlank(),
+            onClick = {
+                scope.launch {
+                    isSyncing = true
+                    runCatching {
+                        val pairing = LanBridgePairing.fromInput(bridgeUrl, bridgeToken)
+                        settingsDao.lanBridgeUrl = pairing.baseUrl
+                        settingsDao.lanBridgeToken = pairing.token
+                        val raw = bridgeClient.fetchVrcxActivity(pairing)
+                        activityService.previewVrcxActivityImport(raw)
+                    }.onSuccess { preview = it }
+                        .onFailure { SharedFlowCentre.toastText.emit(ToastText.Error(localeStrings.vrcxLanSyncFailed)) }
+                    isSyncing = false
+                }
+            },
+        ) {
+            Text(if (isSyncing) localeStrings.vrcxLanSyncing else localeStrings.vrcxLanSyncNow)
+        }
+    }
+
+    preview?.let { importPreview ->
+        AlertDialog(
+            onDismissRequest = { preview = null },
+            title = { Text(localeStrings.vrcxActivityImportConfirmTitle) },
+            text = {
+                Text(
+                    localeStrings.vrcxActivityImportConfirmMessage.formatCountPlaceholders(
+                        importPreview.presenceEvents,
+                        importPreview.completedMeetings,
+                        importPreview.involvedFriends,
+                        importPreview.alreadyImportedEvents,
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    activityService.applyVrcxActivityImport(importPreview)
+                    preview = null
+                    scope.launch { SharedFlowCentre.toastText.emit(ToastText.Info(localeStrings.vrcxActivityImportSuccess)) }
+                }) { Text(localeStrings.vrcxActivityImportConfirmTitle) }
+            },
+            dismissButton = {
+                TextButton(onClick = { preview = null }) { Text(localeStrings.backgroundFriendMonitoringCancel) }
+            },
+        )
+    }
+}
 
 @Composable
 private fun VrcxActivityImportBlock() {

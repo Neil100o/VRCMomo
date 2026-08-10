@@ -15,6 +15,7 @@ import io.github.vrcmteam.vrcm.network.api.users.UsersApi
 import io.github.vrcmteam.vrcm.network.api.worlds.WorldsApi
 import io.github.vrcmteam.vrcm.network.supports.ApiClientDefaultBuilder
 import io.github.vrcmteam.vrcm.network.websocket.WebSocketApi
+import io.github.vrcmteam.vrcm.service.LanActivityBridgeClient
 import io.ktor.client.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.cookies.*
@@ -39,6 +40,7 @@ internal val networkModule = module(true) {
     singleOf(::GitHubApi)
     singleOf(::GroupsApi)
     singleOf(::PrintsApi)
+    singleOf(::LanActivityBridgeClient)
     single<HttpClient> { apiClientDefinition(it) }
     single { createNetworkJson() }
 }
