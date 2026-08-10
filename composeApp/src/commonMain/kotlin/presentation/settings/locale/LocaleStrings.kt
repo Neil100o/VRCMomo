@@ -342,6 +342,9 @@ sealed class LocaleStrings {
     open val vrcxLanSyncLastError: String = "Last issue: %s"
     open val vrcxLanSyncDirectionDownload: String = "PC → phone"
     open val vrcxLanSyncDirectionUpload: String = "phone → PC"
+    open val vrcxLanSyncDirectionAutomatic: String = "automatic two-way"
+    open val vrcxLanAutoSync: String = "Automatic LAN sync"
+    open val vrcxLanAutoSyncDescription: String = "When Android background monitoring is active, sync at a low frequency while the paired PC is reachable."
 
     // Optional Android foreground monitoring. It is never enabled by default.
     open val backgroundFriendMonitoringTitle: String = "Background friend monitoring"

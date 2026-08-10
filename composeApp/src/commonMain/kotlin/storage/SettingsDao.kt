@@ -25,6 +25,10 @@ class SettingsDao(
                 activityLogRetentionDays = settingsSettings.getIntOrNull(
                     DaoKeys.Settings.ACTIVITY_LOG_RETENTION_DAYS_KEY,
                 ),
+                isLanSyncAutoEnabled = settingsSettings.getBoolean(
+                    DaoKeys.Settings.LAN_SYNC_AUTO_ENABLED_KEY,
+                    false,
+                ),
             )
         }
         set(value) {
@@ -51,6 +55,10 @@ class SettingsDao(
             value.activityLogRetentionDays?.let {
                 settingsSettings.putInt(DaoKeys.Settings.ACTIVITY_LOG_RETENTION_DAYS_KEY, it)
             } ?: settingsSettings.remove(DaoKeys.Settings.ACTIVITY_LOG_RETENTION_DAYS_KEY)
+            settingsSettings.putBoolean(
+                DaoKeys.Settings.LAN_SYNC_AUTO_ENABLED_KEY,
+                value.isLanSyncAutoEnabled,
+            )
         }
 
     var lanBridgeUrl: String?

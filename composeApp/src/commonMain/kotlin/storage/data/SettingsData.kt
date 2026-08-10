@@ -11,4 +11,6 @@ data class SettingsData(
     val isSystemNotificationsEnabled: Boolean = true,
     /** Null keeps all activity-log files indefinitely. */
     val activityLogRetentionDays: Int? = null,
+    /** Optional low-frequency LAN bridge cycle while Android background monitoring is active. */
+    val isLanSyncAutoEnabled: Boolean = false,
 )

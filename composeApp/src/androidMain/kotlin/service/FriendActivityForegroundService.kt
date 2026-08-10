@@ -8,6 +8,10 @@ import android.os.IBinder
 import io.github.vrcmteam.vrcm.core.shared.SharedFlowCentre
 import io.github.vrcmteam.vrcm.network.websocket.WebSocketApi
 import io.github.vrcmteam.vrcm.presentation.notifications.AndroidPlatformNotificationService
+import io.github.vrcmteam.vrcm.storage.SettingsDao
+import io.github.vrcmteam.vrcm.storage.data.LanSyncStatus
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -23,6 +27,7 @@ import org.koin.core.context.GlobalContext
  * backgrounded. Android may still stop it after a force-stop, reboot, permission change, or under
  * device-specific power management, so the UI deliberately presents this as best-effort monitoring.
  */
+@OptIn(ExperimentalTime::class)
 class FriendActivityForegroundService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var incomingBoopNotificationService: IncomingBoopNotificationService? = null
@@ -63,6 +68,33 @@ class FriendActivityForegroundService : Service() {
                 delay(FRIEND_REFRESH_INTERVAL_MILLIS)
                 if (SharedFlowCentre.currentSession.value != null) {
                     friendService.refreshFriendList()
+                }
+            }
+        }
+        val settingsDao = koin.get<SettingsDao>()
+        val lanBridgeClient = koin.get<LanActivityBridgeClient>()
+        val activityService = koin.get<FriendActivityService>()
+        serviceScope.launch {
+            while (isActive) {
+                delay(LAN_SYNC_INTERVAL_MILLIS)
+                if (!settingsDao.settings.isLanSyncAutoEnabled || SharedFlowCentre.currentSession.value == null) continue
+                runCatching {
+                    val pairing = LanBridgePairing.fromInput(
+                        settingsDao.lanBridgeUrl.orEmpty(),
+                        settingsDao.lanBridgeToken.orEmpty(),
+                    )
+                    val preview = activityService.previewVrcxActivityImport(lanBridgeClient.fetchVrcxActivity(pairing))
+                    activityService.applyVrcxActivityImport(preview)
+                    lanBridgeClient.uploadVrcmomoActivity(pairing, activityService.exportLanActivitySync())
+                }.onSuccess {
+                    settingsDao.lanSyncStatus = LanSyncStatus(
+                        lastSuccessAtMillis = Clock.System.now().toEpochMilliseconds(),
+                        lastDirection = "automatic",
+                    )
+                }.onFailure { error ->
+                    settingsDao.lanSyncStatus = settingsDao.lanSyncStatus.copy(
+                        lastError = error.message?.take(MAX_SYNC_ERROR_LENGTH) ?: "自动同步失败",
+                    )
                 }
             }
         }
@@ -107,5 +139,7 @@ class FriendActivityForegroundService : Service() {
         const val NOTIFICATION_ID = 0x4D4F4D4F
         const val AUTH_RETRY_DELAY_MILLIS = 30_000L
         const val FRIEND_REFRESH_INTERVAL_MILLIS = 120_000L
+        const val LAN_SYNC_INTERVAL_MILLIS = 15 * 60_000L
+        const val MAX_SYNC_ERROR_LENGTH = 160
     }
 }

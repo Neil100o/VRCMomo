@@ -20,6 +20,7 @@ class SettingsModel(
                 isBackgroundFriendMonitoringEnabled = it.isBackgroundFriendMonitoringEnabled,
                 isSystemNotificationsEnabled = it.isSystemNotificationsEnabled,
                 activityLogRetentionDays = it.activityLogRetentionDays,
+                isLanSyncAutoEnabled = it.isLanSyncAutoEnabled,
             )
         }
     }
@@ -41,6 +42,7 @@ class SettingsModel(
                 isBackgroundFriendMonitoringEnabled = settings.isBackgroundFriendMonitoringEnabled,
                 isSystemNotificationsEnabled = settings.isSystemNotificationsEnabled,
                 activityLogRetentionDays = settings.activityLogRetentionDays,
+                isLanSyncAutoEnabled = settings.isLanSyncAutoEnabled,
             )
         }
 }

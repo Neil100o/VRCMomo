@@ -142,10 +142,10 @@ private fun SystemNotificationsBlock() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FriendActivityLogBlock() {
+    var currentSettings by LocalSettingsState.current
     val activityService = koinInject<FriendActivityService>()
     val events by activityService.activityLog.collectAsState()
     val localeStrings = strings
-    var currentSettings by LocalSettingsState.current
     var open by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -323,6 +323,7 @@ private val DiffRemovedRed = Color(0xFFE53935)
 @OptIn(ExperimentalTime::class)
 @Composable
 private fun VrcxLanSyncBlock() {
+    var currentSettings by LocalSettingsState.current
     val activityService = koinInject<FriendActivityService>()
     val bridgeClient = koinInject<LanActivityBridgeClient>()
     val settingsDao = koinInject<SettingsDao>()
@@ -348,7 +349,7 @@ private fun VrcxLanSyncBlock() {
             syncStatus.lastSuccessAtMillis?.let {
                 localeStrings.vrcxLanSyncLastSuccess.format(
                     Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).ignoredFormat,
-                    syncStatus.lastDirection.orEmpty(),
+                    syncStatus.lastDirection.lanSyncDirectionLabel(localeStrings),
                 )
             } ?: localeStrings.vrcxLanSyncNever,
             style = MaterialTheme.typography.bodySmall,
@@ -361,6 +362,32 @@ private fun VrcxLanSyncBlock() {
                 color = MaterialTheme.colorScheme.error,
             )
         }
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable {
+                currentSettings = currentSettings.copy(
+                    isLanSyncAutoEnabled = !currentSettings.isLanSyncAutoEnabled,
+                )
+            },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                localeStrings.vrcxLanAutoSync,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Switch(
+                checked = currentSettings.isLanSyncAutoEnabled,
+                onCheckedChange = { enabled ->
+                    currentSettings = currentSettings.copy(isLanSyncAutoEnabled = enabled)
+                },
+            )
+        }
+        Text(
+            localeStrings.vrcxLanAutoSyncDescription,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
         OutlinedTextField(
             value = bridgeUrl,
             onValueChange = { bridgeUrl = it },
@@ -412,7 +439,7 @@ private fun VrcxLanSyncBlock() {
                     }.onSuccess {
                         syncStatus = LanSyncStatus(
                             lastSuccessAtMillis = Clock.System.now().toEpochMilliseconds(),
-                            lastDirection = localeStrings.vrcxLanSyncDirectionUpload,
+                            lastDirection = LAN_SYNC_DIRECTION_UPLOAD,
                         )
                         settingsDao.lanSyncStatus = syncStatus
                         SharedFlowCentre.toastText.emit(ToastText.Info(localeStrings.vrcxLanUploadSuccess))
@@ -447,7 +474,7 @@ private fun VrcxLanSyncBlock() {
                     activityService.applyVrcxActivityImport(importPreview)
                     syncStatus = LanSyncStatus(
                         lastSuccessAtMillis = Clock.System.now().toEpochMilliseconds(),
-                        lastDirection = localeStrings.vrcxLanSyncDirectionDownload,
+                        lastDirection = LAN_SYNC_DIRECTION_DOWNLOAD,
                     )
                     settingsDao.lanSyncStatus = syncStatus
                     preview = null
@@ -525,6 +552,17 @@ private fun String.formatCountPlaceholders(vararg values: Int): String =
     values.fold(this) { text, value -> text.replaceFirst("%d", value.toString()) }
 
 private const val MAX_VRCX_ACTIVITY_IMPORT_BYTES = 16L * 1024L * 1024L
+private const val LAN_SYNC_DIRECTION_DOWNLOAD = "download"
+private const val LAN_SYNC_DIRECTION_UPLOAD = "upload"
+private const val LAN_SYNC_DIRECTION_AUTOMATIC = "automatic"
+
+private fun String?.lanSyncDirectionLabel(localeStrings: io.github.vrcmteam.vrcm.presentation.settings.locale.LocaleStrings): String =
+    when (this) {
+        LAN_SYNC_DIRECTION_DOWNLOAD -> localeStrings.vrcxLanSyncDirectionDownload
+        LAN_SYNC_DIRECTION_UPLOAD -> localeStrings.vrcxLanSyncDirectionUpload
+        LAN_SYNC_DIRECTION_AUTOMATIC -> localeStrings.vrcxLanSyncDirectionAutomatic
+        else -> orEmpty()
+    }
 
 
 @Composable
