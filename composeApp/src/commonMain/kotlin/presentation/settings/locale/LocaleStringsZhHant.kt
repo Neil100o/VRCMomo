@@ -326,4 +326,12 @@ internal object LocaleStringsZhHant : LocaleStrings() {
     override val backgroundFriendMonitoringBatteryRestricted = "可能受限制"
     override val backgroundFriendMonitoringBatteryAction = "檢查電池設定"
     override val backgroundFriendMonitoringBatteryHint = "允許不受限制的電池使用可以提高背景可靠性，但強制停止、廠商工作管理員、裝置重新啟動或網路中斷仍可能暫停記錄。"
+    override val officialLinkPromptTitle = "開啟 VRChat 連結"
+    override val officialLinkPromptMessage = "剪貼簿中有一個 VRChat %s連結，是否在 VRCMomo 中開啟？"
+    override val officialLinkOpen = "開啟"
+    override val officialLinkOpenFailed = "無法開啟此連結。內容可能已失效、遭到刪除，或目前帳號無權檢視。"
+    override val officialLinkTypeUser = "使用者"
+    override val officialLinkTypeWorld = "世界"
+    override val officialLinkTypeGroup = "群組"
+    override val officialLinkTypeAvatar = "模型"
 }

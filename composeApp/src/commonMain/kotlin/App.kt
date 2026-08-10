@@ -17,6 +17,7 @@ import cafe.adriel.voyager.transitions.SlideOrientation
 import io.github.vrcmteam.vrcm.presentation.animations.AuthAnimeToHomeTransition
 import io.github.vrcmteam.vrcm.presentation.animations.HomeToAuthAnimeTransition
 import io.github.vrcmteam.vrcm.presentation.animations.slideScreenTransition
+import io.github.vrcmteam.vrcm.presentation.compoments.OfficialLinkPrompt
 import io.github.vrcmteam.vrcm.presentation.compoments.SharedTransitionDialog
 import io.github.vrcmteam.vrcm.presentation.compoments.SharedTransitionScreen
 import io.github.vrcmteam.vrcm.presentation.compoments.SnackBarToastBox
@@ -35,11 +36,15 @@ import io.github.vrcmteam.vrcm.presentation.screens.home.HomeScreen
 import io.github.vrcmteam.vrcm.presentation.screens.user.UserProfileScreen
 import io.github.vrcmteam.vrcm.presentation.screens.world.WorldProfileScreen
 import io.github.vrcmteam.vrcm.presentation.settings.SettingsProvider
+import io.github.vrcmteam.vrcm.service.OfficialLinkInbox
 import org.koin.compose.KoinContext
 
 @Composable
-fun App() {
+fun App(
+    officialLinkInbox: OfficialLinkInbox? = null,
+) {
     val backNavigationPolicy = remember { BackNavigationPolicy() }
+    val activeOfficialLinkInbox = remember(officialLinkInbox) { officialLinkInbox ?: OfficialLinkInbox() }
     KoinContext {
         SettingsProvider {
             Navigator(
@@ -52,6 +57,7 @@ fun App() {
                             .padding(vertical = 76.dp, horizontal = 12.dp)
                     ) {
                         VersionDialog()
+                        OfficialLinkPrompt(it, activeOfficialLinkInbox)
                         SharedTransitionScreen(
                             navigator = it,
                             modifier = Modifier.slideBack(

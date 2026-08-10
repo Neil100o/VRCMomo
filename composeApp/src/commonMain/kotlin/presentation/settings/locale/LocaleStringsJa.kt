@@ -326,4 +326,12 @@ internal object LocaleStringsJa : LocaleStrings() {
     override val backgroundFriendMonitoringBatteryRestricted = "制限される可能性があります"
     override val backgroundFriendMonitoringBatteryAction = "バッテリー設定を確認"
     override val backgroundFriendMonitoringBatteryHint = "バッテリー使用を制限しない設定にするとバックグラウンドの安定性を高められますが、強制停止、端末メーカーのタスク管理、再起動、ネットワーク切断によって記録が中断される場合があります。"
+    override val officialLinkPromptTitle = "VRChatリンクを開く"
+    override val officialLinkPromptMessage = "クリップボードにVRChatの%sリンクがあります。VRCMomoで開きますか？"
+    override val officialLinkOpen = "開く"
+    override val officialLinkOpenFailed = "このリンクを開けませんでした。期限切れ、削除済み、またはこのアカウントでは閲覧できない可能性があります。"
+    override val officialLinkTypeUser = "ユーザー"
+    override val officialLinkTypeWorld = "ワールド"
+    override val officialLinkTypeGroup = "グループ"
+    override val officialLinkTypeAvatar = "アバター"
 }

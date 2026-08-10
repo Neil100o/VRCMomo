@@ -409,6 +409,14 @@ sealed class LocaleStrings {
     open val hiddenModelCannotView: String = "Cannot view hidden model info"
     open val hiddenWorld: String = "Hidden world"
     open val hiddenWorldCannotView: String = "Cannot view hidden world info"
+    open val officialLinkPromptTitle: String = "Open VRChat link"
+    open val officialLinkPromptMessage: String = "A VRChat %s link was found in your clipboard. Open it in VRCMomo?"
+    open val officialLinkOpen: String = "Open"
+    open val officialLinkOpenFailed: String = "Could not open this link. It may have expired, been removed, or be unavailable to this account."
+    open val officialLinkTypeUser: String = "user"
+    open val officialLinkTypeWorld: String = "world"
+    open val officialLinkTypeGroup: String = "group"
+    open val officialLinkTypeAvatar: String = "avatar"
 }
 
 val strings: LocaleStrings
@@ -421,4 +429,5 @@ val strings: LocaleStrings
             LanguageTag.ZH_HANT -> LocaleStringsZhHant
             else -> LocaleStringsEn
         }
-    }
+
+}

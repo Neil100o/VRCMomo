@@ -14,4 +14,5 @@ val serviceModule: Module = module {
     singleOf(::SocialNotificationService)
     singleOf(::IncomingBoopNotificationService)
     singleOf(::WorldPlatformService)
+    singleOf(::OfficialLinkService)
 }
