@@ -27,7 +27,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-MAX_PAYLOAD_BYTES = 16 * 1024 * 1024
+# Full VRCX archives can exceed 16 MiB while still being reasonable for an
+# explicit local-network transfer. Keep a firm bound to avoid unbounded reads.
+MAX_PAYLOAD_BYTES = 32 * 1024 * 1024
 DEFAULT_PORT = 38671
 DISCOVERY_PORT = 38672
 DISCOVERY_REQUEST = b"VRCMOMO-LAN-DISCOVERY-V1"
@@ -79,12 +81,12 @@ class BridgeState:
                 raise RuntimeError(result.stderr.strip() or "VRCX export failed")
             payload = output.read_bytes()
         if len(payload) > MAX_PAYLOAD_BYTES:
-            raise ValueError("VRCX export exceeds the 16 MiB LAN transfer limit")
+            raise ValueError("VRCX export exceeds the 32 MiB LAN transfer limit")
         return payload
 
     def save_mobile_upload(self, payload: bytes) -> str:
         if not payload or len(payload) > MAX_PAYLOAD_BYTES:
-            raise ValueError("Payload must be between 1 byte and 16 MiB")
+            raise ValueError("Payload must be between 1 byte and 32 MiB")
         document = json.loads(payload)
         if not isinstance(document, dict) or document.get("format") != "vrcmomo-activity-sync-v1":
             raise ValueError("Unsupported VRCMomo LAN activity format")
@@ -156,6 +158,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
             try:
                 return self._bytes(HTTPStatus.OK, self.server.state.export_vrcx_activity())
             except (OSError, RuntimeError, ValueError, subprocess.TimeoutExpired) as error:
+                print(f"VRCX activity export failed: {error}", file=sys.stderr)
                 return self._json(HTTPStatus.SERVICE_UNAVAILABLE, {"error": str(error)})
         return self._json(HTTPStatus.NOT_FOUND, {"error": "unknown endpoint"})
 
@@ -166,7 +169,7 @@ class BridgeHandler(BaseHTTPRequestHandler):
             return self._json(HTTPStatus.NOT_FOUND, {"error": "unknown endpoint"})
         length = int(self.headers.get("Content-Length", "0"))
         if length <= 0 or length > MAX_PAYLOAD_BYTES:
-            return self._json(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": "payload must be 1 byte to 16 MiB"})
+            return self._json(HTTPStatus.REQUEST_ENTITY_TOO_LARGE, {"error": "payload must be 1 byte to 32 MiB"})
         try:
             digest = self.server.state.save_mobile_upload(self.rfile.read(length))
         except (ValueError, json.JSONDecodeError) as error:
