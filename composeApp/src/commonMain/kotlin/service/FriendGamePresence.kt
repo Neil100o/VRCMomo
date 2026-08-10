@@ -45,6 +45,21 @@ internal class FavoriteFriendPresenceTracker {
         knownDisplayNames.clear()
     }
 
+    /**
+     * Replaces any cache-derived baseline with the first live server snapshot.
+     * This intentionally emits no transition: reopening the app must not look like every
+     * favorite left and re-entered VRChat.
+     */
+    fun establishLiveBaseline(friends: Map<String, FriendData>) {
+        knownPresence.clear()
+        knownDisplayNames.clear()
+        favoriteFriendIds.forEach { userId ->
+            val friend = friends[userId] ?: return@forEach
+            knownPresence[userId] = friend.isInGamePresence()
+            friend.displayName.takeIf(String::isNotBlank)?.let { knownDisplayNames[userId] = it }
+        }
+    }
+
     fun updateFavorites(
         favoriteIds: Set<String>,
         friends: Map<String, FriendData>,

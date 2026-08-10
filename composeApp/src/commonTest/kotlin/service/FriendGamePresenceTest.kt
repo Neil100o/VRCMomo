@@ -33,6 +33,24 @@ class FriendGamePresenceTest {
     }
 
     @Test
+    fun `live baseline replaces restored offline cache without a false online transition`() {
+        val tracker = FavoriteFriendPresenceTracker()
+        tracker.updateFavorites(
+            favoriteIds = setOf("usr_friend"),
+            friends = mapOf("usr_friend" to friend(location = "offline", status = UserStatus.Offline)),
+        )
+
+        tracker.establishLiveBaseline(
+            mapOf("usr_friend" to friend(location = "wrld_home:instance", status = UserStatus.Active)),
+        )
+        assertTrue(tracker.observe(mapOf("usr_friend" to friend(location = "wrld_home:instance", status = UserStatus.Active))).isEmpty())
+        assertEquals(
+            listOf(FriendPresenceTransition("usr_friend", "Friend", false)),
+            tracker.observe(mapOf("usr_friend" to friend(location = "offline", status = UserStatus.Active))),
+        )
+    }
+
+    @Test
     fun `favorite tracker reports game transitions across website activity`() {
         val tracker = FavoriteFriendPresenceTracker()
         tracker.updateFavorites(

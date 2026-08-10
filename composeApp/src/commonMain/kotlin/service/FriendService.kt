@@ -39,6 +39,11 @@ import kotlinx.coroutines.flow.retry
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
+internal data class FriendStateSnapshot(
+    val friends: Map<String, FriendData>,
+    val isLiveObservation: Boolean,
+)
+
 class FriendService(
     private val friendsApi: FriendsApi,
     private val authService: AuthService,
@@ -72,6 +77,11 @@ class FriendService(
     private val _friendState = MutableStateFlow<Map<String, FriendData>>(emptyMap())
     val friendState: StateFlow<Map<String, FriendData>> = _friendState.asStateFlow()
 
+    // UI can render cached friends immediately. Notification code must additionally know whether
+    // a snapshot is cache-only or a real server/WebSocket observation.
+    private val _friendStateSnapshots = MutableSharedFlow<FriendStateSnapshot>(replay = 1, extraBufferCapacity = 1)
+    internal val friendStateSnapshots: SharedFlow<FriendStateSnapshot> = _friendStateSnapshots.asSharedFlow()
+
     val friendMap: Map<String, FriendData>
         get() = friendState.value
 
@@ -100,7 +110,7 @@ class FriendService(
                         activeSessionToken = null
                         friendActivityService.deactivateAccount()
                         friendStore.clear()
-                        publishFriendState()
+                        publishFriendState(recordActivity = false, writeCache = false)
                     }
                     preloadTask.cancelAndJoin()
                 } else {
@@ -297,7 +307,7 @@ class FriendService(
     fun clearFriendData() {
         synchronized(friendMapLock) {
             friendStore.clear()
-            publishFriendState()
+            publishFriendState(recordActivity = false, writeCache = false)
         }
     }
 
@@ -326,6 +336,12 @@ class FriendService(
         if (_friendState.value != snapshot) {
             _friendState.value = snapshot
         }
+        _friendStateSnapshots.tryEmit(
+            FriendStateSnapshot(
+                friends = snapshot,
+                isLiveObservation = recordActivity,
+            )
+        )
         if (!writeCache) return
         activeAccountUserId?.let { userId ->
             cacheWriter.submit(

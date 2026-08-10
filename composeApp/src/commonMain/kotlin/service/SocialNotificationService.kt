@@ -36,6 +36,7 @@ class SocialNotificationService(
 
     private var started = false
     private var activeSessionToken: AccountSessionToken? = null
+    private var hasLivePresenceBaseline = false
     private var favoriteCollector: Job? = null
 
     fun start() {
@@ -48,6 +49,7 @@ class SocialNotificationService(
                 favoriteCollector?.cancel()
                 stateMutex.withLock {
                     activeSessionToken = session?.token
+                    hasLivePresenceBaseline = false
                     presenceTracker.reset()
                 }
 
@@ -73,7 +75,7 @@ class SocialNotificationService(
         }
 
         serviceScope.launch {
-            friendService.friendState.collect(::handleFriendSnapshot)
+            friendService.friendStateSnapshots.collect(::handleFriendSnapshot)
         }
     }
 
@@ -92,9 +94,19 @@ class SocialNotificationService(
         )
     }
 
-    private suspend fun handleFriendSnapshot(friends: Map<String, FriendData>) {
+    private suspend fun handleFriendSnapshot(snapshot: FriendStateSnapshot) {
         val transitions = stateMutex.withLock {
-            if (activeSessionToken == null) emptyList() else presenceTracker.observe(friends)
+            if (activeSessionToken == null || !snapshot.isLiveObservation) {
+                emptyList()
+            } else if (!hasLivePresenceBaseline) {
+                // Cached rows deliberately carry offline presence so the UI is safe to render.
+                // Do not compare the first real snapshot to that synthetic cache state.
+                presenceTracker.establishLiveBaseline(snapshot.friends)
+                hasLivePresenceBaseline = true
+                emptyList()
+            } else {
+                presenceTracker.observe(snapshot.friends)
+            }
         }
         transitions.forEach(::notifyPresenceTransition)
     }
