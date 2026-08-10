@@ -32,6 +32,7 @@ import io.github.vinceglb.filekit.dialogs.FileKitType
 import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import io.github.vinceglb.filekit.name
 import io.github.vrcmteam.vrcm.core.extensions.toLocalDate
+import io.github.vrcmteam.vrcm.network.api.attributes.FavoriteType
 import io.github.vrcmteam.vrcm.presentation.compoments.ATooltipBox
 import io.github.vrcmteam.vrcm.presentation.compoments.OfficialUrlRow
 import io.github.vrcmteam.vrcm.presentation.compoments.LocalSharedSuffixKey
@@ -43,6 +44,7 @@ import io.github.vrcmteam.vrcm.presentation.extensions.simpleFormat
 import io.github.vrcmteam.vrcm.presentation.screens.avatar.data.AvatarPlatformInfo
 import io.github.vrcmteam.vrcm.presentation.screens.avatar.data.AvatarProfileVo
 import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.PrintImageLimits
+import io.github.vrcmteam.vrcm.presentation.screens.world.components.FavoriteGroupBottomSheet
 import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.readBoundedBytes
 import io.github.vrcmteam.vrcm.presentation.screens.user.UserProfileScreen
 import io.github.vrcmteam.vrcm.presentation.screens.user.data.UserProfileVo
@@ -63,6 +65,7 @@ class AvatarProfileScreen(
         val refreshedAvatar by screenModel.avatarProfileState.collectAsState()
         val isSaving by screenModel.isSaving.collectAsState()
         var showEditDialog by remember { mutableStateOf(false) }
+        var showFavoriteGroupSheet by remember { mutableStateOf(false) }
 
         LaunchedEffect(avatarProfileVo.avatarId) {
             screenModel.refreshAvatarData(avatarProfileVo)
@@ -82,9 +85,16 @@ class AvatarProfileScreen(
                     contentMinHeight = contentMinHeight,
                     canEdit = screenModel.canEdit(displayedAvatar),
                     onEdit = { showEditDialog = true },
+                    onManageFavorite = { showFavoriteGroupSheet = true },
                 )
             }
         }
+        FavoriteGroupBottomSheet(
+            isVisible = showFavoriteGroupSheet,
+            favoriteId = displayedAvatar.avatarId,
+            favoriteType = FavoriteType.Avatar,
+            onDismiss = { showFavoriteGroupSheet = false },
+        )
         if (showEditDialog) {
             AvatarEditDialog(
                 avatar = displayedAvatar,
@@ -117,6 +127,7 @@ private fun AvatarProfileContent(
     contentMinHeight: Dp,
     canEdit: Boolean,
     onEdit: () -> Unit,
+    onManageFavorite: () -> Unit,
 ) {
     val navigator = currentNavigator
 
@@ -127,6 +138,12 @@ private fun AvatarProfileContent(
         Spacer(modifier = Modifier.height(8.dp))
     }
 
+    OutlinedButton(onClick = onManageFavorite, modifier = Modifier.fillMaxWidth()) {
+        Icon(AppIcons.Favorite, contentDescription = null)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(strings.favoriteGroupSelect)
+    }
+    Spacer(modifier = Modifier.height(8.dp))
     // 名称
     SelectionContainer {
         Text(
