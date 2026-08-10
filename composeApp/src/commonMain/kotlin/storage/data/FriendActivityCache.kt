@@ -69,9 +69,10 @@ data class FriendActivityStats(
     val lastOnlineAtMillis: Long? = null,
     val lastOfflineAtMillis: Long? = null,
     val lastActivityAtMillis: Long? = null,
-    /** Runtime-only fields. They are cleared when a cached session is restored. */
+    /** Runtime-only shared-session fields. They are cleared when a cached session is restored. */
     val activeTogetherSinceMillis: Long? = null,
     val activeTogetherInstanceId: String? = null,
+    /** Last confirmed state in the durable activity timeline; keep this across restarts as the baseline. */
     val lastObservedLocation: String? = null,
     val lastObservedStatus: String? = null,
     /** Last observed public friend profile fields for offline recent-player rendering. */
@@ -80,7 +81,5 @@ data class FriendActivityStats(
     fun clearRuntimeObservation(): FriendActivityStats = copy(
         activeTogetherSinceMillis = null,
         activeTogetherInstanceId = null,
-        lastObservedLocation = null,
-        lastObservedStatus = null,
     )
 }

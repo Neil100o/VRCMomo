@@ -27,6 +27,7 @@ import io.github.vrcmteam.vrcm.core.shared.SharedFlowCentre
 import io.github.vrcmteam.vrcm.presentation.compoments.ABottomSheet
 import io.github.vrcmteam.vrcm.presentation.compoments.ToastText
 import io.github.vrcmteam.vrcm.presentation.extensions.onApiFailure
+import io.github.vrcmteam.vrcm.presentation.extensions.ignoredFormat
 import io.github.vrcmteam.vrcm.presentation.extensions.openUrl
 import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.readBoundedBytes
 import io.github.vrcmteam.vrcm.presentation.settings.LocalSettingsState
@@ -50,6 +51,8 @@ import org.koin.compose.koinInject
 import presentation.compoments.UpdateDialog
 import presentation.screens.auth.data.VersionVo
 import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -224,7 +227,7 @@ private fun FriendActivityLogSheet(
                             },
                             supportingContent = {
                                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    Text(Instant.fromEpochMilliseconds(event.occurredAtMillis).toString().replace('T', ' ').removeSuffix("Z"))
+                                    Text(Instant.fromEpochMilliseconds(event.occurredAtMillis).toLocalDateTime(TimeZone.currentSystemDefault()).ignoredFormat)
                                     event.diffLines.forEach { line ->
                                         Text(
                                             text = if (line.added) "+ ${line.text}" else "- ${line.text}",

@@ -76,6 +76,47 @@ class FriendActivityTrackerTest {
         assertEquals(3_000, stats.lastActivityAtMillis)
     }
 
+
+    @Test
+    fun `untrusted cached offline snapshot does not create a restart transition`() {
+        val tracker = FriendActivityTracker(
+            initialStats = mapOf(
+                "usr_friend" to FriendActivityStats(
+                    userId = "usr_friend",
+                    lastObservedLocation = "wrld_home:123",
+                    lastObservedStatus = "active",
+                ),
+            ),
+        )
+
+        tracker.observeFriends(
+            friends = listOf(observation(location = "offline", status = "offline")),
+            nowMillis = 1_000,
+            isTrustedSnapshot = false,
+        )
+        tracker.observeFriends(
+            friends = listOf(observation(location = "wrld_home:123", status = "active")),
+            nowMillis = 2_000,
+        )
+
+        assertEquals("wrld_home:123", tracker.snapshot.getValue("usr_friend").lastObservedLocation)
+        assertEquals("active", tracker.snapshot.getValue("usr_friend").lastObservedStatus)
+        assertEquals(emptyList(), tracker.eventLog)
+    }
+
+
+    @Test
+    fun `first trusted in-game observation establishes a baseline without inventing a location change`() {
+        val tracker = FriendActivityTracker()
+
+        tracker.observeFriends(
+            friends = listOf(observation(location = "wrld_home:123", status = "active")),
+            nowMillis = 1_000,
+        )
+
+        assertEquals(emptyList(), tracker.eventLog)
+    }
+
     @Test
     fun `restored runtime meeting state is discarded rather than counting downtime`() {
         val tracker = FriendActivityTracker(

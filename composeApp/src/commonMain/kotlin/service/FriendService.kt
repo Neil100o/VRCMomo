@@ -311,12 +311,22 @@ class FriendService(
         committed
     }
 
-    private fun publishFriendState() {
+    /**
+     * A restored cache is useful for showing the friend list immediately, but it is not a live
+     * observation. In particular, [FriendData.asCachedOffline] deliberately removes presence;
+     * recording that synthetic offline state would manufacture an offline/online/location cycle
+     * every time the app restarts.
+     */
+    private fun publishFriendState(
+        recordActivity: Boolean = true,
+        writeCache: Boolean = true,
+    ) {
         val snapshot = friendStore.snapshot
-        friendActivityService.observeFriends(snapshot)
+        if (recordActivity) friendActivityService.observeFriends(snapshot)
         if (_friendState.value != snapshot) {
             _friendState.value = snapshot
         }
+        if (!writeCache) return
         activeAccountUserId?.let { userId ->
             cacheWriter.submit(
                 accountUserId = userId,
@@ -333,7 +343,7 @@ class FriendService(
         val friends = friendListCacheDao.load(userId)?.friends.orEmpty()
             .map(FriendData::asCachedOffline)
         friendStore.restore(friends)
-        publishFriendState()
+        publishFriendState(recordActivity = false, writeCache = false)
     }
 
     private fun isCurrentSession(sessionToken: AccountSessionToken): Boolean =

@@ -40,7 +40,11 @@ internal class FriendActivityTracker(
     fun observeFriends(
         friends: Collection<FriendActivityObservation>,
         nowMillis: Long,
+        isTrustedSnapshot: Boolean = true,
     ): Boolean {
+        // Cached startup data is intentionally rewritten as offline for the UI. It must never
+        // advance this timeline, otherwise the following live refresh looks like a new session.
+        if (!isTrustedSnapshot) return false
         var changed = false
         friends.forEach { friend ->
             // VRCX history uses title case ("Active") while the live Android API currently
@@ -82,12 +86,8 @@ internal class FriendActivityTracker(
 
                 next = reconcileMeeting(next, friend.location, nowMillis)
                 val name = friend.friendData?.displayName ?: existing?.lastKnownFriend?.displayName.orEmpty()
-                if (!hasPriorObservation && isInGame) {
-                    appendEvent(
-                        friend.userId, name, FriendActivityEventType.LocationChanged, nowMillis,
-                        currentValue = friend.location,
-                    )
-                }
+                // The first trusted observation establishes a baseline. Its real start time is
+                // unknown, so recording it as a location change would invent an activity event.
                 if (hasPriorObservation) {
                     if (!wasInGame && isInGame) {
                         appendEvent(

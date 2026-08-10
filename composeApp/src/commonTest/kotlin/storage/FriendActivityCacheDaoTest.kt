@@ -32,6 +32,24 @@ class FriendActivityCacheDaoTest {
         )
     }
 
+
+    @Test
+    fun legacyRecordRetainsConfirmedTimelineBaseline() {
+        val settings = MapSettings()
+        val userId = "usr_restart"
+        settings.putString(
+            "${DaoKeys.FriendActivity.KEY_PREFIX}.$userId",
+            """{"schemaVersion":7,"statsByFriendId":{"usr_friend":{"userId":"usr_friend","lastObservedLocation":"wrld_home:123","lastObservedStatus":"active"}}}""",
+        )
+
+        val loaded = assertNotNull(FriendActivityCacheDao(settings).load(userId))
+        val friend = loaded.statsByFriendId.getValue("usr_friend")
+
+        assertEquals("wrld_home:123", friend.lastObservedLocation)
+        assertEquals("active", friend.lastObservedStatus)
+        assertEquals(FriendActivityCache.CURRENT_SCHEMA_VERSION, loaded.schemaVersion)
+    }
+
     @Test
     fun newerSchemaIsNeverOverwrittenByThisBuild() {
         val settings = MapSettings()
