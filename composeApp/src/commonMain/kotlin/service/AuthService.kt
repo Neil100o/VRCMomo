@@ -141,7 +141,10 @@ class AuthService(
 
     suspend fun doReTryAuth(): Boolean {
         val accountInfo = accountDao.currentAccountDtoOrNull() ?: return false
-        return login(accountInfo.username, accountInfo.password!!) is AuthState.Authed
+        // Older or cookie-only account entries do not contain a reusable password.
+        // Treat them as not recoverable instead of crashing the whole app on a 401.
+        val password = accountInfo.password ?: return false
+        return login(accountInfo.username, password) is AuthState.Authed
     }
 
     /**
