@@ -1,4 +1,4 @@
-﻿# VRCMomo development map
+# VRCMomo development map
 
 ## Build and release
 - `gradle/libs.versions.toml`: `app-version`, `app-code`
@@ -25,6 +25,16 @@
 - Search integration: `presentation/screens/home/pager/SearchListPagerModel.kt`
 - VRCX bridge: `tools/export_vrcx_activity.py` (read-only SQLite export) and `service/VrcxActivityImport.kt` (Android merge). Bridge v2 carries presence, locations, social status, BIO diffs, avatar changes, friendship history and completed shared sessions. Credentials, cookies, notes and moderation data are excluded.
 
+## LAN timeline aggregation baseline
+
+- **Protocol / event fingerprints:** `composeApp/src/commonMain/kotlin/service/VrcmomoActivitySync.kt`
+- **Durable per-account dedupe keys:** `composeApp/src/commonMain/kotlin/storage/data/FriendActivityCache.kt` and `storage/FriendActivityCacheDao.kt`
+- **Phone orchestration:** `service/FriendActivityService.kt`, then Android process-launch sync in `src/androidMain/kotlin/VRCMApplication.kt`
+- **Desktop archive endpoint:** `tools/vrcmomo_lan_bridge.py` (`GET/POST /v1/vrcmomo-activity`)
+
+The bridge retains phone timelines and sends them back as an archive. Import treats each timeline entry as an immutable event fingerprint, so opening the app again or re-uploading an unchanged phone snapshot does not duplicate a log entry. V1 phone envelopes remain readable; new exports are V2 and include an installation ID.
+
+Do **not** add cumulative `FriendActivityStats` from a phone archive. Those values are complete per-device snapshots; summing them after a retry inflates meeting counts and time. Cross-device totals need a later episode/cursor protocol, so this first implementation merges timeline history safely and leaves existing locally/VRCX-derived totals unchanged.
 ## LAN VRCX sync
 - PC bridge launcher: `tools/Start-VRCMomoLanBridge.bat`
 - PC bridge server and UDP discovery responder: `tools/vrcmomo_lan_bridge.py`

@@ -153,9 +153,8 @@ class FriendActivityCacheDao(
                 6 -> migrated.copy(
                     schemaVersion = 7,
                 )
-                7 -> migrated.copy(
-                    schemaVersion = FriendActivityCache.CURRENT_SCHEMA_VERSION,
-                )
+                7 -> migrated.copy(schemaVersion = 8)
+                8 -> migrated.copy(schemaVersion = FriendActivityCache.CURRENT_SCHEMA_VERSION)
                 else -> return null
             }
         }

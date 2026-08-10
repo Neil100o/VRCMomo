@@ -40,6 +40,7 @@ class FriendActivityService(
     private var activeAccountUserId: String? = null
     private var tracker = FriendActivityTracker()
     private var importedVrcxEventKeys: Set<String> = emptySet()
+    private var importedVrcmomoEventKeys: Set<String> = emptySet()
 
     private val _friendActivityState = MutableStateFlow<Map<String, FriendActivityStats>>(emptyMap())
     val friendActivityState: StateFlow<Map<String, FriendActivityStats>> = _friendActivityState.asStateFlow()
@@ -63,6 +64,7 @@ class FriendActivityService(
         tracker = FriendActivityTracker(cache?.statsByFriendId.orEmpty(), cache?.activityEvents.orEmpty())
         pruneEventsLocked()
         importedVrcxEventKeys = cache?.importedVrcxEventKeys.orEmpty()
+        importedVrcmomoEventKeys = cache?.importedVrcmomoEventKeys.orEmpty()
         publishLocked(save = false)
     }
 
@@ -71,6 +73,7 @@ class FriendActivityService(
         activeAccountUserId = null
         tracker = FriendActivityTracker()
         importedVrcxEventKeys = emptySet()
+        importedVrcmomoEventKeys = emptySet()
         _friendActivityState.value = emptyMap()
         _activityLog.value = emptyList()
     }
@@ -121,11 +124,30 @@ class FriendActivityService(
         VrcmomoActivitySyncEnvelope(
             ownerUserId = owner,
             exportedAtMillis = Clock.System.now().toEpochMilliseconds(),
+            sourceDeviceId = settingsDao?.lanSyncDeviceId,
             statsByFriendId = tracker.snapshotForPersistence(Clock.System.now().toEpochMilliseconds()),
             activityEvents = tracker.eventLog,
         ).encode()
     }
 
+    /** Preview a desktop-held VRCMomo event archive without modifying the active account. */
+    internal fun previewVrcmomoActivityImport(raw: String): VrcmomoActivityImportPreview = synchronized(lock) {
+        check(activeAccountUserId != null) { "Sign in before importing activity history" }
+        val localKeys = tracker.eventLog.mapTo(mutableSetOf(), ::vrcmomoActivityEventKey)
+        VrcmomoActivityImporter.preview(raw, localKeys + importedVrcmomoEventKeys)
+    }
+
+    /**
+     * Imports only unseen timeline events. Cumulative totals are intentionally not added here:
+     * adding complete snapshots after a retry would inflate meetings and play time.
+     */
+    internal fun applyVrcmomoActivityImport(preview: VrcmomoActivityImportPreview) = synchronized(lock) {
+        check(activeAccountUserId != null) { "Sign in before importing activity history" }
+        if (preview.acceptedEventKeys.isEmpty()) return@synchronized
+        tracker.mergeImportedEvents(preview.events)
+        importedVrcmomoEventKeys = importedVrcmomoEventKeys + preview.acceptedEventKeys
+        publishLocked(save = true)
+    }
     /** Requests a coalesced write of the current account, including active session duration. */
     fun flushNow() {
         persistSnapshot()
@@ -169,6 +191,7 @@ class FriendActivityService(
                 statsByFriendId = tracker.snapshotForPersistence(Clock.System.now().toEpochMilliseconds()),
                 schemaVersion = FriendActivityCache.CURRENT_SCHEMA_VERSION,
                 importedVrcxEventKeys = importedVrcxEventKeys,
+                importedVrcmomoEventKeys = importedVrcmomoEventKeys,
                 activityEvents = tracker.eventLog,
             )
         } ?: return
@@ -183,6 +206,7 @@ class FriendActivityService(
                 statsByFriendId = tracker.snapshotForPersistence(Clock.System.now().toEpochMilliseconds()),
                 schemaVersion = FriendActivityCache.CURRENT_SCHEMA_VERSION,
                 importedVrcxEventKeys = importedVrcxEventKeys,
+                importedVrcmomoEventKeys = importedVrcmomoEventKeys,
                 activityEvents = tracker.eventLog,
             ),
         )

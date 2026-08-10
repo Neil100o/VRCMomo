@@ -51,8 +51,12 @@ class VRCMApplication : Application() {
                 )
                 val activityService = koin.get<FriendActivityService>()
                 val bridgeClient = koin.get<LanActivityBridgeClient>()
-                val preview = activityService.previewVrcxActivityImport(bridgeClient.fetchVrcxActivity(pairing))
-                activityService.applyVrcxActivityImport(preview)
+                val vrcxPreview = activityService.previewVrcxActivityImport(bridgeClient.fetchVrcxActivity(pairing))
+                activityService.applyVrcxActivityImport(vrcxPreview)
+                val timelinePreview = activityService.previewVrcmomoActivityImport(
+                    bridgeClient.fetchVrcmomoActivityArchive(pairing),
+                )
+                activityService.applyVrcmomoActivityImport(timelinePreview)
                 bridgeClient.uploadVrcmomoActivity(pairing, activityService.exportLanActivitySync())
             }.onSuccess {
                 settingsDao.lanSyncStatus = LanSyncStatus(

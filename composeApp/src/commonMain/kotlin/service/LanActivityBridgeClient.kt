@@ -44,6 +44,15 @@ internal class LanActivityBridgeClient(
         check(response.status.isSuccess()) { "Bridge upload failed (${response.status.value}): ${text.take(160)}" }
     }
 
+    /** Reads the bridge-held VRCMomo event archive. It contains no VRChat credentials. */
+    suspend fun fetchVrcmomoActivityArchive(pairing: LanBridgePairing): String {
+        val response = client.get("${pairing.baseUrl}/v1/vrcmomo-activity") {
+            header("X-VRCMomo-Bridge-Token", pairing.token)
+        }
+        val text = response.body<String>()
+        check(response.status.isSuccess()) { "Bridge archive request failed (${response.status.value}): ${text.take(160)}" }
+        return text
+    }
     suspend fun fetchVrcxActivity(pairing: LanBridgePairing): String {
         val response = client.get("${pairing.baseUrl}/v1/vrcx-activity") {
             header("X-VRCMomo-Bridge-Token", pairing.token)

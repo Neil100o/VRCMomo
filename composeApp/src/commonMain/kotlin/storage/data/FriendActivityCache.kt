@@ -17,6 +17,8 @@ data class FriendActivityCache(
     val schemaVersion: Int = LEGACY_SCHEMA_VERSION,
     /** Stable keys from imported VRCX events, used to make repeated imports idempotent. */
     val importedVrcxEventKeys: Set<String> = emptySet(),
+    /** Stable keys from VRCMomo LAN timeline events, used to make archive imports idempotent. */
+    val importedVrcmomoEventKeys: Set<String> = emptySet(),
     /** Newest-first local event timeline, capped by [FriendActivityTracker] before persistence. */
     val activityEvents: List<FriendActivityEvent> = emptyList(),
     /** Number of 500-event files written beside the account cache. */
@@ -24,7 +26,7 @@ data class FriendActivityCache(
 ) {
     companion object {
         const val LEGACY_SCHEMA_VERSION = 1
-        const val CURRENT_SCHEMA_VERSION = 8
+        const val CURRENT_SCHEMA_VERSION = 9
     }
 }
 

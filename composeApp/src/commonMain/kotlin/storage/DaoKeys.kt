@@ -75,6 +75,7 @@ object DaoKeys{
         const val LAN_SYNC_LAST_DIRECTION_KEY = "${PREFIX}.lanSyncLastDirection"
         const val LAN_SYNC_LAST_ERROR_KEY = "${PREFIX}.lanSyncLastError"
         const val LAN_SYNC_AUTO_ENABLED_KEY = "${PREFIX}.lanSyncAutoEnabled"
+        const val LAN_SYNC_DEVICE_ID_KEY = "${PREFIX}.lanSyncDeviceId"
 
     }
 

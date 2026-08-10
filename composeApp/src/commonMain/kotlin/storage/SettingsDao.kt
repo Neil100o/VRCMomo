@@ -73,6 +73,12 @@ class SettingsDao(
             settingsSettings.putString(DaoKeys.Settings.LAN_BRIDGE_TOKEN_KEY, it)
         } ?: settingsSettings.remove(DaoKeys.Settings.LAN_BRIDGE_TOKEN_KEY)
 
+    /** Stable installation identity for LAN archive dedupe. It contains no VRChat credential. */
+    val lanSyncDeviceId: String
+        get() = settingsSettings.getStringOrNull(DaoKeys.Settings.LAN_SYNC_DEVICE_ID_KEY)
+            ?: "device-${kotlin.random.Random.nextLong().toString(36)}-${kotlin.random.Random.nextLong().toString(36)}".also {
+                settingsSettings.putString(DaoKeys.Settings.LAN_SYNC_DEVICE_ID_KEY, it)
+            }
     var lanSyncStatus: LanSyncStatus
         get() = LanSyncStatus(
             lastSuccessAtMillis = settingsSettings.getLongOrNull(DaoKeys.Settings.LAN_SYNC_LAST_SUCCESS_AT_KEY),

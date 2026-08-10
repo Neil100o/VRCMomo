@@ -88,7 +88,9 @@ class BridgeState:
         if not payload or len(payload) > MAX_PAYLOAD_BYTES:
             raise ValueError("Payload must be between 1 byte and 32 MiB")
         document = json.loads(payload)
-        if not isinstance(document, dict) or document.get("format") != "vrcmomo-activity-sync-v1":
+        if not isinstance(document, dict) or document.get("format") not in {
+            "vrcmomo-activity-sync-v1", "vrcmomo-activity-sync-v2"
+        }:
             raise ValueError("Unsupported VRCMomo LAN activity format")
         digest = hashlib.sha256(payload).hexdigest()
         self.inbox.mkdir(parents=True, exist_ok=True)
@@ -100,6 +102,31 @@ class BridgeState:
         return digest
 
 
+    def export_mobile_archive(self) -> bytes:
+        """Return the newest complete timeline per device; clients still dedupe every event."""
+        latest_by_source = {}
+        if self.inbox.exists():
+            for source in self.inbox.glob("mobile-*.json"):
+                try:
+                    document = json.loads(source.read_text(encoding="utf-8"))
+                except (OSError, json.JSONDecodeError):
+                    continue
+                if not isinstance(document, dict) or document.get("format") not in {
+                    "vrcmomo-activity-sync-v1", "vrcmomo-activity-sync-v2"
+                }:
+                    continue
+                source_id = document.get("sourceDeviceId") or f"legacy:{document.get('ownerUserId', '')}"
+                exported_at = document.get("exportedAtMillis")
+                if not isinstance(exported_at, int):
+                    exported_at = 0
+                existing = latest_by_source.get(source_id)
+                if existing is None or exported_at >= existing[0]:
+                    latest_by_source[source_id] = (exported_at, document)
+        documents = [item[1] for item in sorted(latest_by_source.values(), reverse=True)]
+        return json.dumps({
+            "format": "vrcmomo-activity-archive-v1",
+            "documents": documents,
+        }, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
 class DiscoveryResponder(threading.Thread):
     """Answers LAN discovery with the current short-lived pairing link."""
 
@@ -151,9 +178,12 @@ class BridgeHandler(BaseHTTPRequestHandler):
                 "service": "vrcmomo-lan-bridge",
                 "protocol": 1,
                 "vrcxExportFormat": "vrcmomo-vrcx-activity-v3",
-                "mobileUploadFormat": "vrcmomo-activity-sync-v1",
+                "mobileUploadFormats": ["vrcmomo-activity-sync-v1", "vrcmomo-activity-sync-v2"],
+                "mobileArchiveFormat": "vrcmomo-activity-archive-v1",
                 "serverTime": datetime.now(timezone.utc).isoformat(),
             })
+        if path == "/v1/vrcmomo-activity":
+            return self._bytes(HTTPStatus.OK, self.server.state.export_mobile_archive())
         if path == "/v1/vrcx-activity":
             try:
                 return self._bytes(HTTPStatus.OK, self.server.state.export_vrcx_activity())
