@@ -417,6 +417,9 @@ sealed class LocaleStrings {
     open val officialLinkTypeWorld: String = "world"
     open val officialLinkTypeGroup: String = "group"
     open val officialLinkTypeAvatar: String = "avatar"
+    open val copyOfficialUrl: String = "Copy VRChat link"
+    open val officialUrlCopied: String = "Link copied"
+    open val officialUrlCopyFailed: String = "Could not copy the link"
 }
 
 val strings: LocaleStrings

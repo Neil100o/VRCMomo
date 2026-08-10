@@ -334,4 +334,8 @@ internal object LocaleStringsZhHant : LocaleStrings() {
     override val officialLinkTypeWorld = "世界"
     override val officialLinkTypeGroup = "群組"
     override val officialLinkTypeAvatar = "模型"
+
+    override val copyOfficialUrl = "複製 VRChat 連結"
+    override val officialUrlCopied = "連結已複製"
+    override val officialUrlCopyFailed = "無法複製連結"
 }

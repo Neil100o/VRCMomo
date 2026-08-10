@@ -80,6 +80,7 @@ import io.github.vrcmteam.vrcm.network.api.attributes.UserStatus
 import io.github.vrcmteam.vrcm.network.api.users.data.UserData
 import io.github.vrcmteam.vrcm.core.extensions.toLocalDateTime
 import io.github.vrcmteam.vrcm.presentation.compoments.AImage
+import io.github.vrcmteam.vrcm.presentation.compoments.OfficialUrlRow
 import io.github.vrcmteam.vrcm.presentation.compoments.GroupIcon
 import io.github.vrcmteam.vrcm.presentation.compoments.LocalSharedTransitionDialogScope
 import io.github.vrcmteam.vrcm.presentation.compoments.LoadingButton
@@ -559,6 +560,8 @@ private fun DetailsContent(group: GroupProfileVo, owner: UserData?, instances: L
                 modifier = Modifier.fillMaxWidth()
             )
         }
+        OfficialUrlRow(url = "https://vrchat.com/home/group/${group.groupId}")
+
         SectionCard(title = strings.groupTabDetails, modifier = Modifier.fillMaxWidth()) {
 
             val detailItems = listOf(

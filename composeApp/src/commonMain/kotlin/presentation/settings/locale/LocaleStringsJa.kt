@@ -334,4 +334,8 @@ internal object LocaleStringsJa : LocaleStrings() {
     override val officialLinkTypeWorld = "ワールド"
     override val officialLinkTypeGroup = "グループ"
     override val officialLinkTypeAvatar = "アバター"
+
+    override val copyOfficialUrl = "VRChatリンクをコピー"
+    override val officialUrlCopied = "リンクをコピーしました"
+    override val officialUrlCopyFailed = "リンクをコピーできませんでした"
 }

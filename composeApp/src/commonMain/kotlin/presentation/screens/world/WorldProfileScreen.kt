@@ -900,6 +900,7 @@ private fun Screen.RenderBottomSheetContent(
                         text = worldProfileVo.worldDescription,
                         style = MaterialTheme.typography.bodyMedium,
                     )
+                    OfficialUrlRow(url = "https://vrchat.com/home/world/${worldProfileVo.worldId}")
                     if (worldProfileVo.tags?.isNotEmpty() == true) {
                         Text(
                             text = strings.worldProfileAuthorTags,

@@ -823,6 +823,7 @@ private fun ColumnScope.ProfileContent(
     UserStatusRow(canCopy = true, user = currentUser,)
     // LanguagesRow && LinksRow
     LangAndLinkRow(currentUser)
+    OfficialUrlRow(url = "https://vrchat.com/home/user/${currentUser.id}")
 
     var isSelected by remember { mutableStateOf(false) }
     // LocationCard: show the room of this user and friends in the same room
