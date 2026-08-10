@@ -41,6 +41,7 @@ import io.github.vrcmteam.vrcm.service.LanActivityBridgeClient
 import io.github.vrcmteam.vrcm.service.LanBridgePairing
 import io.github.vrcmteam.vrcm.service.LanBridgeCandidate
 import io.github.vrcmteam.vrcm.service.discoverLanBridges
+import io.github.vrcmteam.vrcm.service.LanBridgeQrScanButton
 import io.github.vrcmteam.vrcm.service.VersionService
 import io.github.vrcmteam.vrcm.service.VrcxActivityImportPreview
 import io.github.vrcmteam.vrcm.network.api.worlds.WorldsApi
@@ -407,6 +408,14 @@ private fun VrcxLanSyncBlock() {
                 Text(localeStrings.vrcxLanDiscoveredAddress.format(candidate.baseUrl))
             }
         }
+        LanBridgeQrScanButton(
+            label = localeStrings.vrcxLanScanQr,
+            enabled = !isSyncing,
+            onScanned = { scannedUrl ->
+                bridgeUrl = scannedUrl
+                bridgeToken = ""
+            },
+        )
         if (!isDiscovering && discoveredBridges.isEmpty()) {
             Text(
                 localeStrings.vrcxLanDiscoveryHint,

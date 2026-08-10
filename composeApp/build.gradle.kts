@@ -38,6 +38,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.exifinterface)
+            implementation(libs.zxing.android.embedded)
 
             implementation(libs.koin.androidx.compose)
 

@@ -335,6 +335,7 @@ internal object LocaleStringsZhHans : LocaleStrings() {
     override val vrcxLanDiscovering = "寻找中…"
     override val vrcxLanDiscoveredAddress = "使用 %s"
     override val vrcxLanDiscoveryHint = "请保持电脑桥接工具开启，并连接到同一局域网；自动发现不会传输配对令牌。"
+    override val vrcxLanScanQr = "扫描配对二维码"
     override val profileInviteToMyInstance = "邀请来我的房间"
     override val profileInviteSent = "邀请已发送"
     override val profileInviteNotInInstance = "你当前不在任何房间中"

@@ -6,6 +6,7 @@ import kotlinx.serialization.json.Json
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
+import java.net.NetworkInterface
 
 private const val DISCOVERY_PORT = 38672
 private const val DISCOVERY_TIMEOUT_MILLIS = 2_500
@@ -18,7 +19,9 @@ internal actual suspend fun discoverLanBridges(): List<LanBridgeCandidate> = wit
         socket.broadcast = true
         socket.soTimeout = 350
         val request = LAN_BRIDGE_DISCOVERY_REQUEST.encodeToByteArray()
-        socket.send(DatagramPacket(request, request.size, InetAddress.getByName("255.255.255.255"), DISCOVERY_PORT))
+        discoveryTargets().forEach { target ->
+            socket.send(DatagramPacket(request, request.size, target, DISCOVERY_PORT))
+        }
         while (System.currentTimeMillis() < deadline) {
             val buffer = ByteArray(1024)
             val reply = DatagramPacket(buffer, buffer.size)
@@ -31,4 +34,16 @@ internal actual suspend fun discoverLanBridges(): List<LanBridgeCandidate> = wit
         }
     }
     candidates.toList()
+}
+
+
+private fun discoveryTargets(): Set<InetAddress> = buildSet {
+    // Some access points drop the global broadcast but accept a subnet-specific one.
+    add(InetAddress.getByName("255.255.255.255"))
+    val interfaces = runCatching { NetworkInterface.getNetworkInterfaces().toList() }.getOrDefault(emptyList())
+    interfaces
+        .filter { network -> runCatching { network.isUp && !network.isLoopback }.getOrDefault(false) }
+        .flatMap { network -> network.interfaceAddresses }
+        .mapNotNull { address -> address.broadcast }
+        .forEach(::add)
 }
