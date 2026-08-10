@@ -38,7 +38,7 @@ Export-VRCXActivity.bat --db "D:\Backup\VRCX.sqlite3" --output "D:\Export\vrcmom
 Start-VRCMomoLanBridge.bat
 ```
 
-It installs the small QR helper once if needed, then prints both a scanable terminal QR code and a pairing URL containing a temporary token. Keep the window open while syncing. The current foundation exposes the paired VRCX export endpoint and stores validated phone uploads in `vrcmomo-lan-inbox`; the VRCMomo in-app pairing and automatic sync UI are the next stage.
+It prints a pairing URL containing a temporary token. If the optional `qrcode` Python package is already available it also prints a scannable terminal QR code; otherwise copy the displayed URL. Keep the window open while syncing. The current foundation exposes the paired VRCX export endpoint and stores validated phone uploads in `vrcmomo-lan-inbox`; the VRCMomo in-app pairing and automatic sync UI are the next stage.
 
 For a non-default database:
 

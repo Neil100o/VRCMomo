@@ -37,7 +37,7 @@ EXPORTER = Path(__file__).with_name("export_vrcx_activity.py")
 def print_pairing_qr(url: str) -> None:
     """Print a terminal QR code; it contains the short-lived pairing URL and token."""
     if qrcode is None:
-        print("QR code unavailable: run Start-VRCMomoLanBridge.bat once to install its local helper.")
+        print("QR code helper is not installed; copy the pairing URL below instead. LAN discovery and sync still work normally.")
         return
     code = qrcode.QRCode(border=1)
     code.add_data(url)
