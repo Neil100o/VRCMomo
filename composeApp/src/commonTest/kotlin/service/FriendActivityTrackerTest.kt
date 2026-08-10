@@ -4,6 +4,7 @@ import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class FriendActivityTrackerTest {
     @Test
@@ -162,6 +163,27 @@ class FriendActivityTrackerTest {
         assertEquals(2_000, stats.lastOnlineAtMillis)
         assertEquals(3_000, stats.lastOfflineAtMillis)
     }
+    @Test
+    fun `legacy offline and ask me casing does not create a new activity event`() {
+        val tracker = FriendActivityTracker(
+            initialStats = mapOf(
+                "usr_friend" to FriendActivityStats(
+                    userId = "usr_friend",
+                    lastObservedLocation = "Offline",
+                    lastObservedStatus = "AskMe",
+                ),
+            ),
+        )
+
+        assertTrue(
+            !tracker.observeFriends(
+                listOf(observation(location = "offline", status = "ask me")),
+                nowMillis = 1_000L,
+            ),
+        )
+        assertTrue(tracker.eventLog.isEmpty())
+    }
+
     private fun observation(
         location: String,
         status: String,

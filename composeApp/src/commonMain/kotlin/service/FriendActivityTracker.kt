@@ -24,7 +24,10 @@ internal class FriendActivityTracker(
     initialEvents: List<FriendActivityEvent> = emptyList(),
 ) {
     private val statsByFriendId = initialStats.mapValues { (_, stats) ->
-        stats.clearRuntimeObservation()
+        stats.clearRuntimeObservation().copy(
+            lastObservedLocation = normalizeObservedLocation(stats.lastObservedLocation),
+            lastObservedStatus = normalizeStoredSocialStatus(stats.lastObservedStatus),
+        )
     }.toMutableMap()
     private var selfInstanceId: String? = null
     private val activityEvents = initialEvents
@@ -51,11 +54,12 @@ internal class FriendActivityTracker(
             // exposes lower case ("active"). Keep one canonical value so charts and logs do
             // not split the same social status into two categories.
             val normalizedStatus = formatSocialStatus(friend.status, friend.statusDescription)
+            val normalizedLocation = normalizeObservedLocation(friend.location).orEmpty()
             val existing = statsByFriendId[friend.userId]
             val previousLocation = existing?.lastObservedLocation
             val previousStatus = existing?.lastObservedStatus
             val wasInGame = isInGameLocation(previousLocation)
-            val isInGame = isInGameLocation(friend.location)
+            val isInGame = isInGameLocation(normalizedLocation)
             val hasPriorObservation = previousLocation != null || previousStatus != null
             var next = (existing ?: FriendActivityStats(userId = friend.userId)).copy(
                 lastKnownFriend = friend.friendData ?: existing?.lastKnownFriend,
@@ -64,12 +68,12 @@ internal class FriendActivityTracker(
             if (previousLocation == null && previousStatus == null) {
                 // First observation is a baseline, not an invented online/offline transition.
                 next = next.copy(
-                    lastObservedLocation = friend.location,
+                    lastObservedLocation = normalizedLocation,
                     lastObservedStatus = normalizedStatus,
                     lastActivityAtMillis = latest(next.lastActivityAtMillis, friend.lastActivityAtMillis),
                 )
             } else {
-                val presenceChanged = previousLocation != friend.location || previousStatus != normalizedStatus
+                val presenceChanged = previousLocation != normalizedLocation || previousStatus != normalizedStatus
                 val activityAt = if (presenceChanged) nowMillis else null
                 next = next.copy(
                     lastOnlineAtMillis = if (!wasInGame && isInGame) nowMillis else next.lastOnlineAtMillis,
@@ -79,12 +83,12 @@ internal class FriendActivityTracker(
                         friend.lastActivityAtMillis,
                         activityAt,
                     ),
-                    lastObservedLocation = friend.location,
+                    lastObservedLocation = normalizedLocation,
                     lastObservedStatus = normalizedStatus,
                 )
             }
 
-                next = reconcileMeeting(next, friend.location, nowMillis)
+                next = reconcileMeeting(next, normalizedLocation, nowMillis)
                 val name = friend.friendData?.displayName ?: existing?.lastKnownFriend?.displayName.orEmpty()
                 // The first trusted observation establishes a baseline. Its real start time is
                 // unknown, so recording it as a location change would invent an activity event.
@@ -92,19 +96,19 @@ internal class FriendActivityTracker(
                     if (!wasInGame && isInGame) {
                         appendEvent(
                             friend.userId, name, FriendActivityEventType.Online, nowMillis,
-                            previousValue = previousLocation, currentValue = friend.location,
+                            previousValue = previousLocation, currentValue = normalizedLocation,
                         )
                     }
                     if (wasInGame && !isInGame) {
                         appendEvent(
                             friend.userId, name, FriendActivityEventType.Offline, nowMillis,
-                            previousValue = previousLocation, currentValue = friend.location,
+                            previousValue = previousLocation, currentValue = normalizedLocation,
                         )
                     }
-                    if (wasInGame && isInGame && previousLocation != friend.location) {
+                    if (wasInGame && isInGame && previousLocation != normalizedLocation) {
                         appendEvent(
                             friend.userId, name, FriendActivityEventType.LocationChanged, nowMillis,
-                            previousValue = previousLocation, currentValue = friend.location,
+                            previousValue = previousLocation, currentValue = normalizedLocation,
                         )
                     }
                     if (previousStatus != normalizedStatus) {
@@ -253,6 +257,29 @@ internal class FriendActivityTracker(
         return true
     }
 }
+
+/** Canonicalizes pseudo-locations while leaving VRChat world/instance identifiers intact. */
+internal fun normalizeObservedLocation(value: String?): String? = value
+    ?.trim()
+    ?.let { location ->
+        when {
+            location.equals("offline", ignoreCase = true) -> "offline"
+            location.equals("web", ignoreCase = true) -> "web"
+            location.equals("private", ignoreCase = true) -> "private"
+            location.equals("traveling", ignoreCase = true) -> "traveling"
+            else -> location
+        }
+    }
+
+/** Normalizes the status portion of a historical persisted value without altering its free-text description. */
+internal fun normalizeStoredSocialStatus(value: String?): String? = value
+    ?.trim()
+    ?.takeIf(String::isNotBlank)
+    ?.let { stored ->
+        val status = stored.substringBefore(SOCIAL_STATUS_DESCRIPTION_SEPARATOR)
+        val description = stored.substringAfter(SOCIAL_STATUS_DESCRIPTION_SEPARATOR, missingDelimiterValue = "")
+        formatSocialStatus(status, description)
+    }
 
 /**
  * VRChat/VRCX have historically used different casing and spacing for the same social states.
