@@ -115,6 +115,17 @@ class FriendActivityService(
             .take(limit.coerceAtLeast(0))
             .toList()
 
+    /** Creates a credential-free snapshot for the paired desktop LAN bridge. */
+    internal fun exportLanActivitySync(): String = synchronized(lock) {
+        val owner = checkNotNull(activeAccountUserId) { "Sign in before exporting activity history" }
+        VrcmomoActivitySyncEnvelope(
+            ownerUserId = owner,
+            exportedAtMillis = Clock.System.now().toEpochMilliseconds(),
+            statsByFriendId = tracker.snapshotForPersistence(Clock.System.now().toEpochMilliseconds()),
+            activityEvents = tracker.eventLog,
+        ).encode()
+    }
+
     /** Requests a coalesced write of the current account, including active session duration. */
     fun flushNow() {
         persistSnapshot()

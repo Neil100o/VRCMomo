@@ -372,6 +372,25 @@ private fun VrcxLanSyncBlock() {
         ) {
             Text(if (isSyncing) localeStrings.vrcxLanSyncing else localeStrings.vrcxLanSyncNow)
         }
+        OutlinedButton(
+            enabled = !isSyncing && bridgeUrl.isNotBlank() && (bridgeToken.isNotBlank() || bridgeUrl.contains("token=")),
+            onClick = {
+                scope.launch {
+                    isSyncing = true
+                    runCatching {
+                        val pairing = LanBridgePairing.fromInput(bridgeUrl, bridgeToken)
+                        settingsDao.lanBridgeUrl = pairing.baseUrl
+                        settingsDao.lanBridgeToken = pairing.token
+                        bridgeClient.uploadVrcmomoActivity(pairing, activityService.exportLanActivitySync())
+                    }.onSuccess {
+                        SharedFlowCentre.toastText.emit(ToastText.Info(localeStrings.vrcxLanUploadSuccess))
+                    }.onFailure {
+                        SharedFlowCentre.toastText.emit(ToastText.Error(localeStrings.vrcxLanUploadFailed))
+                    }
+                    isSyncing = false
+                }
+            },
+        ) { Text(localeStrings.vrcxLanUploadNow) }
     }
 
     preview?.let { importPreview ->

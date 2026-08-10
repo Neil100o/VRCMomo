@@ -33,7 +33,7 @@ The bridge accepts the token via `X-VRCMomo-Bridge-Token` or `?token=`. Payloads
 ## Delivery stages
 
 - **Stage 1 (this foundation):** local bridge server, pairing token, read-only VRCX export endpoint, bounded mobile inbox.
-- **Stage 2:** Android pairing screen, one-tap fetch and merge using the existing VRCX importer.
+- **Stage 2:** Android pairing screen, one-tap fetch and merge using the existing VRCX importer, plus a manual credential-free phone-history upload to the bridge inbox.
 - **Stage 3:** Android periodic LAN sync when the user enables it; no cloud requirement.
 - **Stage 4:** optional VRCX fork adapter to view imported mobile events in the desktop UI.
 
