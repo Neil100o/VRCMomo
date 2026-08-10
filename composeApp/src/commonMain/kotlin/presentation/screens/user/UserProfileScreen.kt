@@ -467,13 +467,6 @@ private fun RelationshipStatsCard(
         currentStats.togetherDurationMillis +
             (currentStats.activeTogetherSinceMillis?.let { nowMillis - it } ?: 0L).coerceAtLeast(0L)
     } ?: 0L
-    val isOffline = stats?.let { currentStats ->
-        currentStats.lastObservedLocation == "offline" ||
-            currentStats.lastObservedStatus.equals("offline", ignoreCase = true)
-    } == true
-    val offlineDuration = stats?.lastOfflineAtMillis?.let { offlineAt ->
-        (nowMillis - offlineAt).coerceAtLeast(0L)
-    }
 
     Surface(
         modifier = Modifier
@@ -491,30 +484,19 @@ private fun RelationshipStatsCard(
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
             )
-            RelationshipStatRow(
-                label = localeStrings.friendActivityLastSeenTogether,
-                value = formatActivityTimestamp(stats?.lastSeenTogetherAtMillis, localeStrings.friendActivityNoRecord),
+            RelationshipMetricRow(
+                leftLabel = localeStrings.friendActivityLastSeenTogether,
+                leftValue = formatActivityTimestamp(stats?.lastSeenTogetherAtMillis, localeStrings.friendActivityNoRecord),
+                rightLabel = localeStrings.friendActivityLastActive,
+                rightValue = formatActivityTimestamp(stats?.lastActivityAtMillis, localeStrings.friendActivityNoRecord),
             )
-            RelationshipStatRow(
-                label = localeStrings.friendActivityMeetingCount,
-                value = if (stats == null) localeStrings.friendActivityNoRecord
-                else "${stats.meetingCount} ${localeStrings.friendActivityMeetingUnit}",
-            )
-            RelationshipStatRow(
-                label = localeStrings.friendActivityTogetherDuration,
-                value = if (stats == null) localeStrings.friendActivityNoRecord else formatActivityDuration(togetherDuration, localeStrings),
-            )
-            RelationshipStatRow(
-                label = localeStrings.friendActivityOfflineDuration,
-                value = when {
-                    stats == null -> localeStrings.friendActivityNoRecord
-                    isOffline && offlineDuration != null -> formatActivityDuration(offlineDuration, localeStrings)
-                    else -> localeStrings.friendActivityCurrentlyOnline
-                },
-            )
-            RelationshipStatRow(
-                label = localeStrings.friendActivityLastActive,
-                value = formatActivityTimestamp(stats?.lastActivityAtMillis, localeStrings.friendActivityNoRecord),
+            RelationshipMetricRow(
+                leftLabel = localeStrings.friendActivityMeetingCount,
+                leftValue = stats?.let { "${it.meetingCount} ${localeStrings.friendActivityMeetingUnit}" }
+                    ?: localeStrings.friendActivityNoRecord,
+                rightLabel = localeStrings.friendActivityTogetherDuration,
+                rightValue = stats?.let { formatActivityDuration(togetherDuration, localeStrings) }
+                    ?: localeStrings.friendActivityNoRecord,
             )
             FriendStatusTimeline(events = events, nowMillis = nowMillis)
             FriendActivityHeatmap(events = events, nowMillis = nowMillis)
@@ -698,31 +680,53 @@ private const val ACTIVITY_CHART_RANGE_MILLIS = 30L * 24L * 60L * 60L * 1_000L
 private const val ACTIVITY_CHART_REFRESH_WINDOW = 5L * 60L * 1_000L
 
 @Composable
-private fun RelationshipStatRow(
-    label: String,
-    value: String,
+private fun RelationshipMetricRow(
+    leftLabel: String,
+    leftValue: String,
+    rightLabel: String,
+    rightValue: String,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.width(12.dp))
-        Text(
-            text = value,
-            style = MaterialTheme.typography.bodyMedium,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        RelationshipMetric(leftLabel, leftValue, Modifier.weight(1f))
+        RelationshipMetric(rightLabel, rightValue, Modifier.weight(1f))
     }
 }
 
+@Composable
+private fun RelationshipMetric(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    Surface(
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.surfaceContainer,
+        shape = MaterialTheme.shapes.small,
+    ) {
+        Column(
+            modifier = Modifier.padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
 @OptIn(ExperimentalTime::class)
 private fun formatActivityTimestamp(epochMillis: Long?, emptyLabel: String): String =
     epochMillis?.let {
