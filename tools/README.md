@@ -29,3 +29,21 @@ For a non-default VRCX database location:
 ```text
 Export-VRCXActivity.bat --db "D:\Backup\VRCX.sqlite3" --output "D:\Export\vrcmomo-vrcx-activity-v3.json"
 ```
+
+## LAN sync bridge (foundation)
+
+`vrcmomo_lan_bridge.py` is the first local-network bridge for a computer running VRCX and a paired VRCMomo phone. It reads VRCX activity only through the existing exporter; it never modifies `VRCX.sqlite3`.
+
+```text
+python vrcmomo_lan_bridge.py
+```
+
+It prints a pairing URL containing a temporary token. Keep the window open while syncing. The current foundation exposes the paired VRCX export endpoint and stores validated phone uploads in `vrcmomo-lan-inbox`; the VRCMomo in-app pairing and automatic sync UI are the next stage.
+
+For a non-default database:
+
+```text
+python vrcmomo_lan_bridge.py --db "D:\Backup\VRCX.sqlite3"
+```
+
+See `docs/LAN_SYNC_DESIGN.md` for protocol, privacy boundaries and the staged delivery plan.
