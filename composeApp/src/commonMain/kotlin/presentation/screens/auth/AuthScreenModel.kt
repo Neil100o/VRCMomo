@@ -120,7 +120,7 @@ class AuthScreenModel(
             val version = withContext(Dispatchers.IO) {
                 versionService.checkVersion(true)
                     .onFailure { logger.warn("Version check skipped: ${it.message ?: "unknown error"}") }
-                    .map { VersionVo(it.tagName, it.htmlUrl, it.body, it.hasNewVersion) }
+                    .map { VersionVo(it.tagName, it.htmlUrl, it.body, it.hasNewVersion, it.downloadUrl) }
                     .getOrElse { VersionVo() }
             }
             onCheckVersion(version)
