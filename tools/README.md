@@ -1,4 +1,4 @@
-﻿# VRCX activity export bridge
+# VRCX activity export bridge
 
 `VRCMomo-VRCX-Activity-Export.exe` is the Windows tool distributed to testers.
 Run it on a computer that has VRCX installed. It opens `%APPDATA%\VRCX\VRCX.sqlite3`
@@ -32,11 +32,13 @@ Export-VRCXActivity.bat --db "D:\Backup\VRCX.sqlite3" --output "D:\Export\vrcmom
 
 ## LAN sync bridge (foundation)
 
-`vrcmomo_lan_bridge.py` is the first local-network bridge for a computer running VRCX and a paired VRCMomo phone. It reads VRCX activity only through the existing exporter; it never modifies `VRCX.sqlite3`.
+`VRCMomo-LAN-Bridge.exe` is the Windows local-network bridge distributed to testers. Run it on a computer running VRCX; it contains Python, the QR helper and the read-only exporter, so no separate runtime or package install is needed. It reads VRCX activity only through the existing exporter and never modifies `VRCX.sqlite3`.
 
 ```text
-Start-VRCMomoLanBridge.bat
+VRCMomo-LAN-Bridge.exe
 ```
+
+`Start-VRCMomoLanBridge.bat` remains a source/developer launcher. Rebuild the distributed executable with `Build-VRCMomoLanBridge.ps1`.
 
 It prints a pairing URL containing a temporary token. If the optional `qrcode` Python package is already available it also prints a scannable terminal QR code; otherwise copy the displayed URL. Keep the window open while syncing. The current foundation exposes the paired VRCX export endpoint and stores validated phone uploads in `vrcmomo-lan-inbox`; the VRCMomo in-app pairing and automatic sync UI are the next stage.
 

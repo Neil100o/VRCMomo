@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 # <img src="image/VRCMomoLogo.png" width="50" height="50"  alt="logo"/> VRCMomo
 
@@ -23,6 +23,7 @@ A mobile-first VRChat companion, continued from VRCM, for managing friends, Gall
 
 - **Android APK:** [VRCMomo-v0.3.15.apk](downloads/VRCMomo-v0.3.15.apk) — download it to an Android device, allow installation from the browser/file manager when Android asks, then install.
 - **Optional VRCX exporter (Windows):** [VRCMomo-VRCX-Activity-Export.exe](downloads/VRCMomo-VRCX-Activity-Export.exe) — run it on the computer with VRCX, then import its JSON file from VRCMomo settings.
+- **LAN bridge (Windows):** [VRCMomo-LAN-Bridge.exe](downloads/VRCMomo-LAN-Bridge.exe) — run it on the computer with VRCX, then pair it from VRCMomo on the same network. Python and QR support are included.
 - See [downloads/README.md](downloads/README.md) for privacy boundaries and testing notes. These are test files, not a stable release.
 - The app checks this testing channel for newer Android builds; use the update prompt to open the APK directly.
 

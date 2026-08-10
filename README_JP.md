@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 # <img src="image/VRCMomoLogo.png" width="50" height="50"  alt="logo"/> VRCMomo
 
@@ -23,6 +23,7 @@ VRCM を基盤として継続開発している、Android 優先の VRChat モ�
 
 - **Android APK：**[VRCMomo-v0.3.15.apk](downloads/VRCMomo-v0.3.15.apk) — Android 端末へダウンロードし、確認画面でブラウザまたはファイルマネージャーからのインストールを許可して導入してください。
 - **任意の VRCX エクスポーター（Windows）：**[VRCMomo-VRCX-Activity-Export.exe](downloads/VRCMomo-VRCX-Activity-Export.exe) — VRCX を使っている PC で実行し、生成された JSON を VRCMomo の設定画面から読み込みます。
+- **LAN ブリッジ（Windows）：**[VRCMomo-LAN-Bridge.exe](downloads/VRCMomo-LAN-Bridge.exe) — VRCX を使っている PC で実行し、同一 LAN 上の VRCMomo からペアリングします。Python と QR サポートは同梱済みです。
 - プライバシー境界とテスト時の注意は [downloads/README.md](downloads/README.md) を確認してください。これらは安定版ではありません。
 - アプリはこのテストチャンネルを確認し、新しい Android APK があれば更新ダイアログから直接ダウンロード先を開けます。
 
