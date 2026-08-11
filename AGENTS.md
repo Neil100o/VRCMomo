@@ -72,6 +72,7 @@ Android SDK `apksigner verify --print-certs`.
 
 ## Reference documents
 
+- `docs/ANDROID_NOTIFICATION_RELIABILITY.md`: Android 单一通知开关、WebSocket 状态、后台补漏、事件范围和实现顺序。
 - `docs/CURRENT_WORK_STATUS.md`: current branch state, unfinished local UI batch, verification boundary and exact resume order. Read this before continuing unfinished work.
 - `docs/DEVELOPMENT_MAP.md`: build, storage, API and feature ownership map.
 - `docs/CODE_STANDARDS.md`: Kotlin/KMP/Compose review checklist and refactoring limits.
