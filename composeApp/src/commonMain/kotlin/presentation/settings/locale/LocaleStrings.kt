@@ -336,7 +336,7 @@ sealed class LocaleStrings {
     open val friendActivityLogClear: String = "Clear activity log"
     open val friendActivityLogClearDescription: String = "Deletes only detailed timeline entries; meeting and duration statistics are kept."
     open val systemNotificationsTitle: String = "System notifications"
-    open val systemNotificationsDescription: String = "Show Android notifications for received Boops and favorited friends entering or leaving VRChat."
+    open val systemNotificationsDescription: String = "Keep Android notifications connected for Boops, friend requests, friendship changes, and selected friends entering or leaving VRChat."
     open val vrcxActivityImportTitle: String = "VRCX activity import"
     open val vrcxActivityImportDescription: String = "Import a VRCMomo VRCX activity bridge file. Existing records are merged and duplicate events are skipped."
     open val vrcxActivityImportChoose: String = "Choose activity export"

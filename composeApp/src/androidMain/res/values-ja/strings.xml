@@ -3,6 +3,8 @@
     <string name="social_notification_channel_description">Boop とお気に入りフレンドの状態通知</string>
     <string name="background_monitoring_channel_name">バックグラウンドのフレンド記録</string>
     <string name="background_monitoring_channel_description">ユーザーが有効にした VRChat フレンド活動の監視を継続します</string>
-    <string name="background_monitoring_notification_title">VRCMomo がフレンド活動を記録中です</string>
-    <string name="background_monitoring_notification_message">タップして開きます。設定からいつでも停止できます。</string>
+    <string name="background_monitoring_notification_title">VRCMomo 通知</string>
+    <string name="background_monitoring_connecting">接続中</string>
+    <string name="background_monitoring_connected">接続済み</string>
+    <string name="background_monitoring_disconnected">切断 · %1$s 接続 · 再接続中</string>
 </resources>

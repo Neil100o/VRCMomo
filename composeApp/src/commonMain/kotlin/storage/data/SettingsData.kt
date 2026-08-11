@@ -8,8 +8,9 @@ data class SettingsData(
     val isDarkTheme: Boolean?,
     val themeColor: String?,
     val languageTag: String?,
+    /** Legacy mirror retained for source and saved-setting compatibility; follows the unified switch. */
     val isBackgroundFriendMonitoringEnabled: Boolean = false,
-    val isSystemNotificationsEnabled: Boolean = true,
+    val isSystemNotificationsEnabled: Boolean = false,
     val friendPresenceNotificationSelection: FriendPresenceNotificationSelection = FriendPresenceNotificationSelection(),
     /** Null keeps all activity-log files indefinitely. */
     val activityLogRetentionDays: Int? = null,

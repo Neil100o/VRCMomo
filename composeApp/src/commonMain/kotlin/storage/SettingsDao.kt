@@ -14,18 +14,16 @@ class SettingsDao(
 
     var settings: SettingsData
         get() {
+            val unifiedNotificationsEnabled = migrateUnifiedAndroidNotifications()
             return SettingsData(
                 isDarkTheme = settingsSettings.getBooleanOrNull(DaoKeys.Settings.IS_DARK_THEME_KEY),
                 themeColor = settingsSettings.getStringOrNull(DaoKeys.Settings.THEME_COLOR_KEY),
                 languageTag = settingsSettings.getStringOrNull(DaoKeys.Settings.LANGUAGE_TAG_KEY),
                 isBackgroundFriendMonitoringEnabled = settingsSettings.getBoolean(
                     DaoKeys.Settings.BACKGROUND_FRIEND_MONITORING_ENABLED_KEY,
-                    false,
+                    unifiedNotificationsEnabled,
                 ),
-                isSystemNotificationsEnabled = settingsSettings.getBoolean(
-                    DaoKeys.Settings.SYSTEM_NOTIFICATIONS_ENABLED_KEY,
-                    true,
-                ),
+                isSystemNotificationsEnabled = unifiedNotificationsEnabled,
                 friendPresenceNotificationSelection = settingsSettings
                     .getStringOrNull(DaoKeys.Settings.FRIEND_PRESENCE_NOTIFICATION_SELECTION_KEY)
                     ?.let {
@@ -58,11 +56,15 @@ class SettingsDao(
 
             settingsSettings.putBoolean(
                 DaoKeys.Settings.BACKGROUND_FRIEND_MONITORING_ENABLED_KEY,
-                value.isBackgroundFriendMonitoringEnabled,
+                value.isSystemNotificationsEnabled,
             )
             settingsSettings.putBoolean(
                 DaoKeys.Settings.SYSTEM_NOTIFICATIONS_ENABLED_KEY,
                 value.isSystemNotificationsEnabled,
+            )
+            settingsSettings.putBoolean(
+                DaoKeys.Settings.UNIFIED_ANDROID_NOTIFICATIONS_MIGRATED_KEY,
+                true,
             )
             settingsSettings.putString(
                 DaoKeys.Settings.FRIEND_PRESENCE_NOTIFICATION_SELECTION_KEY,
@@ -76,6 +78,28 @@ class SettingsDao(
                 value.isLanSyncAutoEnabled,
             )
         }
+
+    /**
+     * Older builds exposed system alerts and the foreground monitor as separate switches. The
+     * unified switch starts enabled only when both old permissions were explicitly active, so an
+     * upgrade never starts a long-running service for a user who had background monitoring off.
+     */
+    private fun migrateUnifiedAndroidNotifications(): Boolean {
+        if (settingsSettings.getBoolean(DaoKeys.Settings.UNIFIED_ANDROID_NOTIFICATIONS_MIGRATED_KEY, false)) {
+            return settingsSettings.getBoolean(DaoKeys.Settings.SYSTEM_NOTIFICATIONS_ENABLED_KEY, false)
+        }
+        val enabled = settingsSettings.getBoolean(
+            DaoKeys.Settings.SYSTEM_NOTIFICATIONS_ENABLED_KEY,
+            true,
+        ) && settingsSettings.getBoolean(
+            DaoKeys.Settings.BACKGROUND_FRIEND_MONITORING_ENABLED_KEY,
+            false,
+        )
+        settingsSettings.putBoolean(DaoKeys.Settings.SYSTEM_NOTIFICATIONS_ENABLED_KEY, enabled)
+        settingsSettings.putBoolean(DaoKeys.Settings.BACKGROUND_FRIEND_MONITORING_ENABLED_KEY, enabled)
+        settingsSettings.putBoolean(DaoKeys.Settings.UNIFIED_ANDROID_NOTIFICATIONS_MIGRATED_KEY, true)
+        return enabled
+    }
 
     var lanBridgeUrl: String?
         get() = settingsSettings.getStringOrNull(DaoKeys.Settings.LAN_BRIDGE_URL_KEY)
@@ -129,5 +153,30 @@ class SettingsDao(
         set(value) = value?.trim().takeUnless { it.isNullOrEmpty() }?.let {
             settingsSettings.putString(DaoKeys.Settings.LAST_OFFICIAL_CLIPBOARD_TARGET_KEY, it)
         } ?: settingsSettings.remove(DaoKeys.Settings.LAST_OFFICIAL_CLIPBOARD_TARGET_KEY)
+
+    /** Durable bounded dedupe for tray notifications across Android process recreation. */
+    var notifiedSocialNotificationIds: Set<String>
+        get() = settingsSettings
+            .getStringOrNull(DaoKeys.Settings.NOTIFIED_SOCIAL_NOTIFICATION_IDS_KEY)
+            ?.lineSequence()
+            ?.map(String::trim)
+            ?.filter(String::isNotEmpty)
+            ?.toSet()
+            .orEmpty()
+        set(value) {
+            val bounded = value.toList().takeLast(MAX_NOTIFIED_SOCIAL_IDS)
+            if (bounded.isEmpty()) {
+                settingsSettings.remove(DaoKeys.Settings.NOTIFIED_SOCIAL_NOTIFICATION_IDS_KEY)
+            } else {
+                settingsSettings.putString(
+                    DaoKeys.Settings.NOTIFIED_SOCIAL_NOTIFICATION_IDS_KEY,
+                    bounded.joinToString("\n"),
+                )
+            }
+        }
+
+    private companion object {
+        const val MAX_NOTIFIED_SOCIAL_IDS = 256
+    }
 
 }

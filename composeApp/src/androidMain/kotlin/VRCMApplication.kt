@@ -33,7 +33,7 @@ class VRCMApplication : Application() {
             modules(commonModules + platformModule)
         }
         val koin = koinApplication.koin
-        if (koin.get<SettingsDao>().settings.isBackgroundFriendMonitoringEnabled) {
+        if (koin.get<SettingsDao>().settings.isSystemNotificationsEnabled) {
             // Do not request permission automatically. If Android revoked it, the service remains
             // stopped and the user can review the setting the next time they open the app.
             koin.get<AppPlatform>().setBackgroundFriendMonitoringEnabled(true)

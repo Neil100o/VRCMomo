@@ -137,7 +137,7 @@ private fun SettingsOverview(
             SettingsDivider()
             SettingsNavigationRow(
                 title = localeStrings.settingsCategoryBackground,
-                summary = if (currentSettings.isBackgroundFriendMonitoringEnabled) localeStrings.settingsBackgroundEnabled else localeStrings.settingsBackgroundDisabled,
+                summary = if (currentSettings.isLanSyncAutoEnabled) localeStrings.settingsEnabled else localeStrings.settingsDisabled,
                 icon = AppIcons.Computer,
                 onClick = { onOpen(SettingsDestination.BackgroundAndSync) },
             )
@@ -172,10 +172,8 @@ private fun SettingsDetail(
     SettingsBlockSurface {
         when (destination) {
             SettingsDestination.Appearance -> AppearanceBlock()
-            SettingsDestination.Notifications -> SystemNotificationsBlock()
+            SettingsDestination.Notifications -> UnifiedSystemNotificationsBlock()
             SettingsDestination.BackgroundAndSync -> Column {
-                BackgroundMonitoringBlock()
-                SettingsDivider()
                 VrcxLanSyncBlock()
                 SettingsDivider()
                 VrcxActivityImportBlock()
@@ -218,40 +216,6 @@ private fun SettingsNavigationRow(
         Text("›", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
-@Composable
-private fun SystemNotificationsBlock() {
-    var currentSettings by LocalSettingsState.current
-    val localeStrings = strings
-    Column(
-        modifier = Modifier.fillMaxWidth().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        SettingsSectionTitle(localeStrings.systemNotificationsTitle)
-        Row(
-            modifier = Modifier.fillMaxWidth().clickable {
-                currentSettings = currentSettings.copy(
-                    isSystemNotificationsEnabled = !currentSettings.isSystemNotificationsEnabled,
-                )
-            },
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Text(
-                localeStrings.systemNotificationsDescription,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            Switch(
-                checked = currentSettings.isSystemNotificationsEnabled,
-                onCheckedChange = { enabled ->
-                    currentSettings = currentSettings.copy(isSystemNotificationsEnabled = enabled)
-                },
-            )
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun FriendActivityLogBlock() {
@@ -806,7 +770,7 @@ private fun AppearanceBlock() {
 }
 
 @Composable
-private fun BackgroundMonitoringBlock() {
+private fun UnifiedSystemNotificationsBlock() {
     var currentSettings by LocalSettingsState.current
     val platform = koinInject<AppPlatform>()
     val scope = rememberCoroutineScope()
@@ -828,7 +792,10 @@ private fun BackgroundMonitoringBlock() {
             }
         } else {
             platform.setBackgroundFriendMonitoringEnabled(false)
-            currentSettings = currentSettings.copy(isBackgroundFriendMonitoringEnabled = false)
+            currentSettings = currentSettings.copy(
+                isSystemNotificationsEnabled = false,
+                isBackgroundFriendMonitoringEnabled = false,
+            )
             showInfo(localeStrings.backgroundFriendMonitoringStopped)
         }
     }
@@ -839,12 +806,12 @@ private fun BackgroundMonitoringBlock() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        SettingsSectionTitle(localeStrings.backgroundFriendMonitoringTitle)
+        SettingsSectionTitle(localeStrings.systemNotificationsTitle)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable {
-                    changeBackgroundMonitoring(!currentSettings.isBackgroundFriendMonitoringEnabled)
+                    changeBackgroundMonitoring(!currentSettings.isSystemNotificationsEnabled)
                 },
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -855,7 +822,7 @@ private fun BackgroundMonitoringBlock() {
             ) {
                 Text(
                     text = if (platform.supportsBackgroundFriendMonitoring) {
-                        localeStrings.backgroundFriendMonitoringDescription
+                        localeStrings.systemNotificationsDescription
                     } else {
                         localeStrings.backgroundFriendMonitoringUnsupported
                     },
@@ -864,13 +831,13 @@ private fun BackgroundMonitoringBlock() {
                 )
             }
             Switch(
-                checked = currentSettings.isBackgroundFriendMonitoringEnabled,
+                checked = currentSettings.isSystemNotificationsEnabled,
                 onCheckedChange = changeBackgroundMonitoring,
                 enabled = platform.supportsBackgroundFriendMonitoring,
             )
         }
         if (platform.supportsBatteryOptimizationSettings &&
-            currentSettings.isBackgroundFriendMonitoringEnabled
+            currentSettings.isSystemNotificationsEnabled
         ) {
             SettingsDivider()
             Column(
@@ -940,6 +907,7 @@ private fun BackgroundMonitoringBlock() {
                             BackgroundFriendMonitoringResult.Started -> {
                                 currentSettings = currentSettings.copy(
                                     isBackgroundFriendMonitoringEnabled = true,
+                                    isSystemNotificationsEnabled = true,
                                 )
                                 showInfo(localeStrings.backgroundFriendMonitoringStarted)
                             }
@@ -1064,7 +1032,10 @@ private fun LogoutButton(onDismissRequest: () -> Unit) {
     var currentSettings by LocalSettingsState.current
     val logoutCall = {
         platform.setBackgroundFriendMonitoringEnabled(false)
-        currentSettings = currentSettings.copy(isBackgroundFriendMonitoringEnabled = false)
+        currentSettings = currentSettings.copy(
+            isBackgroundFriendMonitoringEnabled = false,
+            isSystemNotificationsEnabled = false,
+        )
         onDismissRequest()
         authService.logout()
     }

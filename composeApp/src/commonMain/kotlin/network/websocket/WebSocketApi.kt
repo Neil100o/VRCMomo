@@ -14,8 +14,24 @@ import io.ktor.client.request.*
 import io.ktor.client.call.*
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.logger.Logger
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+sealed interface WebSocketConnectionState {
+    data object Idle : WebSocketConnectionState
+    data object Connecting : WebSocketConnectionState
+    data class Connected(val connectedAtEpochMillis: Long) : WebSocketConnectionState
+    data class Disconnected(
+        val connectedDurationMillis: Long?,
+        val consecutiveFailures: Int,
+    ) : WebSocketConnectionState
+}
+
+@OptIn(ExperimentalTime::class)
 class WebSocketApi(
     private val apiClient: HttpClient,
     private val logger: Logger,
@@ -23,6 +39,8 @@ class WebSocketApi(
 
     private var currentJob: Job? = null
     private var scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val _connectionState = MutableStateFlow<WebSocketConnectionState>(WebSocketConnectionState.Idle)
+    val connectionState: StateFlow<WebSocketConnectionState> = _connectionState.asStateFlow()
 
     init {
         // StateFlow replays the active account to a foreground service that is created after
@@ -31,6 +49,11 @@ class WebSocketApi(
         scope.launch {
             SharedFlowCentre.currentSession.collect { session ->
                 currentJob?.cancelAndJoin()
+                _connectionState.value = if (session == null) {
+                    WebSocketConnectionState.Idle
+                } else {
+                    WebSocketConnectionState.Connecting
+                }
                 currentJob = session?.let { authenticated ->
                     launch { startWebSocket(authenticated.token) }
                 }
@@ -40,6 +63,7 @@ class WebSocketApi(
             SharedFlowCentre.logout.collect {
                 currentJob?.cancelAndJoin()
                 currentJob = null
+                _connectionState.value = WebSocketConnectionState.Idle
             }
         }
     }
@@ -58,6 +82,7 @@ class WebSocketApi(
                 request = {
                     parameter("auth", token)
                 }) {
+                _connectionState.value = WebSocketConnectionState.Connected(nowMillis())
                 while (true) {
                     val othersMessage = receiveDeserialized<WebSocketEvent>()
                     SharedFlowCentre.emitWebSocket(
@@ -69,6 +94,14 @@ class WebSocketApi(
     }
 
     private suspend fun reportConnectionFailure(error: Exception, consecutiveFailures: Int) {
+        val previousState = _connectionState.value
+        val connectedDuration = (previousState as? WebSocketConnectionState.Connected)
+            ?.let { (nowMillis() - it.connectedAtEpochMillis).coerceAtLeast(0L) }
+            ?: (previousState as? WebSocketConnectionState.Disconnected)?.connectedDurationMillis
+        _connectionState.value = WebSocketConnectionState.Disconnected(
+            connectedDurationMillis = connectedDuration,
+            consecutiveFailures = consecutiveFailures,
+        )
         val errorType = error::class.simpleName ?: "Exception"
         logger.error(
             "WebSocket reconnect attempt $consecutiveFailures failed ($errorType): ${error.message.orEmpty()}"
@@ -85,6 +118,8 @@ class WebSocketApi(
     private companion object {
         const val USER_NOTICE_INTERVAL = 12
     }
+
+    private fun nowMillis(): Long = Clock.System.now().toEpochMilliseconds()
 }
 
 internal suspend fun retryWebSocketConnection(

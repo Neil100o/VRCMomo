@@ -58,7 +58,7 @@ val LocalSettingsState: ProvidableCompositionLocal<MutableState<SettingsVo>> =
                 themeColor = MomoThemeColor,
                 languageTag = LanguageTag.Default,
                 isBackgroundFriendMonitoringEnabled = false,
-                isSystemNotificationsEnabled = true,
+                isSystemNotificationsEnabled = false,
                 activityLogRetentionDays = null,
             )
         )

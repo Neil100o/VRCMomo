@@ -9,7 +9,7 @@ data class SettingsVo(
     val languageTag: LanguageTag,
     val themeColor: ThemeColor,
     val isBackgroundFriendMonitoringEnabled: Boolean = false,
-    val isSystemNotificationsEnabled: Boolean = true,
+    val isSystemNotificationsEnabled: Boolean = false,
     val friendPresenceNotificationSelection: FriendPresenceNotificationSelection = FriendPresenceNotificationSelection(),
     val activityLogRetentionDays: Int? = null,
     val isLanSyncAutoEnabled: Boolean = false,

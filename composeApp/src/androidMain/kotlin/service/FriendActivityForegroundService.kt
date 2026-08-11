@@ -26,6 +26,7 @@ import org.koin.core.context.GlobalContext
 class FriendActivityForegroundService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var incomingBoopNotificationService: IncomingBoopNotificationService? = null
+    private lateinit var platformNotificationService: AndroidPlatformNotificationService
 
     override fun onCreate() {
         super.onCreate()
@@ -33,11 +34,17 @@ class FriendActivityForegroundService : Service() {
 
         val koin = GlobalContext.get()
         // Install collectors before authentication is emitted when Android recreates only this service.
-        koin.get<WebSocketApi>()
+        val webSocketApi = koin.get<WebSocketApi>()
         val friendService = koin.get<FriendService>()
         koin.get<SocialNotificationService>().start()
         incomingBoopNotificationService = koin.get<IncomingBoopNotificationService>().also { it.start() }
         val authService = koin.get<AuthService>()
+
+        serviceScope.launch {
+            webSocketApi.connectionState.collect { state ->
+                platformNotificationService.updateBackgroundMonitoringNotification(state)
+            }
+        }
 
         serviceScope.launch {
             // A short network loss must not destroy the foreground service. Keep retrying session
@@ -90,21 +97,21 @@ class FriendActivityForegroundService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     private fun startMonitoringForeground() {
-        val notification = AndroidPlatformNotificationService(this)
+        platformNotificationService = AndroidPlatformNotificationService(this)
+        val notification = platformNotificationService
             .buildBackgroundMonitoringNotification()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
             startForeground(
-                NOTIFICATION_ID,
+                AndroidPlatformNotificationService.BACKGROUND_NOTIFICATION_ID,
                 notification,
                 ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
             )
         } else {
-            startForeground(NOTIFICATION_ID, notification)
+            startForeground(AndroidPlatformNotificationService.BACKGROUND_NOTIFICATION_ID, notification)
         }
     }
 
     private companion object {
-        const val NOTIFICATION_ID = 0x4D4F4D4F
         const val AUTH_RETRY_DELAY_MILLIS = 30_000L
         const val FRIEND_REFRESH_INTERVAL_MILLIS = 120_000L
     }

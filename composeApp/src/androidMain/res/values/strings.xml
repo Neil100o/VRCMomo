@@ -4,6 +4,8 @@
     <string name="social_notification_channel_description">Boops and favorite friend status alerts</string>
     <string name="background_monitoring_channel_name">Background friend monitoring</string>
     <string name="background_monitoring_channel_description">Keeps the user-enabled VRChat friend activity monitor running</string>
-    <string name="background_monitoring_notification_title">VRCMomo is recording friend activity</string>
-    <string name="background_monitoring_notification_message">Tap to open VRCMomo. You can turn this off in settings.</string>
+    <string name="background_monitoring_notification_title">VRCMomo notifications</string>
+    <string name="background_monitoring_connecting">Connecting</string>
+    <string name="background_monitoring_connected">Connected</string>
+    <string name="background_monitoring_disconnected">Disconnected · connected for %1$s · reconnecting</string>
 </resources>

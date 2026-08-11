@@ -3,6 +3,8 @@
     <string name="social_notification_channel_description">戳戳與收藏好友狀態提醒</string>
     <string name="background_monitoring_channel_name">背景好友活動記錄</string>
     <string name="background_monitoring_channel_description">保持使用者主動開啟的 VRChat 好友活動監測</string>
-    <string name="background_monitoring_notification_title">VRCMomo 正在記錄好友活動</string>
-    <string name="background_monitoring_notification_message">點按可開啟應用程式，也可隨時在設定中關閉。</string>
+    <string name="background_monitoring_notification_title">VRCMomo 通知</string>
+    <string name="background_monitoring_connecting">正在連線</string>
+    <string name="background_monitoring_connected">已連線</string>
+    <string name="background_monitoring_disconnected">連線中斷 · 已保持 %1$s · 正在重連</string>
 </resources>

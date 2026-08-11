@@ -11,6 +11,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import io.github.vrcmteam.vrcm.MainActivity
 import io.github.vrcmteam.vrcm.R
+import io.github.vrcmteam.vrcm.network.websocket.WebSocketConnectionState
+import java.util.Locale
 
 class AndroidPlatformNotificationService(context: Context) : PlatformNotificationService {
     private val appContext = context.applicationContext
@@ -42,15 +44,43 @@ class AndroidPlatformNotificationService(context: Context) : PlatformNotificatio
         )
     }
 
-    fun buildBackgroundMonitoringNotification(): Notification {
+    fun buildBackgroundMonitoringNotification(
+        state: WebSocketConnectionState = WebSocketConnectionState.Connecting,
+    ): Notification {
         ensureBackgroundMonitoringChannel()
-        return newBuilder(BACKGROUND_MONITORING_CHANNEL_ID, BACKGROUND_NOTIFICATION_REQUEST_CODE)
+        val builder = newBuilder(BACKGROUND_MONITORING_CHANNEL_ID, BACKGROUND_NOTIFICATION_REQUEST_CODE)
             .setContentTitle(appContext.getString(R.string.background_monitoring_notification_title))
-            .setContentText(appContext.getString(R.string.background_monitoring_notification_message))
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setCategory(Notification.CATEGORY_SERVICE)
-            .build()
+        when (state) {
+            WebSocketConnectionState.Idle,
+            WebSocketConnectionState.Connecting -> builder
+                .setContentText(appContext.getString(R.string.background_monitoring_connecting))
+                .setShowWhen(false)
+            is WebSocketConnectionState.Connected -> builder
+                .setContentText(appContext.getString(R.string.background_monitoring_connected))
+                .setWhen(state.connectedAtEpochMillis)
+                .setUsesChronometer(true)
+                .setShowWhen(true)
+            is WebSocketConnectionState.Disconnected -> builder
+                .setContentText(
+                    appContext.getString(
+                        R.string.background_monitoring_disconnected,
+                        formatDuration(state.connectedDurationMillis),
+                    ),
+                )
+                .setUsesChronometer(false)
+                .setShowWhen(false)
+        }
+        return builder.build()
+    }
+
+    fun updateBackgroundMonitoringNotification(state: WebSocketConnectionState) {
+        notificationManager.notify(
+            BACKGROUND_NOTIFICATION_ID,
+            buildBackgroundMonitoringNotification(state),
+        )
     }
 
     private fun newBuilder(channelId: String, requestCode: Int): Notification.Builder {
@@ -101,11 +131,25 @@ class AndroidPlatformNotificationService(context: Context) : PlatformNotificatio
         )
     }
 
-    private companion object {
+    private fun formatDuration(durationMillis: Long?): String {
+        if (durationMillis == null) return "--:--"
+        val totalSeconds = durationMillis.coerceAtLeast(0L) / 1_000L
+        val hours = totalSeconds / 3_600L
+        val minutes = (totalSeconds % 3_600L) / 60L
+        val seconds = totalSeconds % 60L
+        return if (hours > 0L) {
+            String.format(Locale.ROOT, "%02d:%02d:%02d", hours, minutes, seconds)
+        } else {
+            String.format(Locale.ROOT, "%02d:%02d", minutes, seconds)
+        }
+    }
+
+    companion object {
         // Android channels cannot change importance after creation. A new ID upgrades users who
         // previously had the old, quiet VRCMomo social channel.
         const val SOCIAL_CHANNEL_ID = "vrcmomo_social_v2"
         const val BACKGROUND_MONITORING_CHANNEL_ID = "vrcmomo_background_monitoring"
         const val BACKGROUND_NOTIFICATION_REQUEST_CODE = 0x4D4F
+        const val BACKGROUND_NOTIFICATION_ID = 0x4D4F4D4F
     }
 }

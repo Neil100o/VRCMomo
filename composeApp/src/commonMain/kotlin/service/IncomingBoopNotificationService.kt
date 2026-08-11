@@ -4,16 +4,21 @@ import io.github.vrcmteam.vrcm.core.shared.SharedFlowCentre
 import io.github.vrcmteam.vrcm.network.api.attributes.NotificationType
 import io.github.vrcmteam.vrcm.network.api.notification.NotificationApi
 import io.github.vrcmteam.vrcm.network.api.users.UsersApi
+import io.github.vrcmteam.vrcm.network.websocket.WebSocketApi
+import io.github.vrcmteam.vrcm.network.websocket.WebSocketConnectionState
 import io.github.vrcmteam.vrcm.network.websocket.data.type.NotificationEvents
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.BoopNotificationResolver
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.NotificationItemData
 import io.github.vrcmteam.vrcm.presentation.screens.home.data.NotificationUserPresentation
-import io.github.vrcmteam.vrcm.presentation.screens.home.data.isUnreadBoop
+import io.github.vrcmteam.vrcm.storage.SettingsDao
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -28,6 +33,8 @@ class IncomingBoopNotificationService(
     private val usersApi: UsersApi,
     private val friendService: FriendService,
     private val socialNotificationService: SocialNotificationService,
+    private val webSocketApi: WebSocketApi,
+    private val settingsDao: SettingsDao,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val refreshMutex = Mutex()
@@ -38,13 +45,37 @@ class IncomingBoopNotificationService(
 
     fun start() {
         if (monitorJob != null) return
+        knownNotificationIds += settingsDao.notifiedSocialNotificationIds
         monitorJob = scope.launch {
-            launch { refresh(seedOnly = true) }
-            SharedFlowCentre.webSocket.collect { event ->
-                if (event.event.type == NotificationEvents.Notification.typeName) {
-                    refresh(seedOnly = false)
+            launch {
+                SharedFlowCentre.webSocket.collect { event ->
+                    if (event.event.type == NotificationEvents.Notification.typeName) {
+                        refresh(seedOnly = false)
+                    }
                 }
             }
+            combine(
+                SharedFlowCentre.currentSession,
+                webSocketApi.connectionState,
+            ) { session, connection -> session to connection }
+                .collectLatest { (session, connection) ->
+                    if (session == null) {
+                        initialized = false
+                        knownNotificationIds.clear()
+                        return@collectLatest
+                    }
+                    refresh(seedOnly = !initialized)
+                    while (true) {
+                        delay(
+                            if (connection is WebSocketConnectionState.Connected) {
+                                CONNECTED_NOTIFICATION_REFRESH_INTERVAL_MILLIS
+                            } else {
+                                DISCONNECTED_NOTIFICATION_REFRESH_INTERVAL_MILLIS
+                            },
+                        )
+                        refresh(seedOnly = false)
+                    }
+                }
         }
     }
 
@@ -63,16 +94,14 @@ class IncomingBoopNotificationService(
             val v2Notifications = authService.reTryAuthCatching {
                 notificationApi.fetchNotificationsV2()
             }.getOrDefault(emptyList())
-                .filter { it.type == NotificationType.Boop.value }
                 .map(::NotificationItemData)
                 .associateBy { it.id }
 
             if (legacyNotifications.isEmpty() && v2Notifications.isEmpty()) return
 
-            val legacyBoops = legacyNotifications.map(::NotificationItemData)
-                .filter { it.type == NotificationType.Boop.value }
-            val legacyIds = legacyBoops.mapTo(mutableSetOf()) { it.id }
-            val boopItems = legacyBoops.map { legacy ->
+            val legacyItems = legacyNotifications.map(::NotificationItemData)
+            val legacyIds = legacyItems.mapTo(mutableSetOf()) { it.id }
+            val notificationItems = legacyItems.map { legacy ->
                 val v2 = v2Notifications[legacy.id]
                 if (v2 == null) legacy else legacy.copy(
                     seen = v2.seen,
@@ -81,6 +110,7 @@ class IncomingBoopNotificationService(
                     boopInventoryItemId = v2.boopInventoryItemId,
                 )
             } + v2Notifications.values.filterNot { it.id in legacyIds }
+            val boopItems = notificationItems.filter { it.type == NotificationType.Boop.value }
 
             val friends = friendService.friendMap.mapValues { (_, friend) ->
                 NotificationUserPresentation(friend.profileImageUrl, friend.displayName)
@@ -93,27 +123,40 @@ class IncomingBoopNotificationService(
                     NotificationUserPresentation(user.profileImageUrl, user.displayName)
                 }
             }
+            val boopsById = boops.associateBy { it.id }
 
             if (!initialized || seedOnly) {
-                knownNotificationIds += boops.map { it.id }
+                knownNotificationIds += notificationItems.map { it.id }
                 initialized = true
                 // The foreground monitor may be started after the Boop was delivered. Surface
                 // unread notifications once instead of treating them as permanently "old".
-                boops.filter { it.isUnreadBoop }
+                notificationItems
+                    .filter { it.seen == false }
                     .sortedBy { it.createdAt }
-                    .forEach { boop ->
-                        socialNotificationService.notifyBoop(boop)
-                        markSeen(boop.id)
-                    }
+                    .forEach { notifyIncoming(it, boopsById) }
+                persistKnownNotificationIds()
                 return
             }
-            boops.asSequence()
+            notificationItems.asSequence()
                 .filter { knownNotificationIds.add(it.id) }
                 .sortedBy { it.createdAt }
-                .forEach { boop ->
-                    socialNotificationService.notifyBoop(boop)
-                    markSeen(boop.id)
-                }
+                .forEach { notifyIncoming(it, boopsById) }
+            persistKnownNotificationIds()
+        }
+    }
+
+    private suspend fun notifyIncoming(
+        notification: NotificationItemData,
+        boopsById: Map<String, NotificationItemData>,
+    ) {
+        when (notification.type) {
+            NotificationType.Boop.value -> {
+                socialNotificationService.notifyBoop(boopsById[notification.id] ?: notification)
+                markSeen(notification.id)
+            }
+            NotificationType.FriendRequest.value -> {
+                socialNotificationService.notifyFriendRequest(notification)
+            }
         }
     }
 
@@ -126,5 +169,14 @@ class IncomingBoopNotificationService(
                 notificationApi.markNotificationAsRead(notificationId)
             }
         }
+    }
+
+    private fun persistKnownNotificationIds() {
+        settingsDao.notifiedSocialNotificationIds = knownNotificationIds
+    }
+
+    private companion object {
+        const val CONNECTED_NOTIFICATION_REFRESH_INTERVAL_MILLIS = 5 * 60_000L
+        const val DISCONNECTED_NOTIFICATION_REFRESH_INTERVAL_MILLIS = 60_000L
     }
 }

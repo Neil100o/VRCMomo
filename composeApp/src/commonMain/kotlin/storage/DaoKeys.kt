@@ -68,6 +68,7 @@ object DaoKeys{
 
         const val BACKGROUND_FRIEND_MONITORING_ENABLED_KEY = "${PREFIX}.backgroundFriendMonitoringEnabled"
         const val SYSTEM_NOTIFICATIONS_ENABLED_KEY = "${PREFIX}.systemNotificationsEnabled"
+        const val UNIFIED_ANDROID_NOTIFICATIONS_MIGRATED_KEY = "${PREFIX}.unifiedAndroidNotificationsMigrated"
         const val FRIEND_PRESENCE_NOTIFICATION_SELECTION_KEY = "${PREFIX}.friendPresenceNotificationSelection"
         const val ACTIVITY_LOG_RETENTION_DAYS_KEY = "${PREFIX}.activityLogRetentionDays"
         const val LAN_BRIDGE_URL_KEY = "${PREFIX}.lanBridgeUrl"
@@ -78,6 +79,7 @@ object DaoKeys{
         const val LAN_SYNC_AUTO_ENABLED_KEY = "${PREFIX}.lanSyncAutoEnabled"
         const val LAN_SYNC_DEVICE_ID_KEY = "${PREFIX}.lanSyncDeviceId"
         const val LAST_OFFICIAL_CLIPBOARD_TARGET_KEY = "${PREFIX}.lastOfficialClipboardTarget"
+        const val NOTIFIED_SOCIAL_NOTIFICATION_IDS_KEY = "${PREFIX}.notifiedSocialNotificationIds"
 
     }
 
