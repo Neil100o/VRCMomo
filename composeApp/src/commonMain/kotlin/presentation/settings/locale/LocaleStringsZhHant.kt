@@ -86,6 +86,7 @@ internal object LocaleStringsZhHant : LocaleStrings() {
     override val friendNetworkEmpty = "暫無關係網資料"
     override val friendNetworkViewCommunity = "社區"
     override val friendNetworkViewEgo = "以我為中心"
+    override val friendNetworkExport = "匯出關係網 PNG"
     override val locationDialogOwner = "房主"
     override val locationDialogAuthor = "作者"
     override val locationDialogDescription = "描述"

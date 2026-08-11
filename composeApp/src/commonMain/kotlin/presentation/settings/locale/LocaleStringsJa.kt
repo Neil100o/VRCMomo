@@ -86,6 +86,7 @@ internal object LocaleStringsJa : LocaleStrings() {
     override val friendNetworkEmpty = "ネットワークデータがありません"
     override val friendNetworkViewCommunity = "コミュニティ"
     override val friendNetworkViewEgo = "自分中心"
+    override val friendNetworkExport = "関係図を PNG で保存"
     override val locationDialogOwner = "オーナー"
     override val locationDialogAuthor = "作者"
     override val locationDialogDescription = "説明"

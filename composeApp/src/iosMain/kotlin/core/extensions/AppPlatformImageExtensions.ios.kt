@@ -16,6 +16,8 @@ import platform.Photos.PHPhotoLibrary
 import platform.UIKit.UIImage
 import platform.UIKit.UIImageJPEGRepresentation
 import platform.UIKit.UIImagePNGRepresentation
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.usePinned
 
 /**
  * iOS平台实现：保存图片到系统相册
@@ -73,6 +75,36 @@ actual suspend fun AppPlatform.saveImageToGallery(imageUrl: String, fileName: St
         return@withContext success
 
     }
+
+@OptIn(ExperimentalForeignApi::class)
+actual suspend fun AppPlatform.saveImageBytesToGallery(
+    bytes: ByteArray,
+    fileName: String,
+    mimeType: String,
+): Boolean = withContext(Dispatchers.IO) {
+    if (bytes.isEmpty() || !requestPhotoLibraryPermission()) return@withContext false
+    val imageData = bytes.usePinned { pinned ->
+        NSData.create(bytes = pinned.addressOf(0), length = bytes.size.toULong())
+    }
+    val image = UIImage.imageWithData(imageData) ?: return@withContext false
+    val encoded = UIImagePNGRepresentation(image) ?: return@withContext false
+    var success = false
+    val semaphore = Semaphore(1)
+    semaphore.acquire()
+    PHPhotoLibrary.sharedPhotoLibrary().performChanges({
+        PHAssetCreationRequest.creationRequestForAsset().addResourceWithType(
+            PHAssetResourceTypePhoto,
+            encoded,
+            null,
+        )
+    }, { didSucceed, _ ->
+        success = didSucceed
+        semaphore.release()
+    })
+    semaphore.acquire()
+    semaphore.release()
+    success
+}
 
 /**
  * 请求相册权限

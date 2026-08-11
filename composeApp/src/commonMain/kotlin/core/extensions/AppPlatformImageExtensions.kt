@@ -10,6 +10,13 @@ import io.github.vrcmteam.vrcm.AppPlatform
  */
 expect suspend fun AppPlatform.saveImageToGallery(imageUrl: String, fileName: String): Boolean
 
+/** Saves already encoded image bytes to the platform gallery or Pictures folder. */
+expect suspend fun AppPlatform.saveImageBytesToGallery(
+    bytes: ByteArray,
+    fileName: String,
+    mimeType: String = "image/png",
+): Boolean
+
 /**
  * 读取文件字节
  * @param filePath 文件路径

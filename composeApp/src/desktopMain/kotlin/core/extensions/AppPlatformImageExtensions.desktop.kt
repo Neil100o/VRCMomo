@@ -44,6 +44,18 @@ actual suspend fun AppPlatform.saveImageToGallery(imageUrl: String, fileName: St
     }
 }
 
+actual suspend fun AppPlatform.saveImageBytesToGallery(
+    bytes: ByteArray,
+    fileName: String,
+    mimeType: String,
+): Boolean = withContext(Dispatchers.IO) {
+    runCatching {
+        val platform = this@saveImageBytesToGallery as DesktopAppPlatform
+        val directory = File(platform.getPicturesDirectory(), "VRCMomo").apply { mkdirs() }
+        File(directory, fileName).writeBytes(bytes)
+    }.isSuccess
+}
+
 /**
  * Desktop平台实现：读取文件字节
  */

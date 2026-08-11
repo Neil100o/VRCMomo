@@ -17,6 +17,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
+import java.io.ByteArrayInputStream
 
 /**
  * Android平台实现：保存图片到系统相册
@@ -37,6 +38,21 @@ actual suspend fun AppPlatform.saveImageToGallery(imageUrl: String, fileName: St
         httpClient.close()
         result
     }
+
+actual suspend fun AppPlatform.saveImageBytesToGallery(
+    bytes: ByteArray,
+    fileName: String,
+    mimeType: String,
+): Boolean = withContext(Dispatchers.IO) {
+    val platform = this@saveImageBytesToGallery as AndroidAppPlatform
+    ByteArrayInputStream(bytes).use { input ->
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            platform.saveImageWithMediaStore(input, fileName, mimeType)
+        } else {
+            platform.saveImageLegacy(input, fileName)
+        }
+    }
+}
 
 /**
  * Android平台实现：读取文件字节
@@ -107,11 +123,15 @@ actual suspend fun AppPlatform.getImageDimensions(filePath: String): Pair<Int, I
 }
 
 // 辅助方法
-private fun AndroidAppPlatform.saveImageWithMediaStore(inputStream: InputStream, fileName: String): Boolean {
+private fun AndroidAppPlatform.saveImageWithMediaStore(
+    inputStream: InputStream,
+    fileName: String,
+    mimeType: String = "image/jpeg",
+): Boolean {
     val contentValues = ContentValues().apply {
         put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
-        put(MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + "VRCM")
+        put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + File.separator + "VRCMomo")
     }
 
     val uri = context.contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)

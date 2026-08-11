@@ -108,6 +108,7 @@ sealed class LocaleStrings {
     open val friendNetworkEmpty: String = "No network data yet"
     open val friendNetworkViewCommunity: String = "Circles"
     open val friendNetworkViewEgo: String = "Around me"
+    open val friendNetworkExport: String = "Export network as PNG"
     open val locationDialogOwner: String = "Owner"
     open val locationDialogAuthor: String = "Author"
     open val locationDialogDescription: String = "Description"

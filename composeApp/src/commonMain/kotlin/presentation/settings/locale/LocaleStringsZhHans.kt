@@ -97,6 +97,7 @@ internal object LocaleStringsZhHans : LocaleStrings() {
     override val friendNetworkEmpty = "暂无关系网数据"
     override val friendNetworkViewCommunity = "社区"
     override val friendNetworkViewEgo = "以我为中心"
+    override val friendNetworkExport = "导出关系网 PNG"
     override val locationDialogOwner = "房主"
     override val locationDialogAuthor = "作者"
     override val locationDialogDescription = "描述"

@@ -51,7 +51,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Canvas as ImageCanvas
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.PathFillType
@@ -59,10 +62,12 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -74,34 +79,45 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import io.github.vrcmteam.vrcm.core.extensions.saveImageBytesToGallery
+import io.github.vrcmteam.vrcm.core.shared.SharedFlowCentre
+import io.github.vrcmteam.vrcm.getAppPlatform
 import io.github.vrcmteam.vrcm.core.algorithms.ForceLayoutResult
 import io.github.vrcmteam.vrcm.core.algorithms.convexHull
 import io.github.vrcmteam.vrcm.network.api.users.data.MutualFriendData
 import io.github.vrcmteam.vrcm.presentation.compoments.ABottomSheet
+import io.github.vrcmteam.vrcm.presentation.compoments.ToastText
 import io.github.vrcmteam.vrcm.presentation.compoments.UserStateIcon
+import io.github.vrcmteam.vrcm.presentation.screens.gallery.editor.PlatformImageCodec
 import io.github.vrcmteam.vrcm.presentation.screens.user.data.UserProfileVo
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
 import io.github.vrcmteam.vrcm.presentation.supports.AppIcons
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import org.koin.compose.koinInject
 import kotlin.math.roundToInt
 import kotlin.math.sqrt
 import kotlin.time.ExperimentalTime
 
 object FriendNetworkScreen : Screen {
 
-    @OptIn(ExperimentalMaterial3Api::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalTime::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val model: FriendNetworkScreenModel = koinScreenModel()
+        val imageCodec = koinInject<PlatformImageCodec>()
+        val platform = getAppPlatform()
+        val localeStrings = strings
         val state = model.uiState
         val selectedIdState = remember { mutableStateOf<String?>(null) }
         val highlightIdState = remember { mutableStateOf<String?>(null) }
         // 图例选中的社区，与个人长按高亮互斥
         val selectedCommunityState = remember { mutableStateOf<Int?>(null) }
         var showSheet by remember { mutableStateOf(false) }
+        var exportRequest by remember { mutableStateOf(0) }
+        var isExporting by remember { mutableStateOf(false) }
         val sheetState = rememberModalBottomSheetState()
 
         val density = LocalDensity.current
@@ -151,6 +167,23 @@ object FriendNetworkScreen : Screen {
                         }
                     },
                     actions = {
+                        IconButton(
+                            enabled = state.nodes.isNotEmpty() && !state.isLoading && !isExporting,
+                            onClick = {
+                                isExporting = true
+                                exportRequest += 1
+                            },
+                        ) {
+                            if (isExporting) {
+                                CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                            } else {
+                                Icon(
+                                    painter = rememberVectorPainter(AppIcons.SaveAlt),
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    contentDescription = localeStrings.friendNetworkExport,
+                                )
+                            }
+                        }
                         IconButton(
                             enabled = !state.isLoading,
                             onClick = { model.refresh(nodeSizePx) }
@@ -256,6 +289,21 @@ object FriendNetworkScreen : Screen {
                             onBackgroundTap = {
                                 highlightIdState.value = null
                                 selectedCommunityState.value = null
+                            },
+                            exportRequest = exportRequest,
+                            onExportBitmap = { bitmap ->
+                                val saved = runCatching {
+                                    val png = imageCodec.encodePng(bitmap)
+                                    platform.saveImageBytesToGallery(
+                                        bytes = png,
+                                        fileName = "VRCMomo-friend-network-${kotlin.time.Clock.System.now().toEpochMilliseconds()}.png",
+                                    )
+                                }.getOrDefault(false)
+                                SharedFlowCentre.toastText.emit(
+                                    if (saved) ToastText.Success(localeStrings.imageSaveSuccess)
+                                    else ToastText.Error(localeStrings.imageSaveFailed),
+                                )
+                                isExporting = false
                             },
                         )
                     }
@@ -497,10 +545,13 @@ private fun FriendNetworkGraph(
     onNodeTap: (String) -> Unit,
     onNodeLongPress: (String) -> Unit,
     onBackgroundTap: () -> Unit,
+    exportRequest: Int,
+    onExportBitmap: suspend (ImageBitmap) -> Unit,
 ) {
     // clipToBounds：画布经 graphicsLayer 平移/缩放后不得越界画到上方的图例和头部信息上
     BoxWithConstraints(modifier = Modifier.fillMaxSize().clipToBounds()) {
         val density = LocalDensity.current
+        val layoutDirection = LocalLayoutDirection.current
         val baseNodeSize = 40.dp
         val maxExtraSize = 44.dp
         val baseNodeSizePx = with(density) { baseNodeSize.toPx() }
@@ -690,6 +741,78 @@ private fun FriendNetworkGraph(
                 }
             }
             best
+        }
+        val exportBackground = MaterialTheme.colorScheme.surface
+        val exportNodeFill = MaterialTheme.colorScheme.surfaceContainerHighest
+        val exportTextColor = MaterialTheme.colorScheme.onSurface
+        val exportInitialStyle = MaterialTheme.typography.titleSmall.copy(color = exportTextColor)
+        val exportLabelStyle = MaterialTheme.typography.labelSmall.copy(color = exportTextColor)
+
+        LaunchedEffect(exportRequest) {
+            if (exportRequest > 0) {
+                val width = layoutWidthPx.roundToInt().coerceAtLeast(1)
+                val height = layoutHeightPx.roundToInt().coerceAtLeast(1)
+                val bitmap = ImageBitmap(width, height)
+                val canvas = ImageCanvas(bitmap)
+                val currentHighlightIds = highlightIdsState.value
+                val selectedCommunity = selectedCommunityState.value
+                CanvasDrawScope().draw(
+                    density = density,
+                    layoutDirection = layoutDirection,
+                    canvas = canvas,
+                    size = Size(width.toFloat(), height.toFloat()),
+                ) {
+                    drawRect(exportBackground)
+                    edgePaths.forEach { edge ->
+                        val highlighted = when {
+                            selectedCommunity != null -> edge.communityId == selectedCommunity
+                            currentHighlightIds.isNotEmpty() -> edge.from in currentHighlightIds && edge.to in currentHighlightIds
+                            else -> true
+                        }
+                        val edgeColor = edge.communityId?.let { nodeColors[edge.from] } ?: crossEdgeColor
+                        drawPath(
+                            path = edge.path,
+                            color = (edgeColor ?: defaultColor).copy(alpha = if (highlighted) 0.72f else 0.08f),
+                            style = Stroke(width = if (highlighted) 3f else 1.5f),
+                        )
+                    }
+                    nodes.forEach { node ->
+                        val position = positions[node.id] ?: return@forEach
+                        val ratio = nodeSizeRatio[node.id] ?: 0f
+                        val radius = (baseNodeSizePx + maxExtraSizePx * ratio) / 2f
+                        val visible = currentHighlightIds.isEmpty() || node.id in currentHighlightIds
+                        val ring = if (isEgoView) primaryColor.copy(alpha = 0.25f + 0.75f * ratio)
+                        else nodeColors[node.id] ?: defaultColor
+                        drawCircle(ring.copy(alpha = if (visible) 1f else 0.14f), radius + 4f, position)
+                        drawCircle(exportNodeFill.copy(alpha = if (visible) 1f else 0.18f), radius, position)
+                        val initial = node.displayName.trim().take(1).uppercase()
+                        if (initial.isNotEmpty()) {
+                            val initialLayout = textMeasurer.measure(
+                                initial,
+                                exportInitialStyle,
+                            )
+                            drawText(
+                                initialLayout,
+                                topLeft = position - Offset(initialLayout.size.width / 2f, initialLayout.size.height / 2f),
+                                alpha = if (visible) 1f else 0.2f,
+                            )
+                        }
+                        val nameLayout = textMeasurer.measure(
+                            node.displayName,
+                            exportLabelStyle,
+                        )
+                        drawText(
+                            nameLayout,
+                            topLeft = Offset(
+                                position.x - nameLayout.size.width / 2f,
+                                position.y + radius + 6f,
+                            ),
+                            alpha = if (visible) 1f else 0.2f,
+                        )
+                    }
+                }
+                onExportBitmap(bitmap)
+            }
         }
 
         Box(
