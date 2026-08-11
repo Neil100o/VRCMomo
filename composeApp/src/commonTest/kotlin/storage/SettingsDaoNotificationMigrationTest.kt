@@ -42,4 +42,14 @@ class SettingsDaoNotificationMigrationTest {
         assertTrue("ntf_1" in restored)
         assertTrue("ntf_2" in restored)
     }
+
+    @Test
+    fun `vrchat status baseline survives process recreation`() {
+        val storage = MapSettings()
+        SettingsDao(storage).lastVrchatStatusIndicator = "major"
+
+        val restored = SettingsDao(storage).lastVrchatStatusIndicator
+
+        kotlin.test.assertEquals("major", restored)
+    }
 }

@@ -122,6 +122,20 @@ class SocialNotificationService(
         )
     }
 
+    fun notifyGroupMessage(notification: NotificationItemData) {
+        if (!settingsDao.settings.isSystemNotificationsEnabled) return
+        val title = notification.title?.trim().takeUnless { it.isNullOrEmpty() }
+            ?: groupNotificationFallbackTitle(notification.type)
+        val message = notification.message.trim().ifEmpty { "群组有新消息" }
+        platformNotificationService.show(
+            SystemNotification(
+                id = "group-${notification.id}",
+                title = title,
+                message = message,
+            ),
+        )
+    }
+
     private suspend fun handleFriendSnapshot(snapshot: FriendStateSnapshot) {
         val notifications = stateMutex.withLock {
             if (activeSessionToken == null) {
@@ -150,6 +164,7 @@ class SocialNotificationService(
                         FriendSnapshotNotifications(
                             added = snapshot.friends.filterKeys { it !in cachedFriends }.values.toList(),
                             removed = cachedFriends.filterKeys { it !in snapshot.friends }.values.toList(),
+                            renamed = renamedFriends(cachedFriends, snapshot.friends),
                         )
                     }
                 } else {
@@ -165,6 +180,7 @@ class SocialNotificationService(
                             .filterKeys { it !in snapshot.friends }
                             .values
                             .toList(),
+                        renamed = renamedFriends(previousFriends, snapshot.friends),
                     )
                 }
             }
@@ -172,6 +188,7 @@ class SocialNotificationService(
         notifications.presence.forEach(::notifyPresenceTransition)
         notifications.added.forEach(::notifyFriendAdded)
         notifications.removed.forEach(::notifyFriendRemoved)
+        notifications.renamed.forEach(::notifyFriendRenamed)
     }
 
     private fun notifyPresenceTransition(transition: FriendPresenceTransition) {
@@ -212,6 +229,40 @@ class SocialNotificationService(
         )
     }
 
+    private fun notifyFriendRenamed(rename: FriendRename) {
+        if (!settingsDao.settings.isSystemNotificationsEnabled) return
+        platformNotificationService.show(
+            SystemNotification(
+                id = "friend-renamed-${rename.userId}-${nowMillis()}",
+                title = "${rename.previousName} 改名了",
+                message = "现在叫 ${rename.currentName}",
+            ),
+        )
+    }
+
+    private fun renamedFriends(
+        previous: Map<String, FriendData>,
+        current: Map<String, FriendData>,
+    ): List<FriendRename> = current.mapNotNull { (userId, friend) ->
+        val previousName = previous[userId]?.displayName?.trim().orEmpty()
+        val currentName = friend.displayName.trim()
+        if (previousName.isNotEmpty() && currentName.isNotEmpty() && previousName != currentName) {
+            FriendRename(userId, previousName, currentName)
+        } else {
+            null
+        }
+    }
+
+    private fun groupNotificationFallbackTitle(type: String): String = when (type) {
+        "group.announcement", "group.informative", "groupChange" -> "群组消息"
+        "group.event.created" -> "群组活动已创建"
+        "group.event.starting" -> "群组活动即将开始"
+        "group.joinRequest" -> "新的入组申请"
+        "group.transfer" -> "群组转让请求"
+        "group.queueReady" -> "群组队列已就绪"
+        else -> "群组消息"
+    }
+
     private fun nowMillis(): Long = Clock.System.now().toEpochMilliseconds()
 }
 
@@ -219,4 +270,11 @@ private data class FriendSnapshotNotifications(
     val presence: List<FriendPresenceTransition> = emptyList(),
     val added: List<FriendData> = emptyList(),
     val removed: List<FriendData> = emptyList(),
+    val renamed: List<FriendRename> = emptyList(),
+)
+
+private data class FriendRename(
+    val userId: String,
+    val previousName: String,
+    val currentName: String,
 )

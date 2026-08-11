@@ -322,7 +322,7 @@ internal object LocaleStringsZhHans : LocaleStrings() {
     override val friendActivityLogClear = "清除活动日志"
     override val friendActivityLogClearDescription = "只删除详细时间线，见面次数和共同游玩时长等统计会保留。"
     override val systemNotificationsTitle = "系统通知"
-    override val systemNotificationsDescription = "保持 Android 通知连接，接收戳戳、好友请求、好友关系变化及所选好友上下线提醒。"
+    override val systemNotificationsDescription = "保持 Android 通知连接，接收戳戳、好友与群组事件、VRChat 服务异常及所选好友上下线提醒。"
     override val vrcxActivityImportTitle = "VRCX 活动数据导入"
     override val vrcxActivityImportDescription = "导入桌面导出工具生成的活动桥接文件；会合并已有记录，并自动跳过重复事件。"
     override val vrcxActivityImportChoose = "选择活动导出文件"

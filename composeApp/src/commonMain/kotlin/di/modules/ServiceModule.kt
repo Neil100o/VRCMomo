@@ -13,6 +13,7 @@ val serviceModule: Module = module {
     singleOf(::FriendService)
     singleOf(::SocialNotificationService)
     singleOf(::IncomingBoopNotificationService)
+    singleOf(::VrchatStatusNotificationService)
     singleOf(::WorldPlatformService)
     singleOf(::OfficialLinkService)
 }

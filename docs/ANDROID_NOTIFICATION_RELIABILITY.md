@@ -5,7 +5,7 @@
 ## 目标
 
 - Android 只提供一个“系统通知”总开关。
-- 开启后启动前台监测，并接收 Boop、好友请求、成为好友、删除好友及用户选定范围内的进入/离开 VRChat 通知。
+- 开启后启动前台监测，并接收 Boop、好友请求、群组消息、成为好友、删除好友、好友改名、VRChat 服务异常及用户选定范围内的进入/离开 VRChat 通知。
 - WebSocket 提供低延迟事件；HTTP 定时核对负责修复断线期间遗漏的事件。
 - 常驻通知显示本次连续连接时间；断线时冻结计时并显示正在重连。
 - 所有业务事件先去重再通知。进程重建、断线重连和完整列表刷新不得制造重复通知。
@@ -59,9 +59,14 @@ WebSocket 层发布结构化连接状态，前台服务只负责渲染状态；�
 | --- | --- | --- | --- |
 | Boop | WebSocket notification | 通知 API | notification ID |
 | 好友请求 | WebSocket notification | 通知 API | notification ID |
+| 群组公告/活动/管理消息 | WebSocket notification | 通知 API | notification ID |
 | 成为好友 | friend-add | 好友集合差异 | user ID + 变化时间窗 |
 | 删除好友 | friend-delete | 好友集合差异 | user ID + 变化时间窗 |
+| 好友改名 | 好友资料更新 | 完整好友状态 | user ID + 前后名称 |
 | 进入/离开 VRChat | friend presence 事件 | 完整好友状态 | user ID + 游戏在线布尔状态 |
+| VRChat 服务异常/恢复 | Statuspage API | 每 5 分钟核对 | 前后 indicator |
+
+邀请、请求邀请和社交状态文字变化不产生 Android 系统通知。群组邀请同样排除。
 
 后续统一事件收件箱需要持久化 `eventId/type/userId/createdAt/notifiedAt/openedAt/payload`。在收件箱落地前，不得仅凭内存集合承担跨重启去重。
 
@@ -80,6 +85,7 @@ WebSocket 层发布结构化连接状态，前台服务只负责渲染状态；�
 | WebSocket 生命周期 | `composeApp/src/commonMain/kotlin/network/websocket/WebSocketApi.kt` |
 | Boop 后台核对 | `composeApp/src/commonMain/kotlin/service/IncomingBoopNotificationService.kt` |
 | 好友通知 | `composeApp/src/commonMain/kotlin/service/SocialNotificationService.kt` |
+| VRChat 状态监测 | `composeApp/src/commonMain/kotlin/service/VrchatStatusNotificationService.kt`、`network/api/status/` |
 | 总开关设置 | `composeApp/src/commonMain/kotlin/storage/data/SettingsData.kt`、`storage/SettingsDao.kt` |
 | 设置 UI | `composeApp/src/commonMain/kotlin/presentation/screens/home/sheet/SettingsBottomSheet.kt` |
 | Android 启停入口 | `composeApp/src/androidMain/kotlin/AppPlatform.android.kt`、`VRCMApplication.kt` |
@@ -99,6 +105,9 @@ WebSocket 层发布结构化连接状态，前台服务只负责渲染状态；�
 - 已实现常驻通知 Chronometer；断线后冻结连续连接时长并显示重连状态。
 - 已实现 Boop/好友请求通知 API 自适应补偿：连接正常每 5 分钟、断线每 60 秒，并在连接状态变化时立即核对。
 - 已实现好友完整列表的新增/删除差异通知；缓存好友 ID 可作为冷启动关系基线。
+- 已实现群组公告、活动及管理消息通知，并排除群组邀请。
+- 已实现好友显示名变化通知。
+- 已实现 VRChat Statuspage 每 5 分钟核对，并在异常与恢复时分别通知。
 - 已实现最近 256 个通知 ID 的跨进程持久化去重。
 - 已注册开机完成和应用更新后的监测恢复入口。
 - 待实现完整事件收件箱；当前跨重启去重仍使用有界通知 ID 集合。

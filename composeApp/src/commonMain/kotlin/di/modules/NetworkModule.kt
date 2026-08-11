@@ -11,6 +11,7 @@ import io.github.vrcmteam.vrcm.network.api.instances.InstancesApi
 import io.github.vrcmteam.vrcm.network.api.invite.InviteApi
 import io.github.vrcmteam.vrcm.network.api.notification.NotificationApi
 import io.github.vrcmteam.vrcm.network.api.prints.PrintsApi
+import io.github.vrcmteam.vrcm.network.api.status.VrchatStatusApi
 import io.github.vrcmteam.vrcm.network.api.users.UsersApi
 import io.github.vrcmteam.vrcm.network.api.worlds.WorldsApi
 import io.github.vrcmteam.vrcm.network.supports.ApiClientDefaultBuilder
@@ -40,6 +41,7 @@ internal val networkModule = module(true) {
     singleOf(::GitHubApi)
     singleOf(::GroupsApi)
     singleOf(::PrintsApi)
+    singleOf(::VrchatStatusApi)
     singleOf(::LanActivityBridgeClient)
     single<HttpClient> { apiClientDefinition(it) }
     single { createNetworkJson() }

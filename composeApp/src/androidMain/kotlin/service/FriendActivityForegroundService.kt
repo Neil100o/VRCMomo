@@ -26,6 +26,7 @@ import org.koin.core.context.GlobalContext
 class FriendActivityForegroundService : Service() {
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var incomingBoopNotificationService: IncomingBoopNotificationService? = null
+    private var vrchatStatusNotificationService: VrchatStatusNotificationService? = null
     private lateinit var platformNotificationService: AndroidPlatformNotificationService
 
     override fun onCreate() {
@@ -38,6 +39,7 @@ class FriendActivityForegroundService : Service() {
         val friendService = koin.get<FriendService>()
         koin.get<SocialNotificationService>().start()
         incomingBoopNotificationService = koin.get<IncomingBoopNotificationService>().also { it.start() }
+        vrchatStatusNotificationService = koin.get<VrchatStatusNotificationService>().also { it.start() }
         val authService = koin.get<AuthService>()
 
         serviceScope.launch {
@@ -84,6 +86,9 @@ class FriendActivityForegroundService : Service() {
 
     override fun onDestroy() {
         incomingBoopNotificationService?.stop()
+        incomingBoopNotificationService = null
+        vrchatStatusNotificationService?.stop()
+        vrchatStatusNotificationService = null
         serviceScope.cancel()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)

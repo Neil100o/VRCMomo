@@ -157,6 +157,9 @@ class IncomingBoopNotificationService(
             NotificationType.FriendRequest.value -> {
                 socialNotificationService.notifyFriendRequest(notification)
             }
+            in GROUP_NOTIFICATION_TYPES -> {
+                socialNotificationService.notifyGroupMessage(notification)
+            }
         }
     }
 
@@ -178,5 +181,19 @@ class IncomingBoopNotificationService(
     private companion object {
         const val CONNECTED_NOTIFICATION_REFRESH_INTERVAL_MILLIS = 5 * 60_000L
         const val DISCONNECTED_NOTIFICATION_REFRESH_INTERVAL_MILLIS = 60_000L
+
+        // Invites are deliberately excluded: if someone is inviting the user, VRChat itself is
+        // normally the more useful place to surface it. Keep announcements and actionable group
+        // administration messages available while the game is closed.
+        val GROUP_NOTIFICATION_TYPES = setOf(
+            "groupChange",
+            "group.announcement",
+            "group.event.created",
+            "group.event.starting",
+            "group.informative",
+            "group.joinRequest",
+            "group.transfer",
+            "group.queueReady",
+        )
     }
 }

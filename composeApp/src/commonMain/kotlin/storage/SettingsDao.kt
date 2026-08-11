@@ -175,6 +175,15 @@ class SettingsDao(
             }
         }
 
+    var lastVrchatStatusIndicator: String?
+        get() = settingsSettings
+            .getStringOrNull(DaoKeys.Settings.LAST_VRCHAT_STATUS_INDICATOR_KEY)
+            ?.trim()
+            ?.takeIf(String::isNotEmpty)
+        set(value) = value?.trim()?.takeIf(String::isNotEmpty)?.let {
+            settingsSettings.putString(DaoKeys.Settings.LAST_VRCHAT_STATUS_INDICATOR_KEY, it)
+        } ?: settingsSettings.remove(DaoKeys.Settings.LAST_VRCHAT_STATUS_INDICATOR_KEY)
+
     private companion object {
         const val MAX_NOTIFIED_SOCIAL_IDS = 256
     }

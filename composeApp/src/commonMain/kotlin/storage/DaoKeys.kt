@@ -80,6 +80,7 @@ object DaoKeys{
         const val LAN_SYNC_DEVICE_ID_KEY = "${PREFIX}.lanSyncDeviceId"
         const val LAST_OFFICIAL_CLIPBOARD_TARGET_KEY = "${PREFIX}.lastOfficialClipboardTarget"
         const val NOTIFIED_SOCIAL_NOTIFICATION_IDS_KEY = "${PREFIX}.notifiedSocialNotificationIds"
+        const val LAST_VRCHAT_STATUS_INDICATOR_KEY = "${PREFIX}.lastVrchatStatusIndicator"
 
     }
 
