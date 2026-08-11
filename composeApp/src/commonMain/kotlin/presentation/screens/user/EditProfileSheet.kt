@@ -35,7 +35,7 @@ private fun extractLanguages(tags: List<String>): List<String> =
 private fun UserStatus?.safeStatus(): UserStatus =
     if (this == null || this == UserStatus.Offline) UserStatus.Active else this
 
-private enum class EditField { Status, Language, Pronouns, Bio }
+private enum class EditField { Status, Language, Pronouns, Bio, Links }
 
 private val STATUS_OPTIONS = listOf(
     UserStatus.JoinMe, UserStatus.Active, UserStatus.AskMe, UserStatus.Busy,
@@ -60,6 +60,7 @@ fun EditProfileSheet(
     onLanguageSave: (languages: List<String>) -> Unit,
     onPronounsSave: (pronouns: String) -> Unit,
     onBioSave: (bio: String) -> Unit,
+    onLinksSave: (links: List<String>) -> Unit,
 ) {
     if (!isVisible) return
 
@@ -73,6 +74,8 @@ fun EditProfileSheet(
     var editStatusDesc by remember { mutableStateOf(statusDescription) }
     var editPronouns by remember { mutableStateOf(pronouns) }
     var editBio by remember { mutableStateOf(bio) }
+    var links by remember { mutableStateOf(currentUser.bioLinks) }
+    var editLinks by remember { mutableStateOf(links.joinToString("\n")) }
     var editLanguages by remember { mutableStateOf(languages) }
 
     ModalBottomSheet(
@@ -104,6 +107,9 @@ fun EditProfileSheet(
                 ProfileFieldRow(strings.editProfileBio, bio.ifBlank { "—" }.let { if (it.length > 60) it.take(60) + "…" else it }) {
                     editBio = bio; editingField = EditField.Bio
                 }
+                ProfileFieldRow(strings.groupLinks, links.ifEmpty { listOf("—") }.joinToString(", ")) {
+                    editLinks = links.joinToString("\n"); editingField = EditField.Links
+                }
             } else {
                 when (editingField) {
                     EditField.Status -> EditStatusField(editStatus, editStatusDesc, { editStatus = it }, { editStatusDesc = it }, {
@@ -117,6 +123,9 @@ fun EditProfileSheet(
                     }) { editingField = null }
                     EditField.Bio -> EditContentField(strings.editProfileBio, editBio, { editBio = it }, 512, 8, {
                         bio = editBio; onBioSave(editBio); editingField = null
+                    }) { editingField = null }
+                    EditField.Links -> EditContentField(strings.groupLinks, editLinks, { editLinks = it }, 1024, 8, {
+                        links = editLinks.lines().map(String::trim).filter(String::isNotBlank); onLinksSave(links); editingField = null
                     }) { editingField = null }
                     null -> {}
                 }

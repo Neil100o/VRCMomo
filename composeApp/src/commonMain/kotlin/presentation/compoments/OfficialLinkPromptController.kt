@@ -37,6 +37,7 @@ internal class OfficialLinkPromptController<T>(
     private val resolve: suspend (OfficialLinkTarget) -> Result<T>,
     private val onResolved: (T) -> Unit,
     private val onExternalConsumed: (OfficialLinkRequest) -> Unit,
+    private val onTargetInspected: (String) -> Unit = {},
     private val isOperationCurrent: (OfficialLinkOperation) -> Boolean = { true },
     initialSnapshot: OfficialLinkPromptSnapshot? = null,
 ) {
@@ -194,6 +195,7 @@ internal class OfficialLinkPromptController<T>(
 
     private fun markInspected(targetKey: String) {
         lastInspectedTargetKey = targetKey
+        onTargetInspected(targetKey)
     }
 }
 

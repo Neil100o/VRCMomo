@@ -34,13 +34,25 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.ln
+import kotlin.math.min
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 /**
  * 好友分组选项数据类
  */
 data class FriendGroupOptions(
-    val selectedGroup: FavoriteGroupData? = null
+    val selectedGroup: FavoriteGroupData? = null,
+    val sortMode: FriendSortMode = FriendSortMode.Frequent,
 )
+
+enum class FriendSortMode {
+    Status,
+    Frequent,
+    RecentMet,
+    Name,
+}
 
 /**
  * 世界分组选项数据类
@@ -161,6 +173,13 @@ class FriendListPagerModel(
             friendService.friendState.collect { friends ->
                 _friendTotal.value = friends.size
                 findFriendList(_searchText.value)
+            }
+        }
+        screenModelScope.launch {
+            friendActivityService.friendActivityState.drop(1).collect {
+                if (_friendGroupOptions.value.sortMode != FriendSortMode.Status) {
+                    findFriendList(_searchText.value)
+                }
             }
         }
     }
@@ -335,6 +354,7 @@ class FriendListPagerModel(
      *
      * @param favoriteIds 为 null 时返回所有好友， 代表没有选择好友组
      */
+    @OptIn(ExperimentalTime::class)
     suspend fun findFriendsByName(name: String, favoriteIds: Set<String>?): List<FriendData> {
 
         val unFriendData = favoriteIds?.filterNot { friendService.friendMap.contains(it) }?.map {
@@ -353,7 +373,11 @@ class FriendListPagerModel(
             if (favoriteIds != null) nameFilteredList.filter { friend -> favoriteIds.contains(friend.id) }
             else nameFilteredList
 
-        return result.sortedUserByStatus()
+        return result.sortedByFriendMode(
+            mode = friendGroupOptions.value.sortMode,
+            activityByFriendId = friendActivityService.friendActivityState.value,
+            nowMillis = Clock.System.now().toEpochMilliseconds(),
+        )
     }
 
     // 先按状态排序, 如果是离线就再按最后登录时间排序, 再按名字排序
@@ -513,6 +537,45 @@ internal fun Iterable<FriendData>.sortedUserByStatus() = sortedByDescending {
         append('-')
         append(it.displayName)
     }
+}
+
+internal fun Iterable<FriendData>.sortedByFriendMode(
+    mode: FriendSortMode,
+    activityByFriendId: Map<String, io.github.vrcmteam.vrcm.storage.data.FriendActivityStats>,
+    nowMillis: Long,
+): List<FriendData> = when (mode) {
+    FriendSortMode.Status -> sortedUserByStatus()
+    FriendSortMode.Name -> sortedBy { it.displayName.lowercase() }
+    FriendSortMode.RecentMet -> sortedWith(
+        compareByDescending<FriendData> { activityByFriendId[it.id]?.lastSeenTogetherAtMillis ?: Long.MIN_VALUE }
+            .thenByDescending { it.status != UserStatus.Offline }
+            .thenBy { it.displayName.lowercase() },
+    )
+    FriendSortMode.Frequent -> sortedWith(
+        compareByDescending<FriendData> {
+            activityByFriendId[it.id]?.frequentContactScore(nowMillis) ?: 0.0
+        }.thenByDescending { activityByFriendId[it.id]?.lastSeenTogetherAtMillis ?: Long.MIN_VALUE }
+            .thenByDescending { it.status != UserStatus.Offline }
+            .thenBy { it.displayName.lowercase() },
+    )
+}
+
+internal fun io.github.vrcmteam.vrcm.storage.data.FriendActivityStats.frequentContactScore(
+    nowMillis: Long,
+): Double {
+    val dayMillis = 24.0 * 60.0 * 60.0 * 1_000.0
+    fun recencyScore(timestamp: Long?, windowDays: Double, weight: Double): Double {
+        if (timestamp == null) return 0.0
+        val ageDays = ((nowMillis - timestamp).coerceAtLeast(0L) / dayMillis)
+        return (1.0 - ageDays / windowDays).coerceIn(0.0, 1.0) * weight
+    }
+
+    val activityRecency = recencyScore(lastActivityAtMillis, windowDays = 30.0, weight = 35.0)
+    val meetingRecency = recencyScore(lastSeenTogetherAtMillis, windowDays = 60.0, weight = 25.0)
+    val meetingFrequency = min(20.0, ln(meetingCount.coerceAtLeast(0) + 1.0) * 7.0)
+    val togetherHours = togetherDurationMillis.coerceAtLeast(0L) / 3_600_000.0
+    val togetherTime = min(20.0, ln(togetherHours + 1.0) * 6.0)
+    return activityRecency + meetingRecency + meetingFrequency + togetherTime
 }
 
 internal fun FavoritedWorld.toSearchWorldData(): WorldData = WorldData(

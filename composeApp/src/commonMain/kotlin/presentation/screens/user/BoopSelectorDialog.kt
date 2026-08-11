@@ -18,7 +18,9 @@ import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
 internal data class BoopEmojiOption(
     val name: String,
     val request: BoopData,
-)
+) {
+    val symbol: String get() = boopEmojiSymbol(request.emojiId)
+}
 
 private val defaultBoopEmojiOptions = listOf(
     BoopEmojiOption("Default", BoopData()),
@@ -89,6 +91,27 @@ private val defaultBoopEmojiOptions = listOf(
     BoopEmojiOption("Zzz", BoopData(emojiId = "default_zzz")),
 )
 
+private fun boopEmojiSymbol(emojiId: String?): String = when (emojiId) {
+    null -> "👆"
+    "default_angry" -> "😠"; "default_arrowpoint" -> "👉"; "default_bats" -> "🦇"
+    "default_beachball" -> "🏖️"; "default_beer" -> "🍺"; "default_blushing" -> "😊"
+    "default_boo" -> "👻"; "default_broken_heart" -> "💔"; "default_candy", "default_candy_cane" -> "🍬"
+    "default_candy_corn" -> "🌽"; "default_cantsee" -> "🙈"; "default_champagne" -> "🍾"
+    "default_cloud" -> "☁️"; "default_coal" -> "🪨"; "default_confetti" -> "🎉"; "default_crying" -> "😢"
+    "default_drink" -> "🥤"; "default_exclamation" -> "❗"; "default_fire" -> "🔥"; "default_frown" -> "☹️"
+    "default_gift", "default_gifts" -> "🎁"; "default_gingerbread" -> "🍪"; "default_go" -> "🟢"
+    "default_hand_wave" -> "👋"; "default_hang_ten" -> "🤙"; "default_heart" -> "❤️"; "default_hourglass" -> "⌛"
+    "default_ice_cream" -> "🍦"; "default_in_love" -> "🥰"; "default_jack_o_lantern" -> "🎃"; "default_keyboard" -> "⌨️"
+    "default_kiss" -> "😘"; "default_laugh" -> "😂"; "default_life_ring" -> "🛟"; "default_mistletoe" -> "🌿"
+    "default_money" -> "💵"; "default_music_note" -> "🎵"; "default_neon_shades", "default_sunglasses" -> "😎"
+    "default_noheadphones" -> "🎧"; "default_nomic" -> "🎙️"; "default_pineapple" -> "🍍"; "default_pizza" -> "🍕"
+    "default_portal" -> "🌀"; "default_question" -> "❓"; "default_shush" -> "🤫"; "default_skull" -> "💀"
+    "default_smile" -> "🙂"; "default_snow_fall", "default_snowball" -> "❄️"; "default_splash" -> "💦"
+    "default_spooky_ghost" -> "👻"; "default_stoic" -> "😐"; "default_stop" -> "🛑"; "default_sun_lotion" -> "🧴"
+    "default_thinking" -> "🤔"; "default_thumbs_down" -> "👎"; "default_thumbs_up" -> "👍"; "default_tomato" -> "🍅"
+    "default_tongue_out" -> "😛"; "default_web" -> "🕸️"; "default_wow" -> "😮"; "default_zzz" -> "💤"
+    else -> "✦"
+}
 @Composable
 internal fun BoopSelectorDialog(
     onDismissRequest: () -> Unit,
@@ -108,7 +131,7 @@ internal fun BoopSelectorDialog(
                         onClick = { onSelect(option.request) },
                     ) {
                         Text(
-                            if (option.name == "Default") strings.profileBoopDefaultEmoji else option.name,
+                            "${option.symbol} ${if (option.name == "Default") strings.profileBoopDefaultEmoji else option.name}",
                         )
                     }
                 }

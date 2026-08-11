@@ -140,6 +140,10 @@ internal object LocaleStringsZhHant : LocaleStrings() {
     // FriendListPager
     override val friendListPagerAllFriends = "全部好友"
     override val friendListPagerAllWorlds = "全部世界"
+    override val friendSortStatus = "狀態"
+    override val friendSortFrequent = "常聯絡"
+    override val friendSortRecentMet = "最近見面"
+    override val friendSortName = "名稱"
 
     // WorldProfileScreen
     override val worldProfileDescription = "世界描述"

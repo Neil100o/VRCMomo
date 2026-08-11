@@ -1,5 +1,7 @@
 # VRCMomo development map
 
+> 当前尚未提交的工作、测试包边界和继续顺序见 `docs/CURRENT_WORK_STATUS.md`。继续 UI 重构前先读该文件，避免把预览 APK 或半成品误认为已完成状态。
+
 ## Build and release
 - `gradle/libs.versions.toml`: `app-version`, `app-code`
 - `composeApp/src/androidMain/AndroidManifest.xml`: Android identity/icon entry

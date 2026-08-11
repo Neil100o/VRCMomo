@@ -1,6 +1,7 @@
 package io.github.vrcmteam.vrcm.presentation.screens.user
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,6 +31,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.github.vrcmteam.vrcm.presentation.compoments.renderUserItem
 import io.github.vrcmteam.vrcm.presentation.compoments.renderUserItems
+import io.github.vrcmteam.vrcm.presentation.compoments.friendCardColumnCount
 import io.github.vrcmteam.vrcm.presentation.screens.user.data.UserProfileVo
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
 import io.github.vrcmteam.vrcm.presentation.supports.AppIcons
@@ -111,9 +113,16 @@ data class MutualFriendsScreen(
                         color = MaterialTheme.colorScheme.outline
                     )
                 } else {
-                    LazyColumn(modifier = Modifier.fillMaxSize()) {
-                        renderUserItems(visibleMutualFriends) {
-                            navigator push UserProfileScreen(UserProfileVo(it))
+                    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+                        val columns = friendCardColumnCount(maxWidth)
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            renderUserItems(
+                                users = visibleMutualFriends,
+                                columns = columns,
+                                onUserClick = {
+                                    navigator push UserProfileScreen(UserProfileVo(it))
+                                },
+                            )
                         }
                     }
                 }

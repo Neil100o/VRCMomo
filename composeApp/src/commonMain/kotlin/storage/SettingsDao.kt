@@ -107,4 +107,11 @@ class SettingsDao(
             }
         }
 
+    /** Last parsed public VRChat target, used to avoid prompting for the same clipboard link after restart. */
+    var lastOfficialClipboardTargetKey: String?
+        get() = settingsSettings.getStringOrNull(DaoKeys.Settings.LAST_OFFICIAL_CLIPBOARD_TARGET_KEY)
+        set(value) = value?.trim().takeUnless { it.isNullOrEmpty() }?.let {
+            settingsSettings.putString(DaoKeys.Settings.LAST_OFFICIAL_CLIPBOARD_TARGET_KEY, it)
+        } ?: settingsSettings.remove(DaoKeys.Settings.LAST_OFFICIAL_CLIPBOARD_TARGET_KEY)
+
 }

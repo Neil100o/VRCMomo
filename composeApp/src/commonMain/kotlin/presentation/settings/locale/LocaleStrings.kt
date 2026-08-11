@@ -162,6 +162,10 @@ sealed class LocaleStrings {
     // FriendListPager
     open val friendListPagerAllFriends: String = "All Friends"
     open val friendListPagerAllWorlds: String = "All Worlds"
+    open val friendSortStatus: String = "Status"
+    open val friendSortFrequent: String = "Frequent"
+    open val friendSortRecentMet: String = "Recent"
+    open val friendSortName: String = "Name"
 
     // WorldProfileScreen
     open val worldProfileDescription: String = "World Description"

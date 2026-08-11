@@ -1,17 +1,13 @@
 package io.github.vrcmteam.vrcm.presentation.compoments
 
 import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -31,6 +27,7 @@ import io.github.vrcmteam.vrcm.network.api.worlds.data.WorldData
 import io.github.vrcmteam.vrcm.presentation.extensions.ignoredFormat
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
 import io.github.vrcmteam.vrcm.presentation.supports.AppIcons
+import io.github.vrcmteam.vrcm.presentation.theme.GameColor
 import io.github.vrcmteam.vrcm.service.platformPackages
 
 /**
@@ -38,10 +35,91 @@ import io.github.vrcmteam.vrcm.service.platformPackages
  */
 fun LazyListScope.renderUserItems(
     users: List<IUser>,
+    columns: Int = 1,
     onUserClick: (IUser) -> Unit
 ) {
-    items(users, key = { it.id }) { user ->
-        renderUserItem(user, onUserClick)
+    items(
+        items = users.chunked(columns.coerceAtLeast(1)),
+        key = { row -> row.joinToString(separator = "|") { it.id } },
+    ) { row ->
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            row.forEach { user ->
+                CompactFriendCard(user, Modifier.weight(1f), onUserClick)
+            }
+            repeat(columns.coerceAtLeast(1) - row.size) {
+                Spacer(Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun CompactFriendCard(
+    user: IUser,
+    modifier: Modifier,
+    onClick: (IUser) -> Unit,
+) {
+    OutlinedCard(
+        modifier = modifier.clickable { onClick(user) },
+        shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp),
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().heightIn(min = 96.dp)
+                .padding(horizontal = 14.dp, vertical = 13.dp),
+            horizontalArrangement = Arrangement.spacedBy(13.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            UserStateIcon(
+                modifier = Modifier.size(64.dp),
+                iconUrl = user.iconUrl,
+                userStatus = user.status,
+                location = user.location,
+            )
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        imageVector = AppIcons.Shield,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                        tint = GameColor.Rank.fromValue(user.trustRank),
+                    )
+                    Text(
+                        text = user.displayName,
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (user.isSupporter) {
+                        Text(
+                            text = "+",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = GameColor.Supporter,
+                        )
+                    }
+                }
+                UserStatusRow(
+                    user = user,
+                    iconSize = 8.dp,
+                    spacedBy = 6.dp,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+        }
     }
 }
 
@@ -111,13 +189,89 @@ fun WorldData.hiddenWorldDisplayName(): String = favoriteId ?: name
  */
 fun LazyListScope.renderWorldItems(
     worlds: List<WorldData>,
-    onWorldClick: (WorldData) -> Unit
+    columns: Int = 2,
+    onWorldClick: (WorldData) -> Unit,
 ) {
-    items(worlds, key = { it.favoriteId ?: it.id }) { world ->
-        renderWorldItem(world, onWorldClick)
+    items(
+        items = worlds.chunked(columns.coerceAtLeast(1)),
+        key = { row -> row.joinToString(separator = "|") { it.favoriteId ?: it.id } },
+    ) { row ->
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            row.forEach { world ->
+                WorldTile(
+                    world = world,
+                    modifier = Modifier.weight(1f),
+                    onClick = onWorldClick,
+                )
+            }
+            repeat(columns.coerceAtLeast(1) - row.size) {
+                Spacer(Modifier.weight(1f))
+            }
+        }
     }
 }
 
+@Composable
+private fun WorldTile(
+    world: WorldData,
+    modifier: Modifier,
+    onClick: (WorldData) -> Unit,
+) {
+    Card(
+        modifier = modifier.clickable { onClick(world) },
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
+    ) {
+        Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Box {
+                if (world.isHiddenWorld()) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().aspectRatio(1.35f)
+                            .clip(MaterialTheme.shapes.medium)
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = AppIcons.VisibilityOff,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(28.dp),
+                        )
+                    }
+                } else {
+                    AImage(
+                        modifier = Modifier.fillMaxWidth().aspectRatio(1.35f)
+                            .clip(MaterialTheme.shapes.medium),
+                        imageData = world.thumbnailImageUrl?.takeIf(String::isNotBlank) ?: world.safeImageUrl(),
+                    )
+                }
+                PlatformBadgeRow(
+                    platforms = remember(world.unityPackages) {
+                        world.unityPackages.availableWorldPlatforms()
+                    },
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(6.dp),
+                )
+            }
+            Text(
+                text = if (world.isHiddenWorld()) world.hiddenWorldDisplayName() else world.name,
+                maxLines = 2,
+                minLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = if (world.isHiddenWorld()) strings.hiddenWorld else world.authorName,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
 /**
  * 单个世界项渲染
  */
@@ -198,10 +352,88 @@ fun LazyItemScope.renderWorldItem(
  */
 fun LazyListScope.renderAvatarItems(
     avatars: List<AvatarData>,
+    columns: Int = 2,
     onAvatarClick: (AvatarData) -> Unit
 ) {
-    items(avatars, key = { it.id }) { avatar ->
-        renderAvatarItem(avatar, onAvatarClick)
+    items(
+        items = avatars.chunked(columns.coerceAtLeast(1)),
+        key = { row -> row.joinToString(separator = "|") { it.id } },
+    ) { row ->
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            row.forEach { avatar ->
+                AvatarTile(
+                    avatar = avatar,
+                    modifier = Modifier.weight(1f),
+                    onClick = onAvatarClick,
+                )
+            }
+            repeat(columns.coerceAtLeast(1) - row.size) {
+                Spacer(Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun AvatarTile(
+    avatar: AvatarData,
+    modifier: Modifier,
+    onClick: (AvatarData) -> Unit,
+) {
+    Card(
+        modifier = modifier.clickable { onClick(avatar) },
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
+    ) {
+        Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Box {
+                if (avatar.releaseStatus == "hidden") {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().aspectRatio(1f)
+                            .clip(MaterialTheme.shapes.medium)
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            imageVector = AppIcons.VisibilityOff,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(28.dp),
+                        )
+                    }
+                } else {
+                    AImage(
+                        modifier = Modifier.fillMaxWidth().aspectRatio(1f)
+                            .clip(MaterialTheme.shapes.medium),
+                        imageData = avatar.thumbnailImageUrl?.takeIf(String::isNotBlank)
+                            ?: avatar.imageUrl.takeIf(String::isNotBlank),
+                    )
+                }
+                PlatformBadgeRow(
+                    platforms = remember(avatar.unityPackages) {
+                        avatar.unityPackages.availableAvatarPlatforms()
+                    },
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(6.dp),
+                )
+            }
+            Text(
+                text = if (avatar.releaseStatus == "hidden") avatar.id else avatar.name,
+                maxLines = 2,
+                minLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.bodyMedium,
+            )
+            Text(
+                text = if (avatar.releaseStatus == "hidden") strings.hiddenModel else avatar.authorName,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
     }
 }
 

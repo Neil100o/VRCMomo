@@ -41,6 +41,7 @@ import io.github.vrcmteam.vrcm.presentation.screens.world.data.WorldProfileVo
 import io.github.vrcmteam.vrcm.presentation.settings.locale.LocaleStrings
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
 import io.github.vrcmteam.vrcm.presentation.supports.AppIcons
+import io.github.vrcmteam.vrcm.storage.SettingsDao
 import io.github.vrcmteam.vrcm.service.OfficialLinkContent
 import io.github.vrcmteam.vrcm.service.OfficialLinkInbox
 import io.github.vrcmteam.vrcm.service.OfficialLinkRequest
@@ -56,12 +57,13 @@ internal fun OfficialLinkPrompt(
 ) {
     val clipboard = LocalClipboardManager.current
     val service: OfficialLinkService = koinInject()
+    val settingsDao: SettingsDao = koinInject()
     val locale = strings
     val incomingRequest by inbox.pendingRequest.collectAsState()
     var foregroundGeneration by remember { mutableIntStateOf(0) }
     val clipboardInspectionGate = remember { OfficialLinkClipboardInspectionGate() }
     val isAuthenticated = navigator.items.any { it is HomeScreen }
-    val controller = rememberOfficialLinkPromptController(service, navigator, inbox)
+    val controller = rememberOfficialLinkPromptController(service, navigator, inbox, settingsDao)
     val promptState by controller.state.collectAsState()
 
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
@@ -146,6 +148,7 @@ private fun rememberOfficialLinkPromptController(
     service: OfficialLinkService,
     navigator: Navigator,
     inbox: OfficialLinkInbox,
+    settingsDao: SettingsDao,
 ): OfficialLinkPromptController<OfficialLinkContent> {
     val scope = rememberCoroutineScope()
     fun createController(snapshot: OfficialLinkPromptSnapshot? = null) =
@@ -154,6 +157,7 @@ private fun rememberOfficialLinkPromptController(
             resolve = service::resolve,
             onResolved = { navigator.push(it.toRoute()) },
             onExternalConsumed = inbox::consume,
+            onTargetInspected = { settingsDao.lastOfficialClipboardTargetKey = it },
             isOperationCurrent = { operation ->
                 val pendingRequest = inbox.pendingRequest.value
                 navigator.items.any { it is HomeScreen } &&
@@ -163,7 +167,13 @@ private fun rememberOfficialLinkPromptController(
                         pendingRequest?.id == operation.externalRequest.id
                     }
             },
-            initialSnapshot = snapshot,
+            initialSnapshot = snapshot ?: settingsDao.lastOfficialClipboardTargetKey?.let { targetKey ->
+                OfficialLinkPromptSnapshot(
+                    state = OfficialLinkPromptState.Idle,
+                    nextOperationId = 0L,
+                    lastInspectedTargetKey = targetKey,
+                )
+            },
         )
     val saver = Saver<OfficialLinkPromptController<OfficialLinkContent>, List<String>>(
         save = { controller -> controller.snapshot().toSaveableValues() },
@@ -181,6 +191,7 @@ private fun ClipboardConfirmationDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.widthIn(max = 360.dp),
         icon = { Icon(AppIcons.Link, contentDescription = null) },
         title = { Text(locale.officialLinkPromptTitle) },
         text = {
@@ -211,6 +222,7 @@ private fun ClipboardConfirmationDialog(
 private fun ResolvingOfficialLinkDialog(locale: LocaleStrings) {
     AlertDialog(
         onDismissRequest = {},
+        modifier = Modifier.widthIn(max = 360.dp),
         icon = { Icon(AppIcons.Link, contentDescription = null) },
         title = { Text(locale.officialLinkPromptTitle) },
         text = {
@@ -235,6 +247,7 @@ private fun OfficialLinkFailureDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        modifier = Modifier.widthIn(max = 360.dp),
         icon = { Icon(AppIcons.Link, contentDescription = null) },
         title = { Text(locale.officialLinkPromptTitle) },
         text = {

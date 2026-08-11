@@ -60,6 +60,7 @@ APK output: `composeApp/build/outputs/apk/debug/VRCMomo-v<version>.apk`.
 
 ## Reference documents
 
+- `docs/CURRENT_WORK_STATUS.md`: current branch state, unfinished local UI batch, verification boundary and exact resume order. Read this before continuing unfinished work.
 - `docs/DEVELOPMENT_MAP.md`: build, storage, API and feature ownership map.
 - `docs/CODE_STANDARDS.md`: Kotlin/KMP/Compose review checklist and refactoring limits.
 - `docs/VRCX_JIRAI_FEATURE_REVIEW.md`: source attribution and feature-boundary review.

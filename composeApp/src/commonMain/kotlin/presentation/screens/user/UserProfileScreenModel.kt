@@ -261,6 +261,7 @@ class UserProfileScreenModel(
     private val cacheMutex = Mutex()
     private val boopMutex = Mutex()
     private var cachedUserData: UserData? = null
+    val isSelf = userProfileVO.id == authService.accountDto().userId
     private val cacheOwnerUserId = authService.accountDto().userId
 
     init {

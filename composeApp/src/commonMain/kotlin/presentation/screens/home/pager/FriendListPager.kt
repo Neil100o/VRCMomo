@@ -6,6 +6,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -112,6 +114,14 @@ object FriendListPager : Pager {
                             getSelectedGroup = { it.selectedGroup },
                             updateOptions = { options, group -> options.copy(selectedGroup = group) }
                         )
+                        FriendSortModeRow(
+                            selected = friendGroupOptions.sortMode,
+                            onSelected = { mode ->
+                                friendListPagerModel.updateFriendGroupOptions(
+                                    friendGroupOptions.copy(sortMode = mode),
+                                )
+                            },
+                        )
 
                     }
 
@@ -170,6 +180,35 @@ object FriendListPager : Pager {
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun FriendSortModeRow(
+    selected: FriendSortMode,
+    onSelected: (FriendSortMode) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        FriendSortMode.entries.forEach { mode ->
+            FilterChip(
+                selected = mode == selected,
+                onClick = { onSelected(mode) },
+                label = {
+                    Text(
+                        when (mode) {
+                            FriendSortMode.Status -> strings.friendSortStatus
+                            FriendSortMode.Frequent -> strings.friendSortFrequent
+                            FriendSortMode.RecentMet -> strings.friendSortRecentMet
+                            FriendSortMode.Name -> strings.friendSortName
+                        },
+                    )
+                },
+            )
+        }
     }
 }
 

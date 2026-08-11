@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -35,6 +36,7 @@ import io.github.vrcmteam.vrcm.presentation.settings.locale.LanguageTag
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
 import io.github.vrcmteam.vrcm.presentation.settings.theme.ThemeColor
 import io.github.vrcmteam.vrcm.presentation.supports.WebIcons
+import io.github.vrcmteam.vrcm.presentation.supports.AppIcons
 import io.github.vrcmteam.vrcm.service.AuthService
 import io.github.vrcmteam.vrcm.service.FriendActivityService
 import io.github.vrcmteam.vrcm.service.LanActivityBridgeClient
@@ -80,7 +82,9 @@ fun SettingsBottomSheet(
                 .fillMaxWidth()
                 .align(Alignment.CenterHorizontally)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 12.dp, vertical = 8.dp),
+                .navigationBarsPadding()
+                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .padding(bottom = 20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             if (destination == null) {
@@ -120,18 +124,21 @@ private fun SettingsOverview(
                 title = localeStrings.settingsCategoryAppearance,
                 summary = listOf(currentSettings.languageTag.displayName, currentSettings.themeColor.name)
                     .filter(String::isNotBlank).joinToString(" · "),
+                icon = AppIcons.Settings,
                 onClick = { onOpen(SettingsDestination.Appearance) },
             )
             SettingsDivider()
             SettingsNavigationRow(
                 title = localeStrings.settingsCategoryNotifications,
                 summary = if (currentSettings.isSystemNotificationsEnabled) localeStrings.settingsEnabled else localeStrings.settingsDisabled,
+                icon = AppIcons.Notifications,
                 onClick = { onOpen(SettingsDestination.Notifications) },
             )
             SettingsDivider()
             SettingsNavigationRow(
                 title = localeStrings.settingsCategoryBackground,
                 summary = if (currentSettings.isBackgroundFriendMonitoringEnabled) localeStrings.settingsBackgroundEnabled else localeStrings.settingsBackgroundDisabled,
+                icon = AppIcons.Computer,
                 onClick = { onOpen(SettingsDestination.BackgroundAndSync) },
             )
             SettingsDivider()
@@ -139,12 +146,14 @@ private fun SettingsOverview(
                 title = localeStrings.settingsCategoryData,
                 summary = currentSettings.activityLogRetentionDays?.let { "$it ${localeStrings.friendActivityLogRetentionDaysSuffix}" }
                     ?: localeStrings.friendActivityLogKeepForever,
+                icon = AppIcons.DateRange,
                 onClick = { onOpen(SettingsDestination.ActivityData) },
             )
             SettingsDivider()
             SettingsNavigationRow(
                 title = localeStrings.settingsCategoryAbout,
                 summary = AppConst.APP_VERSION,
+                icon = AppIcons.QuestionMark,
                 onClick = { onOpen(SettingsDestination.About) },
             )
         }
@@ -181,13 +190,27 @@ private fun SettingsDetail(
 private fun SettingsNavigationRow(
     title: String,
     summary: String,
+    icon: ImageVector,
     onClick: () -> Unit,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        Surface(
+            modifier = Modifier.size(40.dp),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(imageVector = icon, contentDescription = null, modifier = Modifier.size(20.dp))
+            }
+        }
         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)
             Text(summary, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -456,11 +479,6 @@ private fun VrcxLanSyncBlock() {
     ) {
         SettingsSectionTitle(localeStrings.vrcxLanSyncTitle)
         Text(
-            localeStrings.vrcxLanSyncDescription,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
             syncStatus.lastSuccessAtMillis?.let {
                 localeStrings.vrcxLanSyncLastSuccess.format(
                     Instant.fromEpochMilliseconds(it).toLocalDateTime(TimeZone.currentSystemDefault()).ignoredFormat,
@@ -498,23 +516,34 @@ private fun VrcxLanSyncBlock() {
                 },
             )
         }
-        Text(
-            localeStrings.vrcxLanAutoSyncDescription,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        OutlinedButton(
-            enabled = !isDiscovering,
-            onClick = {
-                scope.launch {
-                    isDiscovering = true
-                    val found = discoverLanBridges()
-                    discoveredBridges = found
-                    isDiscovering = false
-                    found.singleOrNull()?.pairingUrl?.let { pairFromQrAndPreview(it) }
-                }
-            },
-        ) { Text(if (isDiscovering) localeStrings.vrcxLanDiscovering else localeStrings.vrcxLanDiscover) }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            OutlinedButton(
+                modifier = Modifier.weight(1f),
+                enabled = !isDiscovering,
+                onClick = {
+                    scope.launch {
+                        isDiscovering = true
+                        val found = discoverLanBridges()
+                        discoveredBridges = found
+                        isDiscovering = false
+                        found.singleOrNull()?.pairingUrl?.let { pairFromQrAndPreview(it) }
+                    }
+                },
+            ) {
+                Text(if (isDiscovering) localeStrings.vrcxLanDiscovering else localeStrings.vrcxLanDiscover)
+            }
+            LanBridgeQrScanButton(
+                modifier = Modifier.weight(1f),
+                label = localeStrings.vrcxLanScanQr,
+                enabled = !isSyncing,
+                onScanned = { scannedUrl ->
+                    scope.launch { pairFromQrAndPreview(scannedUrl) }
+                },
+            )
+        }
         discoveredBridges.forEach { candidate ->
             if (candidate.pairingUrl != null) {
                 TextButton(
@@ -529,13 +558,6 @@ private fun VrcxLanSyncBlock() {
                 )
             }
         }
-        LanBridgeQrScanButton(
-            label = localeStrings.vrcxLanScanQr,
-            enabled = !isSyncing,
-            onScanned = { scannedUrl ->
-                scope.launch { pairFromQrAndPreview(scannedUrl) }
-            },
-        )
         if (!isDiscovering && discoveredBridges.isEmpty()) {
             Text(
                 localeStrings.vrcxLanDiscoveryHint,
@@ -550,57 +572,64 @@ private fun VrcxLanSyncBlock() {
                 color = MaterialTheme.colorScheme.primary,
             )
         }
-        Button(
-            enabled = !isSyncing && isPaired,
-            onClick = {
-                scope.launch {
-                    isSyncing = true
-                    runCatching {
-                        val pairing = LanBridgePairing.fromInput(bridgeUrl, bridgeToken)
-                        settingsDao.lanBridgeUrl = pairing.baseUrl
-                        settingsDao.lanBridgeToken = pairing.token
-                        val raw = bridgeClient.fetchVrcxActivity(pairing)
-                        activityService.previewVrcxActivityImport(raw)
-                    }.onSuccess { preview = it }
-                        .onFailure {
-                            val error = localeStrings.vrcxLanSyncFailed
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Button(
+                modifier = Modifier.weight(1f),
+                enabled = !isSyncing && isPaired,
+                onClick = {
+                    scope.launch {
+                        isSyncing = true
+                        runCatching {
+                            val pairing = LanBridgePairing.fromInput(bridgeUrl, bridgeToken)
+                            settingsDao.lanBridgeUrl = pairing.baseUrl
+                            settingsDao.lanBridgeToken = pairing.token
+                            val raw = bridgeClient.fetchVrcxActivity(pairing)
+                            activityService.previewVrcxActivityImport(raw)
+                        }.onSuccess { preview = it }
+                            .onFailure {
+                                val error = localeStrings.vrcxLanSyncFailed
+                                syncStatus = syncStatus.copy(lastError = error)
+                                settingsDao.lanSyncStatus = syncStatus
+                                SharedFlowCentre.toastText.emit(ToastText.Error(error))
+                            }
+                        isSyncing = false
+                    }
+                },
+            ) {
+                Text(if (isSyncing) localeStrings.vrcxLanSyncing else localeStrings.vrcxLanSyncNow)
+            }
+            OutlinedButton(
+                modifier = Modifier.weight(1f),
+                enabled = !isSyncing && isPaired,
+                onClick = {
+                    scope.launch {
+                        isSyncing = true
+                        runCatching {
+                            val pairing = LanBridgePairing.fromInput(bridgeUrl, bridgeToken)
+                            settingsDao.lanBridgeUrl = pairing.baseUrl
+                            settingsDao.lanBridgeToken = pairing.token
+                            bridgeClient.uploadVrcmomoActivity(pairing, activityService.exportLanActivitySync())
+                        }.onSuccess {
+                            syncStatus = LanSyncStatus(
+                                lastSuccessAtMillis = Clock.System.now().toEpochMilliseconds(),
+                                lastDirection = LAN_SYNC_DIRECTION_UPLOAD,
+                            )
+                            settingsDao.lanSyncStatus = syncStatus
+                            SharedFlowCentre.toastText.emit(ToastText.Info(localeStrings.vrcxLanUploadSuccess))
+                        }.onFailure {
+                            val error = localeStrings.vrcxLanUploadFailed
                             syncStatus = syncStatus.copy(lastError = error)
                             settingsDao.lanSyncStatus = syncStatus
                             SharedFlowCentre.toastText.emit(ToastText.Error(error))
                         }
-                    isSyncing = false
-                }
-            },
-        ) {
-            Text(if (isSyncing) localeStrings.vrcxLanSyncing else localeStrings.vrcxLanSyncNow)
-        }
-        OutlinedButton(
-            enabled = !isSyncing && isPaired,
-            onClick = {
-                scope.launch {
-                    isSyncing = true
-                    runCatching {
-                        val pairing = LanBridgePairing.fromInput(bridgeUrl, bridgeToken)
-                        settingsDao.lanBridgeUrl = pairing.baseUrl
-                        settingsDao.lanBridgeToken = pairing.token
-                        bridgeClient.uploadVrcmomoActivity(pairing, activityService.exportLanActivitySync())
-                    }.onSuccess {
-                        syncStatus = LanSyncStatus(
-                            lastSuccessAtMillis = Clock.System.now().toEpochMilliseconds(),
-                            lastDirection = LAN_SYNC_DIRECTION_UPLOAD,
-                        )
-                        settingsDao.lanSyncStatus = syncStatus
-                        SharedFlowCentre.toastText.emit(ToastText.Info(localeStrings.vrcxLanUploadSuccess))
-                    }.onFailure {
-                        val error = localeStrings.vrcxLanUploadFailed
-                        syncStatus = syncStatus.copy(lastError = error)
-                        settingsDao.lanSyncStatus = syncStatus
-                        SharedFlowCentre.toastText.emit(ToastText.Error(error))
+                        isSyncing = false
                     }
-                    isSyncing = false
-                }
-            },
-        ) { Text(localeStrings.vrcxLanUploadNow) }
+                },
+            ) { Text(localeStrings.vrcxLanUploadNow) }
+        }
     }
 
     preview?.let { importPreview ->
@@ -660,11 +689,6 @@ private fun VrcxActivityImportBlock() {
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         SettingsSectionTitle(localeStrings.vrcxActivityImportTitle)
-        Text(
-            localeStrings.vrcxActivityImportDescription,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
         TextButton(onClick = picker::launch) { Text(localeStrings.vrcxActivityImportChoose) }
     }
 

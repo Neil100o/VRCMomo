@@ -111,7 +111,7 @@ data class UserProfileScreen(
             }
         }
 
-        val currentUser = userProfileScreenModel.userState
+        val currentUser = userProfileScreenModel.userState.copy(isSelf = userProfileScreenModel.isSelf)
         val userGroups = userProfileScreenModel.userGroups
         val mutualGroups = userProfileScreenModel.mutualGroups
         var bottomSheetIsVisible by remember { mutableStateOf(false) }
@@ -226,6 +226,9 @@ data class UserProfileScreen(
             },
             onBioSave = { bio ->
                 userProfileScreenModel.updateUserProfile(bio = bio, successMessage = editSuccessMsg)
+            },
+            onLinksSave = { links ->
+                userProfileScreenModel.updateUserProfile(bioLinks = links, successMessage = editSuccessMsg)
             },
         )
         // 编辑备注弹窗
@@ -558,18 +561,12 @@ private fun FriendActivityHeatmap(
     }
     val maximum = cells.maxOrNull() ?: 0
     Text(localeStrings.friendActivityHeatmap, style = MaterialTheme.typography.labelLarge)
-    Text(
-        localeStrings.friendActivityHeatmapDescription,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-
     if (maximum == 0) return
     Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Spacer(Modifier.width(30.dp))
             repeat(HEATMAP_HOURS) { hour ->
-                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     if (hour % HEATMAP_HOUR_LABEL_INTERVAL == 0) {
                         Text(
                             text = "%02d".format(hour),
@@ -599,7 +596,7 @@ private fun FriendActivityHeatmap(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(12.dp)
+                            .height(14.dp)
                             .clip(MaterialTheme.shapes.extraSmall)
                             .background(
                                 if (count == 0) MaterialTheme.colorScheme.surfaceVariant

@@ -1,6 +1,7 @@
 package io.github.vrcmteam.vrcm.presentation.compoments
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -133,65 +134,73 @@ fun StandardSearchList(
     // 将索引转换为对应的SearchTabType
     val selectedTabType = SearchTabType.fromIndex(selectedTabIndex)
 
-    GenericSearchList(
-        key = key,
-        searchText = searchText,
-        updateSearchText = updateSearchText,
-        tabs = tabs,
-        selectedTabIndex = selectedTabIndex,
-        onTabSelected = onTabSelected,
-        isRefreshing = isRefreshing,
-        doRefresh = doRefresh,
-        headerContent = headerContent,
-        advancedOptionsContent = {
-            // 使用枚举类型调用高级选项内容
-            advancedOptionsContent?.invoke(selectedTabType)
-        },
-        onLoadMore = onLoadMore,
-        totalItemsCount = totalItemsCount,
-    ) { tabIndex ->
-        when (tabIndex) {
-            SearchTabType.USER.index -> { // 用户标签页
-                renderUserItems(
-                    users = userList,
-                    onUserClick = onUserClick
-                )
-            }
-            SearchTabType.WORLD.index -> { // 世界标签页
-                renderWorldItems(
-                    worlds = worldList,
-                    onWorldClick = onWorldClick
-                )
-            }
-            2 -> { // 第三个标签页：根据includeGroups决定显示模型还是群组
-                if (includeGroups) {
-                    renderGroupItems(
-                        groups = groupList,
-                        onGroupClick = onGroupClick
+    BoxWithConstraints {
+        val friendColumns = friendCardColumnCount(maxWidth)
+        val mediaColumns = mediaCardColumnCount(maxWidth)
+
+        GenericSearchList(
+            key = key,
+            searchText = searchText,
+            updateSearchText = updateSearchText,
+            tabs = tabs,
+            selectedTabIndex = selectedTabIndex,
+            onTabSelected = onTabSelected,
+            isRefreshing = isRefreshing,
+            doRefresh = doRefresh,
+            headerContent = headerContent,
+            advancedOptionsContent = {
+                // 使用枚举类型调用高级选项内容
+                advancedOptionsContent?.invoke(selectedTabType)
+            },
+            onLoadMore = onLoadMore,
+            totalItemsCount = totalItemsCount,
+        ) { tabIndex ->
+            when (tabIndex) {
+                SearchTabType.USER.index -> { // 用户标签页
+                    renderUserItems(
+                        users = userList,
+                        columns = friendColumns,
+                        onUserClick = onUserClick,
                     )
-                    if (isLoadingMore || (loadMoreFailed && retryLoadMore != null)) {
-                        item(key = "group-search-load-more") {
-                            Box(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                if (isLoadingMore) {
-                                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                                } else {
-                                    TextButton(onClick = { retryLoadMore?.invoke() }) {
-                                        Icon(Icons.Default.Refresh, contentDescription = null)
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(strings.retry)
+                }
+                SearchTabType.WORLD.index -> { // 世界标签页
+                    renderWorldItems(
+                        worlds = worldList,
+                        columns = mediaColumns,
+                        onWorldClick = onWorldClick,
+                    )
+                }
+                2 -> { // 第三个标签页：根据includeGroups决定显示模型还是群组
+                    if (includeGroups) {
+                        renderGroupItems(
+                            groups = groupList,
+                            onGroupClick = onGroupClick
+                        )
+                        if (isLoadingMore || (loadMoreFailed && retryLoadMore != null)) {
+                            item(key = "group-search-load-more") {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    if (isLoadingMore) {
+                                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                    } else {
+                                        TextButton(onClick = { retryLoadMore?.invoke() }) {
+                                            Icon(Icons.Default.Refresh, contentDescription = null)
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(strings.retry)
+                                        }
                                     }
                                 }
                             }
                         }
+                    } else {
+                        renderAvatarItems(
+                            avatars = avatarList,
+                            columns = mediaColumns,
+                            onAvatarClick = onAvatarClick,
+                        )
                     }
-                } else {
-                    renderAvatarItems(
-                        avatars = avatarList,
-                        onAvatarClick = onAvatarClick
-                    )
                 }
             }
         }

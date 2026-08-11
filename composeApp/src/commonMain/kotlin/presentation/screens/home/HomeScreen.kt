@@ -82,7 +82,7 @@ object HomeScreen : Screen {
 
         Scaffold(
             contentColor = MaterialTheme.colorScheme.primary,
-            topBar = { HomeTopAppBar(hazeState, pagerList[pagerState.currentPage].title) },
+            topBar = { HomeTopAppBar(hazeState) },
             bottomBar = { HomeBottomBar(pagerList, pagerState, hazeState) },
         ) {
             Surface(
@@ -115,7 +115,6 @@ object HomeScreen : Screen {
 @Composable
 private inline fun Screen.HomeTopAppBar(
     hazeState: HazeState?,
-    currentPageTitle: String,
 ) {
     val homeScreenModel: HomeScreenModel = koinScreenModel()
     val currentUser = homeScreenModel.currentUser
@@ -161,14 +160,14 @@ private inline fun Screen.HomeTopAppBar(
         Row(
             modifier = Modifier
                 .padding(top = getInsetPadding(WindowInsets::getTop))
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+                .padding(horizontal = 16.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Row(
                 modifier = Modifier
                     .clip(MaterialTheme.shapes.medium),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 UserStateIcon(
                     modifier = Modifier.simpleClickable { currentUser?.let { onClickUserIcon(it) } }
@@ -184,21 +183,14 @@ private inline fun Screen.HomeTopAppBar(
                         .simpleClickable { currentUser?.let { onClickShowStatusDialog(currentUser) } },
                     horizontalAlignment = Alignment.Start,
                 ) {
-                    Text(
-                        text = currentPageTitle,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary,
-                        maxLines = 1,
-                    )
                     UserInfoRow(
-                        iconSize = 16.dp,
+                        iconSize = 14.dp,
                         style = MaterialTheme.typography.titleSmall,
                         user = currentUser,
                     )
                     AnimatedVisibility(statusVisibility){
                         UserStatusRow(
-                            iconSize = 8.dp,
+                            iconSize = 7.dp,
                             style = MaterialTheme.typography.labelMedium,
                             user = currentUser,
                             animatedVisibilityScope = this

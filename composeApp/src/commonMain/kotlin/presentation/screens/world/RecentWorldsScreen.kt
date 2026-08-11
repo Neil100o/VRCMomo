@@ -3,9 +3,10 @@ package io.github.vrcmteam.vrcm.presentation.screens.world
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,6 +28,9 @@ import io.github.vrcmteam.vrcm.core.shared.SharedFlowCentre
 import io.github.vrcmteam.vrcm.network.api.worlds.WorldsApi
 import io.github.vrcmteam.vrcm.network.api.worlds.data.WorldData
 import io.github.vrcmteam.vrcm.presentation.compoments.ToastText
+import io.github.vrcmteam.vrcm.presentation.compoments.PlatformBadgeRow
+import io.github.vrcmteam.vrcm.presentation.compoments.availableWorldPlatforms
+import io.github.vrcmteam.vrcm.presentation.compoments.mediaCardColumnCount
 import io.github.vrcmteam.vrcm.presentation.compoments.shouldLoadNextPage
 import io.github.vrcmteam.vrcm.presentation.screens.world.data.WorldProfileVo
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
@@ -192,7 +196,7 @@ object RecentWorldsScreen : Screen {
                     )
                 }
             } else {
-                val listState = rememberLazyListState()
+                val listState = rememberLazyGridState()
                 LaunchedEffect(listState) {
                     snapshotFlow {
                         val layoutInfo = listState.layoutInfo
@@ -205,38 +209,44 @@ object RecentWorldsScreen : Screen {
                     }
                 }
 
-                LazyColumn(
-                    state = listState,
+                BoxWithConstraints(
                     modifier = Modifier.fillMaxSize().padding(paddingValues),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
-                    items(model.worlds, key = { it.id }) { world ->
-                        RecentWorldItem(world) {
-                            if (world.id == "???") {
-                                scope.launch {
-                                    SharedFlowCentre.toastText.emit(ToastText.Info(hiddenWorldCannotViewText))
-                                }
-                            } else {
-                                navigator.push(
-                                    WorldProfileScreen(
-                                        worldProfileVO = WorldProfileVo(world),
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(mediaCardColumnCount(maxWidth)),
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        items(model.worlds, key = { it.id }) { world ->
+                            RecentWorldItem(world) {
+                                if (world.id == "???") {
+                                    scope.launch {
+                                        SharedFlowCentre.toastText.emit(ToastText.Info(hiddenWorldCannotViewText))
+                                    }
+                                } else {
+                                    navigator.push(
+                                        WorldProfileScreen(
+                                            worldProfileVO = WorldProfileVo(world),
+                                        )
                                     )
-                                )
+                                }
                             }
                         }
-                    }
-                    if (model.isLoadingMore || model.loadMoreFailed) {
-                        item(key = "recent-worlds-loading") {
-                            Box(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                if (model.isLoadingMore) {
-                                    CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                                } else {
-                                    TextButton(onClick = model::retryLoadMoreRecentWorlds) {
-                                        Text(strings.retry)
+                        if (model.isLoadingMore || model.loadMoreFailed) {
+                            item(key = "recent-worlds-loading") {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    if (model.isLoadingMore) {
+                                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                                    } else {
+                                        TextButton(onClick = model::retryLoadMoreRecentWorlds) {
+                                            Text(strings.retry)
+                                        }
                                     }
                                 }
                             }
@@ -251,58 +261,32 @@ object RecentWorldsScreen : Screen {
 @Composable
 private fun RecentWorldItem(world: WorldData, onClick: () -> Unit) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLowest
-        )
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLowest),
     ) {
-        Row(
-            modifier = Modifier.padding(12.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (world.id == "???") {
-                Box(
-                    modifier = Modifier
-                        .size(80.dp, 45.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = AppIcons.VisibilityOff,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(24.dp)
+        Column(modifier = Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Box {
+                if (world.id == "???") {
+                    Box(modifier = Modifier.fillMaxWidth().aspectRatio(1.35f).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
+                        Icon(AppIcons.VisibilityOff, null)
+                    }
+                } else {
+                    CoilImage(
+                        imageModel = { (world.thumbnailImageUrl ?: world.imageUrl).orEmpty().ifBlank { null } },
+                        imageOptions = ImageOptions(contentScale = ContentScale.Crop), imageLoader = { koinInject() },
+                        modifier = Modifier.fillMaxWidth().aspectRatio(1.35f).clip(RoundedCornerShape(12.dp)),
                     )
                 }
-            } else {
-                CoilImage(
-                    imageModel = { (world.thumbnailImageUrl ?: world.imageUrl).orEmpty().ifBlank { null } },
-                    imageOptions = ImageOptions(contentScale = ContentScale.Crop),
-                    imageLoader = { koinInject() },
-                    modifier = Modifier
-                        .size(80.dp, 45.dp)
-                        .clip(RoundedCornerShape(8.dp)),
+                PlatformBadgeRow(
+                    platforms = remember(world.unityPackages) {
+                        world.unityPackages.availableWorldPlatforms()
+                    },
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(6.dp),
                 )
             }
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = if (world.id == "???") world.favoriteId ?: world.name else world.name,
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    text = if (world.id == "???") strings.hiddenWorld else world.authorName,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                )
-            }
+            Text(if (world.id == "???") world.favoriteId ?: world.name else world.name, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(if (world.id == "???") strings.hiddenWorld else world.authorName, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
         }
     }
 }

@@ -192,6 +192,10 @@ android {
         getByName("debug") {
             this.applicationIdSuffix = ".debug"
             this.isMinifyEnabled = false
+            // Lab builds也使用固定签名，避免不同电脑/Gradle环境生成的debug key导致覆盖安装失败。
+            if (storeFile != null) {
+                this.signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

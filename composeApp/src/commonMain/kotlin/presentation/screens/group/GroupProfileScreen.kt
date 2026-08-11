@@ -91,6 +91,7 @@ import io.github.vrcmteam.vrcm.presentation.compoments.TextChip
 import io.github.vrcmteam.vrcm.presentation.compoments.TextLabel
 import io.github.vrcmteam.vrcm.presentation.compoments.sharedBoundsBy
 import io.github.vrcmteam.vrcm.presentation.compoments.renderUserItems
+import io.github.vrcmteam.vrcm.presentation.compoments.friendCardColumnCount
 import io.github.vrcmteam.vrcm.presentation.extensions.currentNavigator
 import io.github.vrcmteam.vrcm.presentation.extensions.enableIf
 import io.github.vrcmteam.vrcm.presentation.extensions.getInsetPadding
@@ -225,7 +226,9 @@ private fun GroupOperationsStage(
                 ),
         ) {
             TextButton(onClick = onReturn, contentPadding = PaddingValues(horizontal = 0.dp, vertical = 4.dp)) {
-                Text("?  BACK", color = Color.White, style = MaterialTheme.typography.labelLarge)
+                Icon(imageVector = AppIcons.KeyboardArrowLeft, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
+                Spacer(modifier = Modifier.width(4.dp))
+                Text("BACK", color = Color.White, style = MaterialTheme.typography.labelLarge)
             }
             Spacer(modifier = Modifier.weight(1f))
             Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -831,26 +834,30 @@ private fun MembersContent(
         return
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(max = 4000.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        renderUserItems(
-            users = users,
-            onUserClick = { user ->
-                currentNavigator push UserProfileScreen(
-                    userProfileVO = UserProfileVo(id = user.id, displayName = user.displayName)
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val columns = friendCardColumnCount(maxWidth)
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 4000.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            renderUserItems(
+                users = users,
+                columns = columns,
+                onUserClick = { user ->
+                    currentNavigator push UserProfileScreen(
+                        userProfileVO = UserProfileVo(id = user.id, displayName = user.displayName)
+                    )
+                }
+            )
+            item {
+                GroupLoadMoreButton(
+                    visible = canLoadMore,
+                    isLoading = isLoadingMore,
+                    onClick = onLoadMore,
                 )
             }
-        )
-        item {
-            GroupLoadMoreButton(
-                visible = canLoadMore,
-                isLoading = isLoadingMore,
-                onClick = onLoadMore,
-            )
         }
     }
 }

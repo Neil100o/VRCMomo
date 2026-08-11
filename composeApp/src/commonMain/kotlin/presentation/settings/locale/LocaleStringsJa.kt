@@ -140,6 +140,10 @@ internal object LocaleStringsJa : LocaleStrings() {
     // FriendListPager
     override val friendListPagerAllFriends = "すべてのフレンド"
     override val friendListPagerAllWorlds = "すべてのワールド"
+    override val friendSortStatus = "状態"
+    override val friendSortFrequent = "よく会う"
+    override val friendSortRecentMet = "最近"
+    override val friendSortName = "名前"
 
     // WorldProfileScreen
     override val worldProfileDescription = "ワールド説明"
