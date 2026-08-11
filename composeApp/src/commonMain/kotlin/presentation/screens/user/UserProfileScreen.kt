@@ -197,8 +197,6 @@ data class UserProfileScreen(
                 onManageFriendFavorite = { showFriendFavoriteSheet = true },
                 openEditNoteDialog = { openEditNoteDialog = true },
                 openBoopSelector = { showBoopSelector = true },
-                presenceNotificationOverride = currentSettings
-                    .friendPresenceNotificationSelection.userOverrides[currentUser.id],
                 openPresenceNotificationSelector = { showPresenceNotificationSelector = true },
             )
         }
@@ -295,7 +293,6 @@ private fun ColumnScope.SheetItems(
     onManageFriendFavorite: () -> Unit,
     openEditNoteDialog: () -> Unit,
     openBoopSelector: () -> Unit,
-    presenceNotificationOverride: Boolean?,
     openPresenceNotificationSelector: () -> Unit,
 ) {
     val navigator = LocalNavigator.currentOrThrow
@@ -343,32 +340,12 @@ private fun ColumnScope.SheetItems(
         })
 
         if (currentUser.isFriend) {
-            SheetButtonItem(
-                text = localeStrings.friendPresenceNotificationTitle,
-                onClick = {
-                    scope.launch { hideSheet() }.invokeOnCompletion {
-                        onHideCompletion()
-                        openPresenceNotificationSelector()
-                    }
-                },
-            ) { label ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(label)
-                    Text(
-                        text = when (presenceNotificationOverride) {
-                            null -> localeStrings.friendPresenceNotificationFollowGroup
-                            true -> localeStrings.friendPresenceNotificationAlways
-                            false -> localeStrings.friendPresenceNotificationNever
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+            SheetButtonItem(text = localeStrings.friendPresenceNotificationTitle, onClick = {
+                scope.launch { hideSheet() }.invokeOnCompletion {
+                    onHideCompletion()
+                    openPresenceNotificationSelector()
                 }
-            }
+            })
             SheetButtonItem(text = localeStrings.profileBoop, onClick = {
                 scope.launch { hideSheet() }.invokeOnCompletion {
                     onHideCompletion()
