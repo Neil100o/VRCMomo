@@ -1,6 +1,8 @@
 package io.github.vrcmteam.vrcm.service
 
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityEventType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -181,6 +183,52 @@ class FriendActivityTrackerTest {
                 nowMillis = 1_000L,
             ),
         )
+        assertTrue(tracker.eventLog.isEmpty())
+    }
+
+    @Test
+    fun `status description whitespace does not create a duplicate change`() {
+        val tracker = FriendActivityTracker(
+            initialStats = mapOf(
+                "usr_friend" to FriendActivityStats(
+                    userId = "usr_friend",
+                    lastObservedLocation = "offline",
+                    lastObservedStatus = "offline · 休息",
+                ),
+            ),
+        )
+
+        tracker.observeFriends(
+            listOf(
+                FriendActivityObservation(
+                    userId = "usr_friend",
+                    location = "offline",
+                    status = "Offline",
+                    statusDescription = "  休息  ",
+                    lastActivityAtMillis = null,
+                ),
+            ),
+            nowMillis = 2_000L,
+        )
+
+        assertTrue(tracker.eventLog.isEmpty())
+    }
+
+    @Test
+    fun `legacy no-op status events are removed when archive is loaded`() {
+        val tracker = FriendActivityTracker(
+            initialEvents = listOf(
+                FriendActivityEvent(
+                    userId = "usr_friend",
+                    displayName = "Friend",
+                    type = FriendActivityEventType.StatusChanged,
+                    occurredAtMillis = 1_000L,
+                    previousValue = "Offline ·  休息",
+                    currentValue = "offline·休息",
+                ),
+            ),
+        )
+
         assertTrue(tracker.eventLog.isEmpty())
     }
 

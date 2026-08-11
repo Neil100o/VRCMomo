@@ -31,6 +31,8 @@ internal class FriendActivityTracker(
     }.toMutableMap()
     private var selfInstanceId: String? = null
     private val activityEvents = initialEvents
+        .mapNotNull(::normalizeActivityEvent)
+        .distinctBy(::activityEventIdentity)
         .sortedByDescending(FriendActivityEvent::occurredAtMillis)
         .toMutableList()
 
@@ -239,9 +241,20 @@ internal class FriendActivityTracker(
         previousValue: String? = null,
         currentValue: String? = null,
     ) {
+        val event = normalizeActivityEvent(
+            FriendActivityEvent(userId, displayName, type, occurredAtMillis, diffLines, previousValue, currentValue),
+        ) ?: return
+        val duplicateWindowStart = occurredAtMillis - LIVE_EVENT_DEDUP_WINDOW_MILLIS
+        if (activityEvents.any {
+                it.occurredAtMillis >= duplicateWindowStart &&
+                    it.userId == event.userId && it.type == event.type &&
+                    it.previousValue == event.previousValue && it.currentValue == event.currentValue &&
+                    it.diffLines == event.diffLines
+            }
+        ) return
         activityEvents.add(
             0,
-            FriendActivityEvent(userId, displayName, type, occurredAtMillis, diffLines, previousValue, currentValue),
+            event,
         )
     }
 
@@ -276,8 +289,9 @@ internal fun normalizeStoredSocialStatus(value: String?): String? = value
     ?.trim()
     ?.takeIf(String::isNotBlank)
     ?.let { stored ->
-        val status = stored.substringBefore(SOCIAL_STATUS_DESCRIPTION_SEPARATOR)
-        val description = stored.substringAfter(SOCIAL_STATUS_DESCRIPTION_SEPARATOR, missingDelimiterValue = "")
+        val parts = stored.split(SOCIAL_STATUS_SEPARATOR_REGEX, limit = 2)
+        val status = parts.first()
+        val description = parts.getOrElse(1) { "" }
         formatSocialStatus(status, description)
     }
 
@@ -303,9 +317,42 @@ internal const val SOCIAL_STATUS_DESCRIPTION_SEPARATOR = " \u00B7 "
 
 /** A stable log value that retains the optional free-text description below a social status. */
 internal fun formatSocialStatus(status: String, description: String): String = listOf(
-    normalizeSocialStatus(status),
-    description.trim(),
+    normalizeSocialStatus(status.split(SOCIAL_STATUS_SEPARATOR_REGEX, limit = 2).first()),
+    normalizeSocialDescription(
+        description.ifBlank { status.split(SOCIAL_STATUS_SEPARATOR_REGEX, limit = 2).getOrElse(1) { "" } },
+    ),
 ).filter(String::isNotBlank).joinToString(SOCIAL_STATUS_DESCRIPTION_SEPARATOR)
+
+private fun normalizeSocialDescription(value: String): String = value
+    .replace('\u00A0', ' ')
+    .trim()
+    .replace(Regex("\\s+"), " ")
+
+private fun normalizeActivityEvent(event: FriendActivityEvent): FriendActivityEvent? {
+    val previous = when (event.type) {
+        FriendActivityEventType.StatusChanged -> normalizeStoredSocialStatus(event.previousValue)
+        FriendActivityEventType.LocationChanged, FriendActivityEventType.Online, FriendActivityEventType.Offline ->
+            normalizeObservedLocation(event.previousValue)
+        else -> event.previousValue?.trim()
+    }
+    val current = when (event.type) {
+        FriendActivityEventType.StatusChanged -> normalizeStoredSocialStatus(event.currentValue)
+        FriendActivityEventType.LocationChanged, FriendActivityEventType.Online, FriendActivityEventType.Offline ->
+            normalizeObservedLocation(event.currentValue)
+        else -> event.currentValue?.trim()
+    }
+    if (event.type in VALUE_CHANGE_EVENT_TYPES && previous == current) return null
+    return event.copy(previousValue = previous, currentValue = current)
+}
+
+private fun activityEventIdentity(event: FriendActivityEvent): String = listOf(
+    event.userId,
+    event.type.name,
+    event.occurredAtMillis.toString(),
+    event.previousValue.orEmpty(),
+    event.currentValue.orEmpty(),
+    event.diffLines.joinToString("|") { "${it.added}:${it.text}" },
+).joinToString("\u0001")
 
 /** A compact line diff for profile bios, retaining only lines that were actually changed. */
 internal fun friendBioDiff(before: String?, after: String?): List<FriendActivityDiffLine> {
@@ -342,3 +389,9 @@ internal fun friendBioDiff(before: String?, after: String?): List<FriendActivity
 }
 
 private const val MAX_PROFILE_DIFF_LINES = 200
+private const val LIVE_EVENT_DEDUP_WINDOW_MILLIS = 60_000L
+private val SOCIAL_STATUS_SEPARATOR_REGEX = Regex("\\s*[·•]\\s*")
+private val VALUE_CHANGE_EVENT_TYPES = setOf(
+    FriendActivityEventType.LocationChanged,
+    FriendActivityEventType.StatusChanged,
+)
