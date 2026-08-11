@@ -1,14 +1,18 @@
 package io.github.vrcmteam.vrcm.presentation.screens.home
 
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -19,7 +23,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -96,7 +99,7 @@ object FriendActivityOverviewScreen : Screen {
                         AssistChip(
                             onClick = { selectedTypes[type] = !selected },
                             label = { Text(type.activityLabel(strings)) },
-                            leadingIcon = { EventDot(type = type, highlighted = selected) },
+                            leadingIcon = { EventMarker(type = type, highlighted = selected) },
                         )
                     }
                 }
@@ -143,18 +146,49 @@ private fun ActivityEventCard(event: FriendActivityEvent, onOpenProfile: () -> U
         modifier = Modifier.fillMaxWidth().simpleClickable(onClick = onOpenProfile),
         shape = MaterialTheme.shapes.large,
         color = MaterialTheme.colorScheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f)),
+        tonalElevation = 1.dp,
     ) {
-        ListItem(
-            leadingContent = { EventDot(event.type, highlighted = true) },
-            headlineContent = {
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                EventMarker(event.type, highlighted = true)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = event.displayName.ifBlank { event.userId },
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = event.type.activityLabel(strings),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
                 Text(
-                    text = event.displayName.ifBlank { event.userId },
-                    fontWeight = FontWeight.SemiBold,
+                    event.occurredAtMillis.formatActivityTime(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-            },
-            supportingContent = {
-                Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                    Text(event.type.activityLabel(strings))
+            }
+            val hasChanges = event.diffLines.isNotEmpty() ||
+                !event.previousValue.isNullOrBlank() || !event.currentValue.isNullOrBlank()
+            if (hasChanges) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.medium,
+                    color = MaterialTheme.colorScheme.surfaceContainerLowest,
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
+                        verticalArrangement = Arrangement.spacedBy(3.dp),
+                    ) {
                     event.diffLines.forEach { line ->
                         Text(
                             text = if (line.added) "+ ${line.text}" else "- ${line.text}",
@@ -164,24 +198,23 @@ private fun ActivityEventCard(event: FriendActivityEvent, onOpenProfile: () -> U
                     }
                     event.previousValue?.takeIf(String::isNotBlank)?.let { Text("- $it", color = DiffRemovedColor) }
                     event.currentValue?.takeIf(String::isNotBlank)?.let { Text("+ $it", color = DiffAddedColor) }
-                    Text(
-                        event.occurredAtMillis.formatActivityTime(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    }
                 }
-            },
-        )
+            }
+        }
     }
 }
 
 @Composable
-private fun EventDot(type: FriendActivityEventType, highlighted: Boolean) {
-    Surface(
-        shape = MaterialTheme.shapes.extraSmall,
-        color = type.eventColor().copy(alpha = if (highlighted) 1f else 0.42f),
-        modifier = Modifier.heightIn(min = 10.dp).padding(0.dp),
-    ) { Text(" ", modifier = Modifier.padding(horizontal = 5.dp, vertical = 5.dp)) }
+private fun EventMarker(type: FriendActivityEventType, highlighted: Boolean) {
+    Box(
+        modifier = Modifier
+            .size(if (highlighted) 10.dp else 8.dp)
+            .background(
+                color = type.eventColor().copy(alpha = if (highlighted) 0.9f else 0.38f),
+                shape = androidx.compose.foundation.shape.CircleShape,
+            ),
+    )
 }
 
 private fun FriendActivityEventType.activityLabel(locale: LocaleStrings): String = when (this) {
