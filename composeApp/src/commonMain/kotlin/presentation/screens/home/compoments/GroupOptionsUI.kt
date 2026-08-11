@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -103,6 +106,13 @@ fun <T> GroupOptionsUI(
                                     Switch(
                                         checked = group.id in notificationGroupIds,
                                         onCheckedChange = { onChanged(group.id, it) },
+                                        thumbContent = {
+                                            Icon(
+                                                imageVector = Icons.Filled.Notifications,
+                                                contentDescription = null,
+                                                modifier = Modifier.size(SwitchDefaults.IconSize),
+                                            )
+                                        },
                                     )
                                 }
                             }
