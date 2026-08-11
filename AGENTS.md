@@ -56,7 +56,19 @@ This is the short entry point for future maintenance. Read this file first, then
 .\gradlew.bat :composeApp:testDebugUnitTest
 ```
 
-APK output: `composeApp/build/outputs/apk/debug/VRCMomo-v<version>.apk`.
+Debug APK output: `composeApp/build/outputs/apk/debug/VRCMomo-v<version>.apk`.
+
+**Tester packages must not use the Debug APK.** Existing VRCMomo installations use the permanent
+release certificate, while a normal Debug APK uses Android's temporary debug certificate and cannot
+upgrade them. With the private signing values configured in ignored `local.properties`, build:
+
+```powershell
+.\gradlew.bat :composeApp:assembleRelease
+```
+
+Distribute `composeApp/build/outputs/apk/release/VRCMomo-v<version>.apk`. Before handing it out,
+compare its certificate SHA-256 digest with a known permanently signed VRCMomo release using
+Android SDK `apksigner verify --print-certs`.
 
 ## Reference documents
 
