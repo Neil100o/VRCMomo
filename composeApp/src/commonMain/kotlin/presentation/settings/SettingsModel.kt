@@ -19,6 +19,7 @@ class SettingsModel(
                 languageTag = it.languageTag.tag,
                 isBackgroundFriendMonitoringEnabled = it.isBackgroundFriendMonitoringEnabled,
                 isSystemNotificationsEnabled = it.isSystemNotificationsEnabled,
+                friendPresenceNotificationSelection = it.friendPresenceNotificationSelection,
                 activityLogRetentionDays = it.activityLogRetentionDays,
                 isLanSyncAutoEnabled = it.isLanSyncAutoEnabled,
             )
@@ -41,6 +42,7 @@ class SettingsModel(
                 languageTag = languageTag,
                 isBackgroundFriendMonitoringEnabled = settings.isBackgroundFriendMonitoringEnabled,
                 isSystemNotificationsEnabled = settings.isSystemNotificationsEnabled,
+                friendPresenceNotificationSelection = settings.friendPresenceNotificationSelection,
                 activityLogRetentionDays = settings.activityLogRetentionDays,
                 isLanSyncAutoEnabled = settings.isLanSyncAutoEnabled,
             )

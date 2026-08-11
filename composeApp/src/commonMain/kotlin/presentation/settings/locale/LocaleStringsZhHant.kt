@@ -316,6 +316,11 @@ internal object LocaleStringsZhHant : LocaleStrings() {
     override val hiddenWorldCannotView = "無法查看該隱藏世界的資訊"
 
     override val backgroundFriendMonitoringTitle = "背景記錄好友活動"
+    override val friendPresenceNotificationTitle = "好友上下線通知"
+    override val friendPresenceNotificationFollowGroup = "跟隨收藏夾"
+    override val friendPresenceNotificationAlways = "開啟"
+    override val friendPresenceNotificationNever = "關閉"
+    override val friendPresenceNotificationCancel = "取消"
     override val backgroundFriendMonitoringDescription = "VRCMomo 退到背景後繼續記錄實際觀察到的好友活動。會顯示常駐通知，並消耗一定電量與流量。"
     override val backgroundFriendMonitoringDialogTitle = "開啟背景好友活動記錄？"
     override val backgroundFriendMonitoringDialogMessage = "開啟後，VRCMomo 會顯示常駐通知並繼續觀察好友狀態。省電策略、強制停止、裝置重新啟動、通知權限被撤銷或網路中斷仍可能暫停記錄；裝置重新啟動後需要重新開啟一次 VRCMomo。這裡只會記錄開啟後實際觀察到的資料。"

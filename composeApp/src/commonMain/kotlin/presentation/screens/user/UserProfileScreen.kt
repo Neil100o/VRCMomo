@@ -57,6 +57,7 @@ import io.github.vrcmteam.vrcm.presentation.screens.world.WorldProfileScreen
 import io.github.vrcmteam.vrcm.presentation.screens.world.components.FavoriteGroupBottomSheet
 import io.github.vrcmteam.vrcm.presentation.screens.world.data.WorldProfileVo
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
+import io.github.vrcmteam.vrcm.presentation.settings.LocalSettingsState
 import io.github.vrcmteam.vrcm.presentation.supports.AppIcons
 import io.github.vrcmteam.vrcm.presentation.supports.LanguageIcons
 import io.github.vrcmteam.vrcm.presentation.supports.WebIcons
@@ -122,6 +123,8 @@ data class UserProfileScreen(
         // Control showing favorite group management for Friend type
         var showFriendFavoriteSheet by remember { mutableStateOf(false) }
         var showBoopSelector by remember { mutableStateOf(false) }
+        var showPresenceNotificationSelector by remember { mutableStateOf(false) }
+        var currentSettings by LocalSettingsState.current
 
         // 保存/恢复滚动位置
         val outerScrollState = rememberScrollState()
@@ -194,8 +197,27 @@ data class UserProfileScreen(
                 onManageFriendFavorite = { showFriendFavoriteSheet = true },
                 openEditNoteDialog = { openEditNoteDialog = true },
                 openBoopSelector = { showBoopSelector = true },
+                presenceNotificationOverride = currentSettings
+                    .friendPresenceNotificationSelection.userOverrides[currentUser.id],
+                openPresenceNotificationSelector = { showPresenceNotificationSelector = true },
             )
         }
+        PresenceNotificationOverrideDialog(
+            visible = showPresenceNotificationSelector,
+            currentOverride = currentSettings
+                .friendPresenceNotificationSelection.userOverrides[currentUser.id],
+            onDismiss = { showPresenceNotificationSelector = false },
+            onChange = { override ->
+                val overrides = currentSettings.friendPresenceNotificationSelection
+                    .userOverrides.toMutableMap()
+                if (override == null) overrides -= currentUser.id else overrides[currentUser.id] = override
+                currentSettings = currentSettings.copy(
+                    friendPresenceNotificationSelection = currentSettings
+                        .friendPresenceNotificationSelection.copy(userOverrides = overrides),
+                )
+                showPresenceNotificationSelector = false
+            },
+        )
         // Friend FavoriteType group management bottom sheet
         FavoriteGroupBottomSheet(
             isVisible = showFriendFavoriteSheet,
@@ -273,6 +295,8 @@ private fun ColumnScope.SheetItems(
     onManageFriendFavorite: () -> Unit,
     openEditNoteDialog: () -> Unit,
     openBoopSelector: () -> Unit,
+    presenceNotificationOverride: Boolean?,
+    openPresenceNotificationSelector: () -> Unit,
 ) {
     val navigator = LocalNavigator.currentOrThrow
     val localeStrings = strings
@@ -319,6 +343,32 @@ private fun ColumnScope.SheetItems(
         })
 
         if (currentUser.isFriend) {
+            SheetButtonItem(
+                text = localeStrings.friendPresenceNotificationTitle,
+                onClick = {
+                    scope.launch { hideSheet() }.invokeOnCompletion {
+                        onHideCompletion()
+                        openPresenceNotificationSelector()
+                    }
+                },
+            ) { label ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(label)
+                    Text(
+                        text = when (presenceNotificationOverride) {
+                            null -> localeStrings.friendPresenceNotificationFollowGroup
+                            true -> localeStrings.friendPresenceNotificationAlways
+                            false -> localeStrings.friendPresenceNotificationNever
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
             SheetButtonItem(text = localeStrings.profileBoop, onClick = {
                 scope.launch { hideSheet() }.invokeOnCompletion {
                     onHideCompletion()
@@ -365,6 +415,48 @@ private fun ColumnScope.SheetItems(
         }
     })
 
+}
+
+@Composable
+private fun PresenceNotificationOverrideDialog(
+    visible: Boolean,
+    currentOverride: Boolean?,
+    onDismiss: () -> Unit,
+    onChange: (Boolean?) -> Unit,
+) {
+    if (!visible) return
+    val options = listOf(
+        null to strings.friendPresenceNotificationFollowGroup,
+        true to strings.friendPresenceNotificationAlways,
+        false to strings.friendPresenceNotificationNever,
+    )
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(strings.friendPresenceNotificationTitle) },
+        text = {
+            Column {
+                options.forEach { (value, label) ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onChange(value) }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(
+                            selected = currentOverride == value,
+                            onClick = { onChange(value) },
+                        )
+                        Text(label)
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(strings.friendPresenceNotificationCancel) }
+        },
+    )
 }
 
 @Composable

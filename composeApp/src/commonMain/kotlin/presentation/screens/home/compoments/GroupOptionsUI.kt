@@ -1,12 +1,15 @@
 package io.github.vrcmteam.vrcm.presentation.screens.home.compoments
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import io.github.vrcmteam.vrcm.network.api.attributes.FavoriteType
 import io.github.vrcmteam.vrcm.network.api.favorite.data.FavoriteData
@@ -35,7 +38,9 @@ fun <T> GroupOptionsUI(
     defaultText: String,
     onOptionsChanged: (T) -> Unit,
     getSelectedGroup: (T) -> FavoriteGroupData?,
-    updateOptions: (T, FavoriteGroupData?) -> T
+    updateOptions: (T, FavoriteGroupData?) -> T,
+    notificationGroupIds: Set<String> = emptySet(),
+    onNotificationGroupChanged: ((groupId: String, enabled: Boolean) -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -88,7 +93,20 @@ fun <T> GroupOptionsUI(
                 favoriteGroups.forEach { (group, data) ->
                     DropdownMenuItem(
                         text = { Text(group.displayName) },
-                        trailingIcon = { Text("${data.size}/${maxFavoritesPerGroup}") },
+                        trailingIcon = {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            ) {
+                                Text("${data.size}/${maxFavoritesPerGroup}")
+                                onNotificationGroupChanged?.let { onChanged ->
+                                    Switch(
+                                        checked = group.id in notificationGroupIds,
+                                        onCheckedChange = { onChanged(group.id, it) },
+                                    )
+                                }
+                            }
+                        },
                         onClick = {
                             onOptionsChanged(updateOptions(currentOptions, group))
                             expandGroupMenu = false
@@ -98,4 +116,4 @@ fun <T> GroupOptionsUI(
             }
         }
     }
-} 
+}

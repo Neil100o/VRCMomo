@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
@@ -26,6 +27,7 @@ import io.github.vrcmteam.vrcm.presentation.extensions.simpleClickable
 import io.github.vrcmteam.vrcm.presentation.screens.home.compoments.GroupOptionsUI
 import io.github.vrcmteam.vrcm.presentation.screens.user.FriendNetworkScreen
 import io.github.vrcmteam.vrcm.presentation.settings.locale.strings
+import io.github.vrcmteam.vrcm.presentation.settings.LocalSettingsState
 import io.github.vrcmteam.vrcm.presentation.supports.AppIcons
 import io.github.vrcmteam.vrcm.presentation.supports.Pager
 import org.jetbrains.compose.resources.painterResource
@@ -46,6 +48,7 @@ object FriendListPager : Pager {
     @Composable
     override fun Content() {
         val friendListPagerModel: FriendListPagerModel = koinScreenModel()
+        var currentSettings by LocalSettingsState.current
 
         // 搜索文本
         val searchText by friendListPagerModel.searchText.collectAsState()
@@ -112,7 +115,18 @@ object FriendListPager : Pager {
                                 friendListPagerModel.updateFriendGroupOptions(newOptions)
                             },
                             getSelectedGroup = { it.selectedGroup },
-                            updateOptions = { options, group -> options.copy(selectedGroup = group) }
+                            updateOptions = { options, group -> options.copy(selectedGroup = group) },
+                            notificationGroupIds = currentSettings
+                                .friendPresenceNotificationSelection.groupIds,
+                            onNotificationGroupChanged = { groupId, enabled ->
+                                val groupIds = currentSettings.friendPresenceNotificationSelection
+                                    .groupIds.toMutableSet()
+                                if (enabled) groupIds += groupId else groupIds -= groupId
+                                currentSettings = currentSettings.copy(
+                                    friendPresenceNotificationSelection = currentSettings
+                                        .friendPresenceNotificationSelection.copy(groupIds = groupIds),
+                                )
+                            },
                         )
                         FriendSortModeRow(
                             selected = friendGroupOptions.sortMode,

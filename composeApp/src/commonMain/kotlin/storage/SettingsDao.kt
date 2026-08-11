@@ -3,6 +3,10 @@ package io.github.vrcmteam.vrcm.storage
 import com.russhwolf.settings.Settings
 import io.github.vrcmteam.vrcm.storage.data.SettingsData
 import io.github.vrcmteam.vrcm.storage.data.LanSyncStatus
+import io.github.vrcmteam.vrcm.service.FriendPresenceNotificationSelection
+import kotlinx.serialization.json.Json
+
+private val settingsJson = Json { ignoreUnknownKeys = true }
 
 class SettingsDao(
     private val settingsSettings: Settings
@@ -22,6 +26,14 @@ class SettingsDao(
                     DaoKeys.Settings.SYSTEM_NOTIFICATIONS_ENABLED_KEY,
                     true,
                 ),
+                friendPresenceNotificationSelection = settingsSettings
+                    .getStringOrNull(DaoKeys.Settings.FRIEND_PRESENCE_NOTIFICATION_SELECTION_KEY)
+                    ?.let {
+                        runCatching {
+                            settingsJson.decodeFromString<FriendPresenceNotificationSelection>(it)
+                        }.getOrNull()
+                    }
+                    ?: FriendPresenceNotificationSelection(),
                 activityLogRetentionDays = settingsSettings.getIntOrNull(
                     DaoKeys.Settings.ACTIVITY_LOG_RETENTION_DAYS_KEY,
                 ),
@@ -51,6 +63,10 @@ class SettingsDao(
             settingsSettings.putBoolean(
                 DaoKeys.Settings.SYSTEM_NOTIFICATIONS_ENABLED_KEY,
                 value.isSystemNotificationsEnabled,
+            )
+            settingsSettings.putString(
+                DaoKeys.Settings.FRIEND_PRESENCE_NOTIFICATION_SELECTION_KEY,
+                settingsJson.encodeToString(value.friendPresenceNotificationSelection),
             )
             value.activityLogRetentionDays?.let {
                 settingsSettings.putInt(DaoKeys.Settings.ACTIVITY_LOG_RETENTION_DAYS_KEY, it)

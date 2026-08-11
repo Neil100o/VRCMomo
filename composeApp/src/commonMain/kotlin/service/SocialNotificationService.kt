@@ -20,7 +20,7 @@ import kotlinx.coroutines.sync.withLock
 /**
  * Turns VRCMomo's in-process social events into platform local notifications.
  *
- * Friend presence notifications are restricted to VRChat friend favorites. Presence is derived
+ * Friend presence notifications use the favorite-group and per-friend selection. Presence is derived
  * from the complete friend state instead of only friend-online/friend-offline events, because
  * VRChat can report the same transition through active, location, update, or a refreshed snapshot.
  */
@@ -38,6 +38,7 @@ class SocialNotificationService(
     private var activeSessionToken: AccountSessionToken? = null
     private var hasLivePresenceBaseline = false
     private var favoriteCollector: Job? = null
+    private var favoriteGroupIdsByUser: Map<String, Set<String>> = emptyMap()
 
     fun start() {
         if (started) return
@@ -50,6 +51,7 @@ class SocialNotificationService(
                 stateMutex.withLock {
                     activeSessionToken = session?.token
                     hasLivePresenceBaseline = false
+                    favoriteGroupIdsByUser = emptyMap()
                     presenceTracker.reset()
                 }
 
@@ -57,15 +59,22 @@ class SocialNotificationService(
                     favoriteCollector = serviceScope.launch {
                         favoriteService.loadFavoriteByGroup(FavoriteType.Friend)
                         favoriteService.favoritesByGroup(FavoriteType.Friend).collect { groups ->
-                            val favoriteIds = groups.values
-                                .asSequence()
-                                .flatten()
-                                .map { it.favoriteId }
-                                .toSet()
+                            val groupIdsByUser = buildMap<String, MutableSet<String>> {
+                                groups.forEach { (group, favorites) ->
+                                    favorites.forEach { favorite ->
+                                        getOrPut(favorite.favoriteId) { mutableSetOf() } += group.id
+                                    }
+                                }
+                            }
                             val friendSnapshot = friendService.friendMap
                             stateMutex.withLock {
                                 if (activeSessionToken == authenticatedAccount.token) {
-                                    presenceTracker.updateFavorites(favoriteIds, friendSnapshot)
+                                    favoriteGroupIdsByUser = groupIdsByUser
+                                    presenceTracker.updateFavorites(
+                                        settingsDao.settings.friendPresenceNotificationSelection
+                                            .selectedUserIds(groupIdsByUser),
+                                        friendSnapshot,
+                                    )
                                 }
                             }
                         }
@@ -98,14 +107,21 @@ class SocialNotificationService(
         val transitions = stateMutex.withLock {
             if (activeSessionToken == null || !snapshot.isLiveObservation) {
                 emptyList()
-            } else if (!hasLivePresenceBaseline) {
+            } else {
+                presenceTracker.updateFavorites(
+                    settingsDao.settings.friendPresenceNotificationSelection
+                        .selectedUserIds(favoriteGroupIdsByUser),
+                    snapshot.friends,
+                )
+                if (!hasLivePresenceBaseline) {
                 // Cached rows deliberately carry offline presence so the UI is safe to render.
                 // Do not compare the first real snapshot to that synthetic cache state.
-                presenceTracker.establishLiveBaseline(snapshot.friends)
-                hasLivePresenceBaseline = true
-                emptyList()
-            } else {
-                presenceTracker.observe(snapshot.friends)
+                    presenceTracker.establishLiveBaseline(snapshot.friends)
+                    hasLivePresenceBaseline = true
+                    emptyList()
+                } else {
+                    presenceTracker.observe(snapshot.friends)
+                }
             }
         }
         transitions.forEach(::notifyPresenceTransition)

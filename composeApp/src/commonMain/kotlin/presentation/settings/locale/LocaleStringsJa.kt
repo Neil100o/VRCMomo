@@ -316,6 +316,11 @@ internal object LocaleStringsJa : LocaleStrings() {
     override val hiddenWorldCannotView = "非公開ワールドの情報は表示できません"
 
     override val backgroundFriendMonitoringTitle = "バックグラウンドでフレンド活動を記録"
+    override val friendPresenceNotificationTitle = "オンライン・オフライン通知"
+    override val friendPresenceNotificationFollowGroup = "お気に入りグループに従う"
+    override val friendPresenceNotificationAlways = "有効"
+    override val friendPresenceNotificationNever = "無効"
+    override val friendPresenceNotificationCancel = "キャンセル"
     override val backgroundFriendMonitoringDescription = "VRCMomo を閉じている間も、実際に観測できたフレンド活動を記録します。常駐通知が表示され、バッテリーと通信量を使用します。"
     override val backgroundFriendMonitoringDialogTitle = "バックグラウンド記録を有効にしますか？"
     override val backgroundFriendMonitoringDialogMessage = "有効にすると、VRCMomo は常駐通知を表示してフレンド状態の観測を続けます。省電力設定、強制停止、端末の再起動、通知権限の取り消し、または通信切断により停止する場合があります。端末を再起動した後は VRCMomo を一度開いてください。有効化後に実際に観測できたデータだけを記録します。"
