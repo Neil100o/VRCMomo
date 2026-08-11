@@ -195,6 +195,16 @@ internal class FriendActivityTracker(
         }
     }
 
+    /**
+     * Merges complete VRCMomo snapshots without adding their cumulative counters. This is safe to
+     * repeat and keeps the current device's live observation fields whenever they already exist.
+     */
+    fun mergeSnapshotBaselines(imported: Map<String, FriendActivityStats>) {
+        imported.forEach { (userId, incoming) ->
+            statsByFriendId[userId] = mergeVrcmomoSnapshotBaseline(statsByFriendId[userId], incoming)
+        }
+    }
+
     /** Event keys are tracked by the import service, so this only merges and orders accepted history. */
     fun mergeImportedEvents(imported: List<FriendActivityEvent>) {
         if (imported.isEmpty()) return

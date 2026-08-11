@@ -42,6 +42,7 @@ internal data class VrcmomoActivityImportPreview(
     val involvedFriends: Int,
     internal val events: List<FriendActivityEvent>,
     internal val acceptedEventKeys: Set<String>,
+    internal val baselineStats: Map<String, FriendActivityStats>,
 )
 
 internal object VrcmomoActivityImporter {
@@ -54,10 +55,14 @@ internal object VrcmomoActivityImporter {
         val documents = decodeDocuments(raw)
         val accepted = linkedSetOf<String>()
         val events = mutableListOf<FriendActivityEvent>()
+        val baselineStats = mutableMapOf<String, FriendActivityStats>()
         var known = 0
         documents.forEach { document ->
             require(document.format in setOf(VRCMOMO_ACTIVITY_SYNC_FORMAT_V1, VRCMOMO_ACTIVITY_SYNC_FORMAT_V2)) {
                 "Unsupported VRCMomo activity document"
+            }
+            document.statsByFriendId.forEach { (userId, incoming) ->
+                baselineStats[userId] = mergeVrcmomoSnapshotBaseline(baselineStats[userId], incoming)
             }
             document.activityEvents.forEach { event ->
                 val key = vrcmomoActivityEventKey(event)
@@ -72,9 +77,10 @@ internal object VrcmomoActivityImporter {
             sourceDocuments = documents.size,
             acceptedEvents = events.size,
             alreadyKnownEvents = known,
-            involvedFriends = events.map(FriendActivityEvent::userId).distinct().size,
+            involvedFriends = (events.map(FriendActivityEvent::userId) + baselineStats.keys).distinct().size,
             events = events.sortedByDescending(FriendActivityEvent::occurredAtMillis),
             acceptedEventKeys = accepted,
+            baselineStats = baselineStats,
         )
     }
 
@@ -95,6 +101,30 @@ internal object VrcmomoActivityImporter {
         }
     }
 }
+
+/**
+ * Phone sync documents are complete snapshots, not deltas. Taking the larger cumulative value
+ * preserves the most complete baseline while making repeated imports idempotent.
+ */
+internal fun mergeVrcmomoSnapshotBaseline(
+    current: FriendActivityStats?,
+    incoming: FriendActivityStats,
+): FriendActivityStats {
+    if (current == null) return incoming.clearRuntimeObservation()
+    return current.copy(
+        lastSeenTogetherAtMillis = latestTimestamp(current.lastSeenTogetherAtMillis, incoming.lastSeenTogetherAtMillis),
+        meetingCount = maxOf(current.meetingCount, incoming.meetingCount),
+        togetherDurationMillis = maxOf(current.togetherDurationMillis, incoming.togetherDurationMillis),
+        lastOnlineAtMillis = latestTimestamp(current.lastOnlineAtMillis, incoming.lastOnlineAtMillis),
+        lastOfflineAtMillis = latestTimestamp(current.lastOfflineAtMillis, incoming.lastOfflineAtMillis),
+        lastActivityAtMillis = latestTimestamp(current.lastActivityAtMillis, incoming.lastActivityAtMillis),
+        lastObservedLocation = current.lastObservedLocation ?: incoming.lastObservedLocation,
+        lastObservedStatus = current.lastObservedStatus ?: incoming.lastObservedStatus,
+        lastKnownFriend = current.lastKnownFriend ?: incoming.lastKnownFriend,
+    )
+}
+
+private fun latestTimestamp(first: Long?, second: Long?): Long? = listOfNotNull(first, second).maxOrNull()
 
 /**
  * A source-independent fingerprint. It lets retries and overlapping phone/desktop observations

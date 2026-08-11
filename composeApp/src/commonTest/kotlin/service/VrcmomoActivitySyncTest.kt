@@ -2,6 +2,7 @@ package io.github.vrcmteam.vrcm.service
 
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEvent
 import io.github.vrcmteam.vrcm.storage.data.FriendActivityEventType
+import io.github.vrcmteam.vrcm.storage.data.FriendActivityStats
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -64,5 +65,46 @@ class VrcmomoActivitySyncTest {
         ).encode()
 
         assertEquals(0, VrcmomoActivityImporter.preview(raw, emptySet()).acceptedEvents)
+    }
+
+    @Test
+    fun `snapshot statistics use an idempotent maximum baseline`() {
+        val first = FriendActivityStats(
+            userId = "usr_friend",
+            meetingCount = 8,
+            togetherDurationMillis = 12_000L,
+            lastActivityAtMillis = 2_000L,
+        )
+        val second = FriendActivityStats(
+            userId = "usr_friend",
+            meetingCount = 5,
+            togetherDurationMillis = 18_000L,
+            lastActivityAtMillis = 3_000L,
+        )
+
+        val merged = mergeVrcmomoSnapshotBaseline(first, second)
+        val repeated = mergeVrcmomoSnapshotBaseline(merged, second)
+
+        assertEquals(8, merged.meetingCount)
+        assertEquals(18_000L, merged.togetherDurationMillis)
+        assertEquals(3_000L, merged.lastActivityAtMillis)
+        assertEquals(merged, repeated)
+    }
+
+    @Test
+    fun `legacy snapshot statistics are included even without timeline events`() {
+        val raw = VrcmomoActivitySyncEnvelope(
+            format = VRCMOMO_ACTIVITY_SYNC_FORMAT_V1,
+            ownerUserId = "usr_owner",
+            exportedAtMillis = 1_000L,
+            statsByFriendId = mapOf(
+                "usr_friend" to FriendActivityStats(userId = "usr_friend", meetingCount = 7),
+            ),
+            activityEvents = emptyList(),
+        ).encode()
+
+        val preview = VrcmomoActivityImporter.preview(raw, emptySet())
+        assertEquals(7, preview.baselineStats.getValue("usr_friend").meetingCount)
+        assertEquals(1, preview.involvedFriends)
     }
 }

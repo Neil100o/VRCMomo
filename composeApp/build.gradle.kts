@@ -142,6 +142,10 @@ room {
 }
 
 android {
+    val legacyDebugSigning = providers.gradleProperty("legacyDebugSigning")
+        .orNull
+        ?.toBooleanStrictOrNull()
+        ?: false
 
     applicationVariants.all {
         outputs.all {
@@ -211,7 +215,9 @@ android {
             this.applicationIdSuffix = ".debug"
             this.isMinifyEnabled = false
             // Lab builds也使用固定签名，避免不同电脑/Gradle环境生成的debug key导致覆盖安装失败。
-            if (storeFile != null) {
+            // 0.3.16 迁移包是唯一例外：它必须沿用旧自动更新轨的 Android debug key，
+            // 才能覆盖安装并读取 io.github.vrcmteam.vrcm.debug 的私有 JSON。
+            if (!legacyDebugSigning && storeFile != null) {
                 this.signingConfig = signingConfigs.getByName("release")
             }
         }

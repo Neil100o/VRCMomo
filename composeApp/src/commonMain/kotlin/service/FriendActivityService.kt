@@ -143,13 +143,11 @@ class FriendActivityService(
         VrcmomoActivityImporter.preview(raw, localKeys + importedVrcmomoEventKeys)
     }
 
-    /**
-     * Imports only unseen timeline events. Cumulative totals are intentionally not added here:
-     * adding complete snapshots after a retry would inflate meetings and play time.
-     */
+    /** Imports unseen events and idempotently adopts the most complete cumulative phone baseline. */
     internal fun applyVrcmomoActivityImport(preview: VrcmomoActivityImportPreview) = synchronized(lock) {
         check(activeAccountUserId != null) { "Sign in before importing activity history" }
-        if (preview.acceptedEventKeys.isEmpty()) return@synchronized
+        if (preview.acceptedEventKeys.isEmpty() && preview.baselineStats.isEmpty()) return@synchronized
+        tracker.mergeSnapshotBaselines(preview.baselineStats)
         tracker.mergeImportedEvents(preview.events)
         importedVrcmomoEventKeys = importedVrcmomoEventKeys + preview.acceptedEventKeys
         publishLocked(save = true)
