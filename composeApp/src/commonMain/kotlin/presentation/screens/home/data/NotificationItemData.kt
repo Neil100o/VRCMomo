@@ -26,9 +26,7 @@ data class NotificationItemData(
 
     /** A readable label for built-in Boop reactions. Custom inventory reactions remain custom. */
     val boopEmojiLabel: String?
-        get() = boopEmojiId
-            ?.trim()
-            ?.takeIf { it.isNotEmpty() }
+        get() = normalizedBoopEmojiId
             ?.let { emojiId ->
                 if (emojiId.startsWith("default_")) {
                     emojiId.removePrefix("default_")
@@ -45,8 +43,9 @@ data class NotificationItemData(
 
     /** A compact, offline-safe visual for the built-in Boop reactions. */
     val boopEmojiGlyph: String
-        get() = when (boopEmojiId) {
+        get() = when (normalizedBoopEmojiId) {
             "default_angry" -> "😠"
+            "default_arrowpoint" -> "👉"
             "default_bats" -> "🦇"
             "default_beachball" -> "🏖"
             "default_beer" -> "🍺"
@@ -54,26 +53,45 @@ data class NotificationItemData(
             "default_boo", "default_spooky_ghost" -> "👻"
             "default_broken_heart" -> "💔"
             "default_candy", "default_candy_cane" -> "🍬"
+            "default_candy_corn" -> "🌽"
+            "default_cantsee" -> "🙈"
             "default_champagne" -> "🍾"
             "default_cloud" -> "☁"
+            "default_coal" -> "🪨"
             "default_confetti" -> "🎉"
             "default_crying" -> "😢"
             "default_exclamation" -> "❗"
             "default_fire" -> "🔥"
+            "default_frown" -> "☹"
             "default_gift", "default_gifts" -> "🎁"
+            "default_gingerbread" -> "🍪"
+            "default_go" -> "🟢"
+            "default_hang_ten" -> "🤙"
             "default_hand_wave" -> "👋"
             "default_heart", "default_in_love", "default_kiss" -> "❤"
+            "default_hourglass" -> "⌛"
             "default_ice_cream" -> "🍦"
+            "default_jack_o_lantern" -> "🎃"
+            "default_keyboard" -> "⌨"
             "default_laugh" -> "😂"
             "default_life_ring" -> "🛟"
+            "default_mistletoe" -> "🌿"
             "default_money" -> "💰"
             "default_music_note" -> "🎵"
+            "default_noheadphones" -> "🎧"
+            "default_nomic" -> "🎙"
+            "default_pineapple" -> "🍍"
             "default_pizza" -> "🍕"
+            "default_portal" -> "🌀"
             "default_question" -> "❓"
+            "default_shush" -> "🤫"
             "default_skull" -> "💀"
             "default_smile" -> "🙂"
             "default_snowball", "default_snow_fall" -> "❄"
+            "default_splash" -> "💦"
+            "default_stoic" -> "😐"
             "default_stop" -> "🛑"
+            "default_sun_lotion" -> "🧴"
             "default_sunglasses", "default_neon_shades" -> "😎"
             "default_thinking" -> "🤔"
             "default_thumbs_down" -> "👎"
@@ -83,6 +101,20 @@ data class NotificationItemData(
             null -> "✦"
             else -> "✦"
         }
+
+    /** VRChat clients have historically sent both `default_heart` and display-style `Heart`. */
+    private val normalizedBoopEmojiId: String?
+        get() = boopEmojiId
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+            ?.lowercase()
+            ?.replace(' ', '_')
+            ?.replace('-', '_')
+            ?.let { id ->
+                if (id.startsWith("default_")) id
+                else if (id in knownDefaultBoopIds) "default_$id"
+                else id
+            }
 
     /** The VRChat user targeted by a `user:usr_...` notification link. */
     val linkedUserId: String?
@@ -136,6 +168,17 @@ data class NotificationItemData(
     )
 
 }
+
+private val knownDefaultBoopIds = setOf(
+    "angry", "arrowpoint", "bats", "beachball", "beer", "blushing", "boo", "broken_heart",
+    "candy", "candy_cane", "candy_corn", "cantsee", "champagne", "cloud", "coal", "confetti",
+    "crying", "drink", "exclamation", "fire", "frown", "gift", "gifts", "gingerbread", "go",
+    "hand_wave", "hang_ten", "heart", "hourglass", "ice_cream", "in_love", "jack_o_lantern",
+    "keyboard", "kiss", "laugh", "life_ring", "mistletoe", "money", "music_note", "neon_shades",
+    "noheadphones", "nomic", "pineapple", "pizza", "portal", "question", "shush", "skull", "smile",
+    "snow_fall", "snowball", "splash", "spooky_ghost", "stoic", "stop", "sun_lotion", "sunglasses",
+    "thinking", "thumbs_down", "thumbs_up", "tomato", "tongue_out", "web", "wow", "zzz",
+)
 
 /** Boops that VRChat has not yet acknowledged are safe to surface after a cold app start. */
 internal val NotificationItemData.isUnreadBoop: Boolean

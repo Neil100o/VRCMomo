@@ -1,6 +1,6 @@
 [versions]
-app-code = "30"
-app-version = "0.3.18"
+app-code = "31"
+app-version = "0.3.19"
 app-packageName = "io.github.vrcmteam.vrcm"
 agp = "8.6.1"
 kotlin = "2.2.20"
