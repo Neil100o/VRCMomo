@@ -3,7 +3,7 @@
 最后更新：2026-08-11  
 工作目录：`F:\vrcmoskavis\VRCMomoLanSync`  
 当前分支：`main`（跟踪 `origin/main`）  
-当前版本：`0.3.19`，Android `versionCode = 31`
+当前版本：`0.3.20`，Android `versionCode = 32`
 
 本文是继续开发时的第一入口，用来区分已经进入 `main` 的功能、尚未提交的本地改动、测试包实际包含的内容，以及下一步应当从哪里继续。不要仅根据页面效果或旧 APK 判断源码状态。
 
