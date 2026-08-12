@@ -4,9 +4,8 @@ import android.app.Application
 import io.github.vrcmteam.vrcm.di.commonModules
 import io.github.vrcmteam.vrcm.di.modules.platformModule
 import io.github.vrcmteam.vrcm.core.shared.SharedFlowCentre
-import io.github.vrcmteam.vrcm.service.FriendActivityService
-import io.github.vrcmteam.vrcm.service.LanActivityBridgeClient
 import io.github.vrcmteam.vrcm.service.LanBridgePairing
+import io.github.vrcmteam.vrcm.service.LanActivitySyncService
 import io.github.vrcmteam.vrcm.storage.SettingsDao
 import io.github.vrcmteam.vrcm.storage.data.LanSyncStatus
 import kotlinx.coroutines.CoroutineScope
@@ -49,15 +48,7 @@ class VRCMApplication : Application() {
                     settingsDao.lanBridgeUrl.orEmpty(),
                     settingsDao.lanBridgeToken.orEmpty(),
                 )
-                val activityService = koin.get<FriendActivityService>()
-                val bridgeClient = koin.get<LanActivityBridgeClient>()
-                val vrcxPreview = activityService.previewVrcxActivityImport(bridgeClient.fetchVrcxActivity(pairing))
-                activityService.applyVrcxActivityImport(vrcxPreview)
-                val timelinePreview = activityService.previewVrcmomoActivityImport(
-                    bridgeClient.fetchVrcmomoActivityArchive(pairing),
-                )
-                activityService.applyVrcmomoActivityImport(timelinePreview)
-                bridgeClient.uploadVrcmomoActivity(pairing, activityService.exportLanActivitySync())
+                koin.get<LanActivitySyncService>().sync(pairing)
             }.onSuccess {
                 settingsDao.lanSyncStatus = LanSyncStatus(
                     lastSuccessAtMillis = Clock.System.now().toEpochMilliseconds(),

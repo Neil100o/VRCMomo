@@ -39,11 +39,12 @@ import io.github.vrcmteam.vrcm.presentation.supports.WebIcons
 import io.github.vrcmteam.vrcm.presentation.supports.AppIcons
 import io.github.vrcmteam.vrcm.service.AuthService
 import io.github.vrcmteam.vrcm.service.FriendActivityService
-import io.github.vrcmteam.vrcm.service.LanActivityBridgeClient
 import io.github.vrcmteam.vrcm.service.LanBridgePairing
 import io.github.vrcmteam.vrcm.service.LanBridgeCandidate
 import io.github.vrcmteam.vrcm.service.discoverLanBridges
 import io.github.vrcmteam.vrcm.service.LanBridgeQrScanButton
+import io.github.vrcmteam.vrcm.service.LanActivitySyncPreview
+import io.github.vrcmteam.vrcm.service.LanActivitySyncService
 import io.github.vrcmteam.vrcm.service.VersionService
 import io.github.vrcmteam.vrcm.service.VrcxActivityImportPreview
 import io.github.vrcmteam.vrcm.network.api.worlds.WorldsApi
@@ -401,8 +402,7 @@ private val DiffRemovedRed = Color(0xFFE53935)
 @Composable
 private fun VrcxLanSyncBlock() {
     var currentSettings by LocalSettingsState.current
-    val activityService = koinInject<FriendActivityService>()
-    val bridgeClient = koinInject<LanActivityBridgeClient>()
+    val lanSyncService = koinInject<LanActivitySyncService>()
     val settingsDao = koinInject<SettingsDao>()
     val scope = rememberCoroutineScope()
     val localeStrings = strings
@@ -412,7 +412,7 @@ private fun VrcxLanSyncBlock() {
     var isDiscovering by remember { mutableStateOf(false) }
     var discoveredBridges by remember { mutableStateOf<List<LanBridgeCandidate>>(emptyList()) }
     var syncStatus by remember { mutableStateOf(settingsDao.lanSyncStatus) }
-    var preview by remember { mutableStateOf<VrcxActivityImportPreview?>(null) }
+    var lanPreview by remember { mutableStateOf<LanActivitySyncPreview?>(null) }
     val isPaired = bridgeUrl.isNotBlank() && bridgeToken.isNotBlank()
 
     suspend fun pairFromQrAndPreview(rawUrl: String) {
@@ -423,9 +423,9 @@ private fun VrcxLanSyncBlock() {
             bridgeToken = pairing.token
             settingsDao.lanBridgeUrl = pairing.baseUrl
             settingsDao.lanBridgeToken = pairing.token
-            activityService.previewVrcxActivityImport(bridgeClient.fetchVrcxActivity(pairing))
+            lanSyncService.prepare(pairing)
         }.onSuccess { imported ->
-            preview = imported
+            lanPreview = imported
             syncStatus = syncStatus.copy(lastError = null)
             settingsDao.lanSyncStatus = syncStatus
         }.onFailure {
@@ -550,9 +550,8 @@ private fun VrcxLanSyncBlock() {
                             val pairing = LanBridgePairing.fromInput(bridgeUrl, bridgeToken)
                             settingsDao.lanBridgeUrl = pairing.baseUrl
                             settingsDao.lanBridgeToken = pairing.token
-                            val raw = bridgeClient.fetchVrcxActivity(pairing)
-                            activityService.previewVrcxActivityImport(raw)
-                        }.onSuccess { preview = it }
+                            lanSyncService.prepare(pairing)
+                        }.onSuccess { lanPreview = it }
                             .onFailure {
                                 val error = localeStrings.vrcxLanSyncFailed
                                 syncStatus = syncStatus.copy(lastError = error)
@@ -565,65 +564,50 @@ private fun VrcxLanSyncBlock() {
             ) {
                 Text(if (isSyncing) localeStrings.vrcxLanSyncing else localeStrings.vrcxLanSyncNow)
             }
-            OutlinedButton(
-                modifier = Modifier.weight(1f),
-                enabled = !isSyncing && isPaired,
-                onClick = {
+        }
+    }
+
+    lanPreview?.let { importPreview ->
+        AlertDialog(
+            onDismissRequest = { lanPreview = null },
+            title = { Text(localeStrings.vrcxLanSyncConfirmTitle) },
+            text = {
+                Text(
+                    localeStrings.vrcxLanSyncConfirmMessage.formatCountPlaceholders(
+                        importPreview.archive.acceptedEvents,
+                        importPreview.archive.alreadyKnownEvents,
+                        importPreview.vrcx.presenceEvents,
+                        importPreview.vrcx.completedMeetings,
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
                     scope.launch {
                         isSyncing = true
                         runCatching {
                             val pairing = LanBridgePairing.fromInput(bridgeUrl, bridgeToken)
-                            settingsDao.lanBridgeUrl = pairing.baseUrl
-                            settingsDao.lanBridgeToken = pairing.token
-                            bridgeClient.uploadVrcmomoActivity(pairing, activityService.exportLanActivitySync())
+                            lanSyncService.apply(pairing, importPreview)
                         }.onSuccess {
                             syncStatus = LanSyncStatus(
                                 lastSuccessAtMillis = Clock.System.now().toEpochMilliseconds(),
-                                lastDirection = LAN_SYNC_DIRECTION_UPLOAD,
+                                lastDirection = LAN_SYNC_DIRECTION_AUTOMATIC,
                             )
                             settingsDao.lanSyncStatus = syncStatus
-                            SharedFlowCentre.toastText.emit(ToastText.Info(localeStrings.vrcxLanUploadSuccess))
+                            lanPreview = null
+                            SharedFlowCentre.toastText.emit(ToastText.Info(localeStrings.vrcxLanSyncSuccess))
                         }.onFailure {
-                            val error = localeStrings.vrcxLanUploadFailed
+                            val error = localeStrings.vrcxLanSyncFailed
                             syncStatus = syncStatus.copy(lastError = error)
                             settingsDao.lanSyncStatus = syncStatus
                             SharedFlowCentre.toastText.emit(ToastText.Error(error))
                         }
                         isSyncing = false
                     }
-                },
-            ) { Text(localeStrings.vrcxLanUploadNow) }
-        }
-    }
-
-    preview?.let { importPreview ->
-        AlertDialog(
-            onDismissRequest = { preview = null },
-            title = { Text(localeStrings.vrcxActivityImportConfirmTitle) },
-            text = {
-                Text(
-                    localeStrings.vrcxActivityImportConfirmMessage.formatCountPlaceholders(
-                        importPreview.presenceEvents,
-                        importPreview.completedMeetings,
-                        importPreview.involvedFriends,
-                        importPreview.alreadyImportedEvents,
-                    ),
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = {
-                    activityService.applyVrcxActivityImport(importPreview)
-                    syncStatus = LanSyncStatus(
-                        lastSuccessAtMillis = Clock.System.now().toEpochMilliseconds(),
-                        lastDirection = LAN_SYNC_DIRECTION_DOWNLOAD,
-                    )
-                    settingsDao.lanSyncStatus = syncStatus
-                    preview = null
-                    scope.launch { SharedFlowCentre.toastText.emit(ToastText.Info(localeStrings.vrcxActivityImportSuccess)) }
-                }) { Text(localeStrings.vrcxActivityImportConfirmTitle) }
+                }) { Text(localeStrings.vrcxLanSyncNow) }
             },
             dismissButton = {
-                TextButton(onClick = { preview = null }) { Text(localeStrings.backgroundFriendMonitoringCancel) }
+                TextButton(onClick = { lanPreview = null }) { Text(localeStrings.backgroundFriendMonitoringCancel) }
             },
         )
     }
@@ -688,14 +672,10 @@ private fun String.formatCountPlaceholders(vararg values: Int): String =
     values.fold(this) { text, value -> text.replaceFirst("%d", value.toString()) }
 
 private const val MAX_VRCX_ACTIVITY_IMPORT_BYTES = 16L * 1024L * 1024L
-private const val LAN_SYNC_DIRECTION_DOWNLOAD = "download"
-private const val LAN_SYNC_DIRECTION_UPLOAD = "upload"
 private const val LAN_SYNC_DIRECTION_AUTOMATIC = "automatic"
 
 private fun String?.lanSyncDirectionLabel(localeStrings: io.github.vrcmteam.vrcm.presentation.settings.locale.LocaleStrings): String =
     when (this) {
-        LAN_SYNC_DIRECTION_DOWNLOAD -> localeStrings.vrcxLanSyncDirectionDownload
-        LAN_SYNC_DIRECTION_UPLOAD -> localeStrings.vrcxLanSyncDirectionUpload
         LAN_SYNC_DIRECTION_AUTOMATIC -> localeStrings.vrcxLanSyncDirectionAutomatic
         else -> orEmpty()
     }

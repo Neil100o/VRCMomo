@@ -39,6 +39,11 @@ The bridge accepts the token via `X-VRCMomo-Bridge-Token` or `?token=`. Payloads
 
 ## Conflict and deduplication rules
 
+Each sync is one complete exchange: the phone uploads a current snapshot, the bridge rebuilds its
+canonical multi-device archive, the phone imports that archive and VRCX's read-only export, then
+uploads its final merged snapshot. Incoming phone snapshots always use the same maximum-baseline
+merge rule as the desktop bridge, so the phone never adds cumulative counters from a repeated sync.
+
 - Exact event identity uses type, timestamp, user ID, before/after values and Diff lines.
 - Adjacent observations of the same transition within 120 seconds are treated as cross-device duplicates; an intervening event prevents folding.
 - Social status and pseudo-location casing is normalized before comparison.
