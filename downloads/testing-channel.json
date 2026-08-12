@@ -1,6 +1,7 @@
 {
   "version": "0.3.20",
   "notes": "VRCMomo 0.3.20 旧测试轨迁移包\n\n重要：这是旧签名测试轨的迁移更新。请先在电脑运行 VRCMomo-LAN-Bridge.exe，在本应用完成一次同步，将手机活动记录汇总到电脑归档。确认记录无误后，再安装后续固定签名版本并从桥接器拉取归档。\n\n- 修复部分设备的 Boop 表情选择显示为空框。\n- 桥接器现在会明确显示本机可读取的 VRCX 活动记录数量。",
-  "apkUrl": "https://github.com/Neil100o/VRCMomo/raw/main/downloads/VRCMomo-v0.3.20.apk",
+  "apkUrl": "https://github.com/Neil100o/VRCMomo/raw/main/downloads/VRCMomo-v0.3.20-legacy-migration.apk",
   "pageUrl": "https://github.com/Neil100o/VRCMomo/tree/main/downloads"
 }
+

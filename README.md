@@ -21,7 +21,7 @@ A mobile-first VRChat companion, continued from VRCM, for managing friends, Gall
 
 ## Test downloads
 
-- **Android migration APK:** [VRCMomo-v0.3.20.apk](downloads/VRCMomo-v0.3.20.apk) — update the old 0.3.16 testing app in place, sync through the LAN bridge, then retain the bridge archive for the permanent-signature migration.
+- **Android migration APK:** [VRCMomo-v0.3.20-legacy-migration.apk](downloads/VRCMomo-v0.3.20-legacy-migration.apk) — update the old 0.3.16 testing app in place, sync through the LAN bridge, then retain the bridge archive for the permanent-signature migration.
 - **LAN bridge (Windows):** [VRCMomo-LAN-Bridge.exe](downloads/VRCMomo-LAN-Bridge.exe) — run it on the computer with VRCX, then pair it from VRCMomo on the same network. Python and QR support are included.
 - See [downloads/README.md](downloads/README.md) for privacy boundaries and testing notes. These are test files, not a stable release.
 - Fixed-signature builds check GitHub Releases for updates. The temporary testing channel is retained only so old 0.3.16 installs can receive the migration APK.
@@ -157,3 +157,4 @@ Contributions of code, bug reports, or feature suggestions are welcome! Please c
 [Download Latest Release](https://github.com/Neil100o/VRCMomo/releases/latest) • [Report Issues](https://github.com/Neil100o/VRCMomo/issues) • [Feature Requests](https://github.com/Neil100o/VRCMomo/discussions)
 
 </div>
+

@@ -21,7 +21,7 @@ VRCM を基盤として継続開発している、Android 優先の VRChat モ�
 
 ## テスト版のダウンロード
 
-- **Android 移行 APK：**[VRCMomo-v0.3.20.apk](downloads/VRCMomo-v0.3.20.apk) — 旧 0.3.16 を上書き更新し、LAN ブリッジで同期・保管してから固定署名版へ移行してください。
+- **Android 移行 APK：**[VRCMomo-v0.3.20-legacy-migration.apk](downloads/VRCMomo-v0.3.20-legacy-migration.apk) — 旧 0.3.16 を上書き更新し、LAN ブリッジで同期・保管してから固定署名版へ移行してください。
 - **LAN ブリッジ（Windows）：**[VRCMomo-LAN-Bridge.exe](downloads/VRCMomo-LAN-Bridge.exe) — VRCX を使っている PC で実行し、同一 LAN 上の VRCMomo からペアリングします。Python と QR サポートは同梱済みです。
 - プライバシー境界とテスト時の注意は [downloads/README.md](downloads/README.md) を確認してください。これらは安定版ではありません。
 - 固定署名版は GitHub Releases から以後の更新を確認します。テストチャンネルは旧 0.3.16 が移行 APK を受け取るためだけに残します。
@@ -141,3 +141,4 @@ VRCM Team とすべての上流貢献者に感謝します。元の履歴と貢�
 [最新版をダウンロード](https://github.com/Neil100o/VRCMomo/releases/latest) • [問題を報告](https://github.com/Neil100o/VRCMomo/issues) • [機能提案](https://github.com/Neil100o/VRCMomo/discussions)
 
 </div>
+

@@ -21,7 +21,7 @@
 
 ## 测试版下载
 
-- **Android 迁移安装包：**[VRCMomo-v0.3.20.apk](downloads/VRCMomo-v0.3.20.apk) —— 先覆盖旧版 0.3.16，通过局域网桥接器同步并保留归档，再迁移到后续固定签名版本。
+- **Android 迁移安装包：**[VRCMomo-v0.3.20-legacy-migration.apk](downloads/VRCMomo-v0.3.20-legacy-migration.apk) —— 先覆盖旧版 0.3.16，通过局域网桥接器同步并保留归档，再迁移到后续固定签名版本。
 - **局域网桥接器（Windows）：**[VRCMomo-LAN-Bridge.exe](downloads/VRCMomo-LAN-Bridge.exe) —— 在装有 VRCX 的电脑上直接运行，再由同一局域网中的 VRCMomo 配对同步；已内置 Python 与二维码支持。
 - 隐私边界和测试注意事项见 [downloads/README.md](downloads/README.md)。以上均为测试文件，不是稳定发行版。
 - 固定签名版本会检查 GitHub Releases 获取后续更新；测试通道仅保留给旧版 0.3.16 接收迁移包。
@@ -159,3 +159,4 @@ VRCMomo 在此基础上加入并维护了新的品牌、主题与导航调整、
 [下载最新版本](https://github.com/Neil100o/VRCMomo/releases/latest) • [反馈问题](https://github.com/Neil100o/VRCMomo/issues) • [功能建议](https://github.com/Neil100o/VRCMomo/discussions)
 
 </div>
+

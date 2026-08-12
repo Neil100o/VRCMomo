@@ -11,7 +11,7 @@ private JSON. Migration must therefore happen before the old app is removed.
 
 ## Safe rollout
 
-1. Publish `VRCMomo-v0.3.20.apk` as the old testing channel's migration update.
+1. Publish `VRCMomo-v0.3.20-legacy-migration.apk` as the old testing channel's migration update.
 2. The migration APK keeps the old package and signer, so Android updates 0.3.16 in place.
 3. In that updated app, pair with the LAN bridge and send the complete phone activity snapshot.
 4. Install the permanent release package alongside it and pull the archive from the bridge.
@@ -35,3 +35,4 @@ VRCMomo release key. Never use it for the final `io.github.vrcmteam.vrcm` releas
 Before publishing, verify all four values: package name, version code, version name, and signer.
 `downloads/testing-channel.json` now points to this migration APK. Before moving an account to the
 permanent signer, complete one bridge sync and verify the rebuilt archive contains the expected activity history.
+
