@@ -141,4 +141,3 @@ VRCM Team とすべての上流貢献者に感謝します。元の履歴と貢�
 [最新版をダウンロード](https://github.com/Neil100o/VRCMomo/releases/latest) • [問題を報告](https://github.com/Neil100o/VRCMomo/issues) • [機能提案](https://github.com/Neil100o/VRCMomo/discussions)
 
 </div>
-

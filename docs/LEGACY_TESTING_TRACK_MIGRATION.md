@@ -35,4 +35,3 @@ VRCMomo release key. Never use it for the final `io.github.vrcmteam.vrcm` releas
 Before publishing, verify all four values: package name, version code, version name, and signer.
 `downloads/testing-channel.json` now points to this migration APK. Before moving an account to the
 permanent signer, complete one bridge sync and verify the rebuilt archive contains the expected activity history.
-

@@ -6,4 +6,3 @@ These files are the legacy Android migration build and its Windows LAN bridge.
 - `VRCMomo-LAN-Bridge.exe`: Windows LAN bridge. Run it on the computer with VRCX, then pair from VRCMomo to sync activity archives over the same LAN. Python and the QR helper are already included.
 
 The bridge reads VRCX activity without copying cookies, passwords, tokens, notes or moderation data. The 0.3.20 APK is only for migration; later fixed-signature builds are published through GitHub Releases.
-

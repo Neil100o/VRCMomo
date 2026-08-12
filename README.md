@@ -157,4 +157,3 @@ Contributions of code, bug reports, or feature suggestions are welcome! Please c
 [Download Latest Release](https://github.com/Neil100o/VRCMomo/releases/latest) • [Report Issues](https://github.com/Neil100o/VRCMomo/issues) • [Feature Requests](https://github.com/Neil100o/VRCMomo/discussions)
 
 </div>
-
