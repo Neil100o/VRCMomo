@@ -14,50 +14,50 @@ class VersionService(
 ) {
 
     /**
-     * 获取最新的版本号,和版本链接
+     * Prefer GitHub Releases. The temporary testing manifest remains only as a fallback for
+     * the old-signature migration track, so established installs do not get stranded.
      * @param checkRemember 是否检查记住版本
      * @return 最新版本号和最新版本链接
      */
     suspend fun checkVersion(checkRemember: Boolean): Result<VersionDto> =
-        gitHubApi.testingChannel(AppConst.APP_TESTING_CHANNEL_URL).fold(
-            onSuccess = { channel ->
+        gitHubApi.latestRelease(AppConst.APP_GITHUB_LATEST_RELEASE_URL).fold(
+            onSuccess = { release ->
                 Result.success(
                     VersionDto(
-                        tagName = channel.version,
-                        htmlUrl = channel.pageUrl,
-                        body = channel.notes,
-                        hasNewVersion = isNewerVersion(channel.version, AppConst.APP_VERSION) &&
-                            (!checkRemember || settingsDao.rememberVersion != channel.version),
-                        downloadUrl = listOf(channel.apkUrl),
+                        tagName = release.tagName,
+                        htmlUrl = release.htmlUrl,
+                        body = release.body,
+                        hasNewVersion = isNewerVersion(release.tagName, AppConst.APP_VERSION) &&
+                            (!checkRemember || settingsDao.rememberVersion != release.tagName),
+                        downloadUrl = release.assets.map { asset -> asset.browserDownloadUrl },
                     ),
                 )
             },
-            onFailure = { testingChannelError -> checkReleaseFallback(checkRemember, testingChannelError) },
+            onFailure = { releaseError -> checkTestingFallback(checkRemember, releaseError) },
         )
 
-    private suspend fun checkReleaseFallback(
+    private suspend fun checkTestingFallback(
         checkRemember: Boolean,
-        testingChannelError: Throwable,
+        releaseError: Throwable,
     ): Result<VersionDto> =
-        gitHubApi.latestRelease(AppConst.APP_GITHUB_LATEST_RELEASE_URL).let { it ->
+        gitHubApi.testingChannel(AppConst.APP_TESTING_CHANNEL_URL).let { it ->
             when {
                 it.isSuccess -> {
-                    val releaseData = it.getOrNull() ?: return@let Result.failure(testingChannelError)
-                    val tagName = releaseData.tagName
-                    val downloadUrl = releaseData.assets.map { asset -> asset.browserDownloadUrl }
-                    if (AppConst.APP_VERSION == tagName
-                        || (checkRemember && settingsDao.rememberVersion == tagName)
-                    ) {
-                        // 当前版本是最新版本
-                        Result.success(VersionDto(tagName, releaseData.htmlUrl, releaseData.body, false,downloadUrl))
-                    } else {
-                        // 当前版本不是最新版本
-                        Result.success(VersionDto(tagName, releaseData.htmlUrl, releaseData.body, true,downloadUrl))
-                    }
+                    val channel = it.getOrNull() ?: return@let Result.failure(releaseError)
+                    Result.success(
+                        VersionDto(
+                            tagName = channel.version,
+                            htmlUrl = channel.pageUrl,
+                            body = channel.notes,
+                            hasNewVersion = isNewerVersion(channel.version, AppConst.APP_VERSION) &&
+                                (!checkRemember || settingsDao.rememberVersion != channel.version),
+                            downloadUrl = listOf(channel.apkUrl),
+                        ),
+                    )
                 }
 
                 else -> {
-                    val error = it.exceptionOrNull() ?: testingChannelError
+                    val error = it.exceptionOrNull() ?: releaseError
                     if (error is VRCApiException && error.code in GITHUB_OPTIONAL_UPDATE_CODES) {
                         // GitHub's public API is shared by all users behind the same network address.
                         // A missing release, rate limit, or temporary GitHub refusal must never affect login.
