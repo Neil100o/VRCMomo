@@ -24,3 +24,9 @@ tools/dist/
 !*.xcworkspace/contents.xcworkspacedata
 **/xcshareddata/WorkspaceSettings.xcsettings
 .vscode
+*.log
+*.log.err
+testing/
+**/__pycache__/
+downloads/vrcmomo-lan-inbox/
+tools/vrcmomo-lan-inbox/

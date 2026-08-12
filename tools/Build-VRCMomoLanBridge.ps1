@@ -10,13 +10,15 @@ $distDirectory = Join-Path $toolsDirectory "dist"
 $outputPath = Join-Path $repositoryRoot "downloads\VRCMomo-LAN-Bridge.exe"
 $scriptPath = Join-Path $toolsDirectory "vrcmomo_lan_bridge.py"
 $exporterPath = Join-Path $toolsDirectory "export_vrcx_activity.py"
+$iconPath = Join-Path $toolsDirectory "vrcmomo.ico"
 
 if ($Clean) {
     Remove-Item -Recurse -Force $buildDirectory, $distDirectory -ErrorAction SilentlyContinue
 }
 
-python -m PyInstaller --noconfirm --clean --onefile --console `
+python -m PyInstaller --noconfirm --clean --onefile --windowed `
     --name "VRCMomo-LAN-Bridge" `
+    --icon $iconPath `
     --add-data "$exporterPath;." `
     --distpath $distDirectory `
     --workpath $buildDirectory `

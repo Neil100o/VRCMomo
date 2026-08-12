@@ -30,9 +30,13 @@ For a non-default VRCX database location:
 Export-VRCXActivity.bat --db "D:\Backup\VRCX.sqlite3" --output "D:\Export\vrcmomo-vrcx-activity-v3.json"
 ```
 
-## LAN sync bridge (foundation)
+## LAN sync bridge
 
-`VRCMomo-LAN-Bridge.exe` is the Windows local-network bridge distributed to testers. Run it on a computer running VRCX; it contains Python, the QR helper and the read-only exporter, so no separate runtime or package install is needed. It reads VRCX activity only through the existing exporter and never modifies `VRCX.sqlite3`.
+`VRCMomo-LAN-Bridge.exe` is the Windows local-network bridge distributed to testers. Run it on a computer running VRCX; it contains Python, the QR helper and the read-only exporter, so no separate runtime or package install is needed. Its small desktop UI shows pairing state, archive counts, rebuild status and JSON export. It reads VRCX activity only through the existing exporter and never modifies `VRCX.sqlite3`.
+
+Phone snapshots are stored beside the EXE in `vrcmomo-lan-inbox`. `archive-rebuilt.json` is an
+inspectable canonical copy. Rebuild uses maximum snapshot baselines and paired meeting episodes;
+repeating a sync does not add the same counters again.
 
 ```text
 VRCMomo-LAN-Bridge.exe
@@ -40,7 +44,7 @@ VRCMomo-LAN-Bridge.exe
 
 `Start-VRCMomoLanBridge.bat` remains a source/developer launcher. Rebuild the distributed executable with `Build-VRCMomoLanBridge.ps1`.
 
-It prints a pairing URL containing a temporary token. If the optional `qrcode` Python package is already available it also prints a scannable terminal QR code; otherwise copy the displayed URL. Keep the window open while syncing. The current foundation exposes the paired VRCX export endpoint and stores validated phone uploads in `vrcmomo-lan-inbox`; the VRCMomo in-app pairing and automatic sync UI are the next stage.
+The desktop UI shows a pairing QR code and also answers VRCMomo's LAN discovery request. Keep it open while syncing. VRCMomo can pair by discovery or QR, run a manual two-way sync, and optionally sync once when the app starts. Validated phone snapshots are stored in `vrcmomo-lan-inbox` and rebuilt into an idempotent aggregate archive; VRCX itself remains read-only.
 
 For a non-default database:
 

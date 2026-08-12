@@ -34,12 +34,22 @@
 - **Phone orchestration:** `service/FriendActivityService.kt`, then Android process-launch sync in `src/androidMain/kotlin/VRCMApplication.kt`
 - **Desktop archive endpoint:** `tools/vrcmomo_lan_bridge.py` (`GET/POST /v1/vrcmomo-activity`)
 
-The bridge retains phone timelines and sends them back as an archive. Import treats each timeline entry as an immutable event fingerprint, so opening the app again or re-uploading an unchanged phone snapshot does not duplicate a log entry. V1 phone envelopes remain readable; new exports are V2 and include an installation ID.
+The bridge retains phone timelines and rebuilds one canonical document per VRChat account. Exact
+events and adjacent same-transition observations within 120 seconds are folded, status/location
+values are normalized, and `Met -> Left` episodes rebuild a conservative meeting baseline. V1
+phone envelopes remain readable; new exports are V2 and include an installation ID.
 
-Do **not** add cumulative `FriendActivityStats` from a phone archive. Those values are complete per-device snapshots; summing them after a retry inflates meeting counts and time. Cross-device totals need a later episode/cursor protocol, so this first implementation merges timeline history safely and leaves existing locally/VRCX-derived totals unchanged.
+Complete `FriendActivityStats` snapshots are merged by maximum counters and latest timestamps,
+never summed. Event-derived meeting count/duration may raise that baseline when the timeline proves
+a larger value. The same archive can therefore be imported repeatedly without inflating totals.
+
+- Desktop merge core: `tools/vrcmomo_activity_merge.py`
+- Merge tests: `tools/test_vrcmomo_activity_merge.py`
+- Rebuilt audit copy: `<bridge folder>/vrcmomo-lan-inbox/archive-rebuilt.json`
 ## LAN VRCX sync
 - PC bridge launcher: `tools/Start-VRCMomoLanBridge.bat`
 - PC bridge server and UDP discovery responder: `tools/vrcmomo_lan_bridge.py`
+- Windows bridge UI and archive controls: `tools/vrcmomo_lan_bridge.py` (`run_gui`)
 - Optional PC dependency list: `tools/requirements-lan-bridge.txt`
 - Shared pairing parser and HTTP client: `service/LanActivityBridgeClient.kt`
 - Shared UDP discovery contract: `service/LanBridgeDiscovery.kt`
