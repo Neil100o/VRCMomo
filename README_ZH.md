@@ -17,11 +17,11 @@
 
 一个基于 VRCM 延续开发的移动端 VRChat Companion，帮助你在手机上管理好友、相册、通知与最近共同游玩记录。
 
-> **当前测试版本：0.3.16**。欢迎通过 [Issues](https://github.com/Neil100o/VRCMomo/issues) 反馈问题、设备信息和复现步骤。
+> **当前旧签名迁移包：0.3.20**。请先从 0.3.16 覆盖更新，再通过局域网桥接器同步一次以保存活动记录；之后再迁移到后续固定签名版本。欢迎通过 [Issues](https://github.com/Neil100o/VRCMomo/issues) 反馈问题、设备信息和复现步骤。
 
 ## 测试版下载
 
-- **Android 安装包：**[VRCMomo-v0.3.15.apk](downloads/VRCMomo-v0.3.15.apk) —— 下载到 Android 设备；系统提示时，允许浏览器或文件管理器安装未知来源应用后安装。
+- **Android 迁移安装包：**[VRCMomo-v0.3.20.apk](downloads/VRCMomo-v0.3.20.apk) —— 先覆盖旧版 0.3.16，通过局域网桥接器同步并保留归档，再迁移到后续固定签名版本。
 - **可选 VRCX 导出工具（Windows）：**[VRCMomo-VRCX-Activity-Export.exe](downloads/VRCMomo-VRCX-Activity-Export.exe) —— 在安装了 VRCX 的电脑上运行，再从 VRCMomo 设置页导入生成的 JSON 文件。
 - **局域网桥接器（Windows）：**[VRCMomo-LAN-Bridge.exe](downloads/VRCMomo-LAN-Bridge.exe) —— 在装有 VRCX 的电脑上直接运行，再由同一局域网中的 VRCMomo 配对同步；已内置 Python 与二维码支持。
 - 隐私边界和测试注意事项见 [downloads/README.md](downloads/README.md)。以上均为测试文件，不是稳定发行版。

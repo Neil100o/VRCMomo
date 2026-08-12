@@ -17,11 +17,11 @@
 
 A mobile-first VRChat companion, continued from VRCM, for managing friends, Gallery, notifications, and recent shared play.
 
-> **Current test version: 0.3.16.** Please report reproducible issues with device, Android version, steps and logs through [Issues](https://github.com/Neil100o/VRCMomo/issues).
+> **Current old-signature migration build: 0.3.20.** Update from 0.3.16, sync once with the LAN bridge to preserve activity history, then move to the future permanent-signature build. Please report reproducible issues with device, Android version, steps and logs through [Issues](https://github.com/Neil100o/VRCMomo/issues).
 
 ## Test downloads
 
-- **Android APK:** [VRCMomo-v0.3.15.apk](downloads/VRCMomo-v0.3.15.apk) — download it to an Android device, allow installation from the browser/file manager when Android asks, then install.
+- **Android migration APK:** [VRCMomo-v0.3.20.apk](downloads/VRCMomo-v0.3.20.apk) — update the old 0.3.16 testing app in place, sync through the LAN bridge, then retain the bridge archive for the permanent-signature migration.
 - **Optional VRCX exporter (Windows):** [VRCMomo-VRCX-Activity-Export.exe](downloads/VRCMomo-VRCX-Activity-Export.exe) — run it on the computer with VRCX, then import its JSON file from VRCMomo settings.
 - **LAN bridge (Windows):** [VRCMomo-LAN-Bridge.exe](downloads/VRCMomo-LAN-Bridge.exe) — run it on the computer with VRCX, then pair it from VRCMomo on the same network. Python and QR support are included.
 - See [downloads/README.md](downloads/README.md) for privacy boundaries and testing notes. These are test files, not a stable release.
