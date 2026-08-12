@@ -235,6 +235,35 @@ class BridgeState:
         with self._lock:
             return dict(self._last_report)
 
+    def vrcx_summary(self) -> dict[str, int]:
+        """Count readable VRCX records without exporting their contents to the UI."""
+        import export_vrcx_activity
+
+        with sqlite3.connect(self.db.resolve().as_uri() + "?mode=ro", uri=True) as connection:
+            tables = export_vrcx_activity.table_names(connection)
+            prefix = self._resolve_account_prefix()
+
+            def count(table: str) -> int:
+                if table not in tables:
+                    return 0
+                return int(connection.execute(
+                    f"SELECT COUNT(*) FROM {export_vrcx_activity.quote_identifier(table)}"
+                ).fetchone()[0])
+
+            presence = count(f"{prefix}_feed_online_offline")
+            locations = count(f"{prefix}_feed_gps")
+            statuses = count(f"{prefix}_feed_status")
+            profiles = count(f"{prefix}_feed_bio")
+            meetings = count("gamelog_join_leave")
+            return {
+                "presence": presence,
+                "locations": locations,
+                "statuses": statuses,
+                "profiles": profiles,
+                "meetings": meetings,
+                "total": presence + locations + statuses + profiles + meetings,
+            }
+
     def save_rebuilt_archive_as(self, target: Path) -> None:
         archive, _ = self.rebuild_mobile_archive()
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -489,7 +518,33 @@ def run_gui(args) -> int:
     ttk.Button(action_row, text="复制地址", command=copy_pairing, style="Primary.TButton").pack(side="left")
     ttk.Button(action_row, text="打开归档目录", command=lambda: os.startfile(state.inbox), style="Secondary.TButton").pack(side="left", padx=(8, 0))
 
-    ttk.Label(right, text="合并归档", style="CardTitle.TLabel").pack(anchor="w")
+    ttk.Label(right, text="VRCX 数据", style="CardTitle.TLabel").pack(anchor="w")
+    vrcx_summary_var = tk.StringVar(value="正在扫描本机 VRCX…")
+    ttk.Label(right, textvariable=vrcx_summary_var, style="Body.TLabel", justify="left", wraplength=250).pack(anchor="w", pady=(8, 10))
+
+    def refresh_vrcx_summary() -> None:
+        try:
+            summary = state.vrcx_summary()
+            text = (
+                f"已读取 {summary['total']} 条记录\n"
+                f"上下线 {summary['presence']} · 位置 {summary['locations']} · "
+                f"状态 {summary['statuses']} · 简介 {summary['profiles']} · 同游 {summary['meetings']}"
+            )
+            root.after(0, lambda: vrcx_summary_var.set(text))
+            report_status("VRCX 扫描完成，可供手机同步")
+        except (OSError, RuntimeError, ValueError, sqlite3.Error) as error:
+            root.after(0, lambda: vrcx_summary_var.set(f"无法读取 VRCX：{error}"))
+            report_status("VRCX 扫描失败")
+
+    ttk.Button(
+        right,
+        text="重新扫描 VRCX",
+        command=lambda: threading.Thread(target=refresh_vrcx_summary, daemon=True).start(),
+        style="Secondary.TButton",
+    ).pack(fill="x", pady=(0, 16))
+
+    ttk.Separator(right).pack(fill="x", pady=(0, 16))
+    ttk.Label(right, text="手机合并归档", style="CardTitle.TLabel").pack(anchor="w")
     metrics = ttk.Frame(right, style="Surface.TFrame")
     metrics.pack(fill="x", pady=(14, 18))
     metric_vars = {name: tk.StringVar(value="0") for name in ("设备", "好友", "事件", "折叠")}
@@ -531,6 +586,7 @@ def run_gui(args) -> int:
 
     try:
         state.rebuild_mobile_archive()
+        refresh_vrcx_summary()
         server = BridgeServer(("0.0.0.0", args.port), state)
         discovery = None if args.no_discovery else DiscoveryResponder(args.port, args.discovery_port, token)
         discovery and discovery.start()
