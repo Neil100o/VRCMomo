@@ -99,9 +99,7 @@ class GroupProfileScreenModel(
         }
         _isLoading.value = true
         screenModelScope.launch(Dispatchers.IO) {
-            authService.reTryAuthCatching {
-                groupsApi.fetchGroup(groupId, includeRoles = true)
-            }.onSuccess {
+            fetchGroupProfile(groupId).onSuccess {
                 _groupProfileState.value = GroupProfileVo(it)
             }.onFailure {
                 handleError("GroupProfile", it)
@@ -126,6 +124,19 @@ class GroupProfileScreenModel(
             _isLoading.value = false
         }
     }
+
+    /**
+     * Role details are useful for members, but VRChat may reject or return a
+     * different payload for public groups that the current user has not joined.
+     * Retry the same profile without roles so the basic group page and join
+     * action remain available.
+     */
+    private suspend fun fetchGroupProfile(groupId: String) =
+        authService.reTryAuthCatching {
+            groupsApi.fetchGroup(groupId, includeRoles = true)
+        }.recoverCatching {
+            groupsApi.fetchGroup(groupId, includeRoles = false)
+        }
 
     fun joinGroup() {
         val groupId = _groupProfileState.value?.groupId ?: return

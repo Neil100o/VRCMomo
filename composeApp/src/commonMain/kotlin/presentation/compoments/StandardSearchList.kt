@@ -124,7 +124,10 @@ fun StandardSearchList(
         if (currentNavigator.size <= 1) {
             coroutineScope.launch {
                 currentNavigator push GroupProfileScreen(
-                    groupProfileVo = GroupProfileVo(group.id),
+                    // Keep the search result as the initial profile state. The full group
+                    // request can fail for non-members, but the page should never collapse
+                    // into an id-only placeholder while it retries.
+                    groupProfileVo = GroupProfileVo(group),
                     sharedSuffixKey = sharedSuffixKey
                 )
             }
