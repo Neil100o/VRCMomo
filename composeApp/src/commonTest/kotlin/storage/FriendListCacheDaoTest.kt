@@ -4,12 +4,28 @@ import com.russhwolf.settings.MapSettings
 import io.github.vrcmteam.vrcm.network.api.attributes.UserStatus
 import io.github.vrcmteam.vrcm.network.api.friends.date.FriendData
 import io.github.vrcmteam.vrcm.storage.data.FriendListCache
+import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class FriendListCacheDaoTest {
+    @Test
+    fun legacyFriendSnapshotWithoutPronounsIsReadable() {
+        val legacyJson = """
+            {"bio":null,"currentAvatarImageUrl":"","currentAvatarThumbnailImageUrl":"",
+             "developerType":"none","displayName":"legacy","friendKey":"","id":"usr_legacy",
+             "imageUrl":"","isFriend":true,"last_login":"","last_platform":"standalonewindows",
+             "location":"offline","profilePicOverride":"","status":"offline",
+             "statusDescription":"","userIcon":""}
+        """.trimIndent()
+
+        val restored = Json.decodeFromString<FriendData>(legacyJson)
+
+        assertNull(restored.pronouns)
+    }
+
     @Test
     fun successfulEmptySnapshotIsStoredInsteadOfLookingLikeMissingCache() {
         val dao = FriendListCacheDao(MapSettings())

@@ -32,5 +32,7 @@ data class FriendData(
     override val statusDescription: String,
     override val tags: List<String> = emptyList(),
     override val userIcon: String,
-    override val pronouns: String?,
+    // Friend snapshots written before pronouns were added do not have this key.
+    // Keep local cache and LAN archive upgrades backward compatible.
+    override val pronouns: String? = null,
 ): IUser, JavaSerializable
