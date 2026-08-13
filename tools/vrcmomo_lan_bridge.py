@@ -71,7 +71,7 @@ def print_pairing_qr(url: str) -> None:
 
 
 def local_ip() -> str:
-    """Prefer a real RFC1918 adapter over VPN test ranges for phone pairing."""
+    """Prefer the home-LAN adapter over VPN and virtual adapters for pairing."""
     candidates: list[str] = []
     try:
         candidates.extend(socket.gethostbyname_ex(socket.gethostname())[2])
@@ -93,7 +93,19 @@ def local_ip() -> str:
             private.append(candidate)
     # ipaddress treats the VPN benchmarking block as non-global on some Python releases.
     private = [value for value in private if not value.startswith(("198.18.", "198.19."))]
-    return private[0] if private else "127.0.0.1"
+    # A VPN commonly adds a 10.x adapter before the physical Wi-Fi adapter.
+    # Most home routers use 192.168.x.x, so prefer it for a QR code shown to a
+    # phone on the same Wi-Fi. Discovery still uses the reply source address.
+    def preference(value: str) -> int:
+        if value.startswith("192.168."):
+            return 0
+        if value.startswith("172."):
+            return 1
+        if value.startswith("10."):
+            return 2
+        return 3
+
+    return min(private, key=preference) if private else "127.0.0.1"
 
 
 class BridgeState:

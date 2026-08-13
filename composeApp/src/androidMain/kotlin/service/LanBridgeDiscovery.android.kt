@@ -2,6 +2,7 @@ package io.github.vrcmteam.vrcm.service
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import io.ktor.http.Url
 import kotlinx.serialization.json.Json
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -32,7 +33,19 @@ internal actual suspend fun discoverLanBridges(): List<LanBridgeCandidate> = wit
             if (response.service != "vrcmomo-lan-bridge" || response.protocol != 1 || response.port !in 1..65535) continue
             candidates += LanBridgeCandidate(
                 baseUrl = "http://${reply.address.hostAddress}:${response.port}",
-                pairingUrl = response.pairingUrl,
+                // Discovery replies may contain a pairing URL generated from a
+                // VPN or another network adapter on the PC.  The UDP reply itself
+                // arrived from the reachable LAN address, so retain only its token
+                // and rebuild the URL with that source address.
+                pairingUrl = response.pairingUrl
+                    ?.let { pairingUrl ->
+                        runCatching { Url(pairingUrl).parameters["token"] }
+                            .getOrNull()
+                            ?.takeIf { it.isNotBlank() }
+                            ?.let { token ->
+                                "http://${reply.address.hostAddress}:${response.port}/v1/health?token=$token"
+                            }
+                    },
             )
         }
     }
