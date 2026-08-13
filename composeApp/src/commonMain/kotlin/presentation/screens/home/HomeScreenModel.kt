@@ -146,9 +146,9 @@ class HomeScreenModel(
                 val v2 = v2ById[legacy.id]
                 if (v2 == null) legacy else legacy.copy(
                     seen = v2.seen,
-                    boopEmojiId = v2.boopEmojiId,
-                    boopEmojiVersion = v2.boopEmojiVersion,
-                    boopInventoryItemId = v2.boopInventoryItemId,
+                    boopEmojiId = v2.boopEmojiId ?: legacy.boopEmojiId,
+                    boopEmojiVersion = v2.boopEmojiVersion ?: legacy.boopEmojiVersion,
+                    boopInventoryItemId = v2.boopInventoryItemId ?: legacy.boopInventoryItemId,
                 )
             }.let { existing ->
                 val existingIds = existing.mapTo(mutableSetOf()) { it.id }

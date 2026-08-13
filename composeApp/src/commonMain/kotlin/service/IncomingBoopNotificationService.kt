@@ -105,9 +105,9 @@ class IncomingBoopNotificationService(
                 val v2 = v2Notifications[legacy.id]
                 if (v2 == null) legacy else legacy.copy(
                     seen = v2.seen,
-                    boopEmojiId = v2.boopEmojiId,
-                    boopEmojiVersion = v2.boopEmojiVersion,
-                    boopInventoryItemId = v2.boopInventoryItemId,
+                    boopEmojiId = v2.boopEmojiId ?: legacy.boopEmojiId,
+                    boopEmojiVersion = v2.boopEmojiVersion ?: legacy.boopEmojiVersion,
+                    boopInventoryItemId = v2.boopInventoryItemId ?: legacy.boopInventoryItemId,
                 )
             } + v2Notifications.values.filterNot { it.id in legacyIds }
             val boopItems = notificationItems.filter { it.type == NotificationType.Boop.value }

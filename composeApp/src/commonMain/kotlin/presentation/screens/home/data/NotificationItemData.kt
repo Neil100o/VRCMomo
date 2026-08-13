@@ -162,9 +162,9 @@ data class NotificationItemData(
             )
         },
         seen = n.seen,
-        boopEmojiId = n.data.emojiId,
-        boopEmojiVersion = n.data.emojiVersion,
-        boopInventoryItemId = n.data.inventoryItemId,
+        boopEmojiId = n.details?.emojiId ?: n.data.emojiId,
+        boopEmojiVersion = n.details?.emojiVersion ?: n.data.emojiVersion,
+        boopInventoryItemId = n.details?.inventoryItemId ?: n.data.inventoryItemId,
     )
 
 }

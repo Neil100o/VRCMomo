@@ -8,6 +8,8 @@ data class NotificationData(
     val category: String,
     val createdAt: String,
     val data: Data,
+    /** Newer legacy-feed responses can put Boop reaction metadata here instead of [data]. */
+    val details: Data? = null,
     val expiresAt: String,
     val expiryAfterSeen: Int?,
     val id: String,
