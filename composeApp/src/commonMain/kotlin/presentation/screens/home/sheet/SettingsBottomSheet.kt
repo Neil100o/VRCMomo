@@ -415,6 +415,14 @@ private fun VrcxLanSyncBlock() {
     var lanPreview by remember { mutableStateOf<LanActivitySyncPreview?>(null) }
     val isPaired = bridgeUrl.isNotBlank() && bridgeToken.isNotBlank()
 
+    fun syncError(cause: Throwable): String = buildString {
+        append(localeStrings.vrcxLanSyncFailed)
+        cause.message?.trim()?.takeIf { it.isNotEmpty() }?.let {
+            append("：")
+            append(it.take(120))
+        }
+    }
+
     suspend fun pairFromQrAndPreview(rawUrl: String) {
         isSyncing = true
         runCatching {
@@ -428,8 +436,8 @@ private fun VrcxLanSyncBlock() {
             lanPreview = imported
             syncStatus = syncStatus.copy(lastError = null)
             settingsDao.lanSyncStatus = syncStatus
-        }.onFailure {
-            val error = localeStrings.vrcxLanSyncFailed
+        }.onFailure { cause ->
+            val error = syncError(cause)
             syncStatus = syncStatus.copy(lastError = error)
             settingsDao.lanSyncStatus = syncStatus
             SharedFlowCentre.toastText.emit(ToastText.Error(error))
@@ -552,8 +560,8 @@ private fun VrcxLanSyncBlock() {
                             settingsDao.lanBridgeToken = pairing.token
                             lanSyncService.prepare(pairing)
                         }.onSuccess { lanPreview = it }
-                            .onFailure {
-                                val error = localeStrings.vrcxLanSyncFailed
+                            .onFailure { cause ->
+                                val error = syncError(cause)
                                 syncStatus = syncStatus.copy(lastError = error)
                                 settingsDao.lanSyncStatus = syncStatus
                                 SharedFlowCentre.toastText.emit(ToastText.Error(error))
@@ -596,8 +604,8 @@ private fun VrcxLanSyncBlock() {
                             settingsDao.lanSyncStatus = syncStatus
                             lanPreview = null
                             SharedFlowCentre.toastText.emit(ToastText.Info(localeStrings.vrcxLanSyncSuccess))
-                        }.onFailure {
-                            val error = localeStrings.vrcxLanSyncFailed
+                        }.onFailure { cause ->
+                            val error = syncError(cause)
                             syncStatus = syncStatus.copy(lastError = error)
                             settingsDao.lanSyncStatus = syncStatus
                             SharedFlowCentre.toastText.emit(ToastText.Error(error))
