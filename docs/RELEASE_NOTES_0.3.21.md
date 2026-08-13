@@ -1,4 +1,4 @@
-# VRCMomo 0.3.21 / VRCMomo 0.3.21 / VRCMomo 0.3.21
+# VRCMomo 0.3.21
 
 Date / 日期 / 日付：2026-08-13<br>
 Version / 版本 / バージョン：`0.3.21`<br>
