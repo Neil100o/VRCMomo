@@ -61,6 +61,17 @@ class ActivityMergeTest(unittest.TestCase):
         self.assertEqual([source], decode_documents(source))
         self.assertEqual([source], decode_documents({"format": "vrcmomo-activity-archive-v1", "documents": [source]}))
 
+    def test_legacy_friend_snapshot_gets_optional_pronouns_at_bridge_boundary(self):
+        source = document("phone-a", {"usr_friend": {
+            "userId": "usr_friend",
+            "lastKnownFriend": {"id": "usr_friend", "displayName": "Friend"},
+        }})
+        migrated = decode_documents(source)[0]
+        friend = migrated["statsByFriendId"]["usr_friend"]["lastKnownFriend"]
+        self.assertIn("pronouns", friend)
+        self.assertIsNone(friend["pronouns"])
+        self.assertNotIn("pronouns", source["statsByFriendId"]["usr_friend"]["lastKnownFriend"])
+
 
 if __name__ == "__main__":
     unittest.main()

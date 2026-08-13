@@ -5,6 +5,7 @@ ported to Kotlin. Input documents are complete device snapshots, never deltas.
 """
 from __future__ import annotations
 
+from copy import deepcopy
 from collections import defaultdict
 from dataclasses import dataclass, asdict
 from typing import Any, Iterable
@@ -47,8 +48,29 @@ def decode_documents(value: Any) -> list[dict[str, Any]]:
             raise ValueError("Unsupported VRCMomo activity document")
         if not isinstance(document.get("ownerUserId"), str) or not document["ownerUserId"]:
             raise ValueError("Activity document is missing ownerUserId")
-        result.append(document)
+        result.append(migrate_document(document))
     return result
+
+
+def migrate_document(document: dict[str, Any]) -> dict[str, Any]:
+    """Upgrade a mobile snapshot at the bridge boundary without dropping data.
+
+    Older VRCMomo caches predate the optional ``pronouns`` field inside the
+    retained friend snapshot.  The bridge can keep such uploads for months, so
+    migrate them whenever they are read instead of requiring every phone to
+    upload a fresh snapshot before it can import the shared archive.
+    """
+    migrated = deepcopy(document)
+    stats = migrated.get("statsByFriendId")
+    if not isinstance(stats, dict):
+        return migrated
+    for stat in stats.values():
+        if not isinstance(stat, dict):
+            continue
+        friend = stat.get("lastKnownFriend")
+        if isinstance(friend, dict):
+            friend.setdefault("pronouns", None)
+    return migrated
 
 
 def merge_archive(documents: Iterable[dict[str, Any]], exported_at_millis: int) -> tuple[dict[str, Any], MergeReport]:
