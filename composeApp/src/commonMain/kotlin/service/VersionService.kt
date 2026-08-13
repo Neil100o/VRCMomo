@@ -14,12 +14,34 @@ class VersionService(
 ) {
 
     /**
-     * Prefer GitHub Releases. The temporary testing manifest remains only as a fallback for
-     * the old-signature migration track, so established installs do not get stranded.
-     * @param checkRemember 是否检查记住版本
-     * @return 最新版本号和最新版本链接
+     * Check the old-signature migration channel first.
+     *
+     * A 0.3.16-era installation and the permanent-release installation share the same Android
+     * package name but not the same certificate. The migration manifest is intentionally kept at
+     * 0.3.20: old clients see it first and can back up activity data before moving to Releases;
+     * permanent clients already at 0.3.20 or newer skip it and then check GitHub Releases.
      */
     suspend fun checkVersion(checkRemember: Boolean): Result<VersionDto> =
+        gitHubApi.testingChannel(AppConst.APP_TESTING_CHANNEL_URL).fold(
+            onSuccess = { channel ->
+                val testingUpdate = VersionDto(
+                    tagName = channel.version,
+                    htmlUrl = channel.pageUrl,
+                    body = channel.notes,
+                    hasNewVersion = isNewerVersion(channel.version, AppConst.APP_VERSION) &&
+                        (!checkRemember || settingsDao.rememberVersion != channel.version),
+                    downloadUrl = listOf(channel.apkUrl),
+                )
+                if (testingUpdate.hasNewVersion) Result.success(testingUpdate)
+                else checkLatestRelease(checkRemember)
+            },
+            onFailure = { testingError -> checkLatestRelease(checkRemember, testingError) },
+        )
+
+    private suspend fun checkLatestRelease(
+        checkRemember: Boolean,
+        fallbackError: Throwable? = null,
+    ): Result<VersionDto> =
         gitHubApi.latestRelease(AppConst.APP_GITHUB_LATEST_RELEASE_URL).fold(
             onSuccess = { release ->
                 Result.success(
@@ -33,41 +55,17 @@ class VersionService(
                     ),
                 )
             },
-            onFailure = { releaseError -> checkTestingFallback(checkRemember, releaseError) },
+            onFailure = { releaseError ->
+                val error = fallbackError ?: releaseError
+                if (error is VRCApiException && error.code in GITHUB_OPTIONAL_UPDATE_CODES) {
+                    // GitHub's public API is shared by all users behind the same network address.
+                    // A missing release, rate limit, or temporary GitHub refusal must never affect login.
+                    noUpdateAvailable()
+                } else {
+                    Result.failure(error)
+                }
+            },
         )
-
-    private suspend fun checkTestingFallback(
-        checkRemember: Boolean,
-        releaseError: Throwable,
-    ): Result<VersionDto> =
-        gitHubApi.testingChannel(AppConst.APP_TESTING_CHANNEL_URL).let { it ->
-            when {
-                it.isSuccess -> {
-                    val channel = it.getOrNull() ?: return@let Result.failure(releaseError)
-                    Result.success(
-                        VersionDto(
-                            tagName = channel.version,
-                            htmlUrl = channel.pageUrl,
-                            body = channel.notes,
-                            hasNewVersion = isNewerVersion(channel.version, AppConst.APP_VERSION) &&
-                                (!checkRemember || settingsDao.rememberVersion != channel.version),
-                            downloadUrl = listOf(channel.apkUrl),
-                        ),
-                    )
-                }
-
-                else -> {
-                    val error = it.exceptionOrNull() ?: releaseError
-                    if (error is VRCApiException && error.code in GITHUB_OPTIONAL_UPDATE_CODES) {
-                        // GitHub's public API is shared by all users behind the same network address.
-                        // A missing release, rate limit, or temporary GitHub refusal must never affect login.
-                        noUpdateAvailable()
-                    } else {
-                        Result.failure(error)
-                    }
-                }
-            }
-        }
 
     private fun isNewerVersion(candidate: String, current: String): Boolean {
         val candidateParts = candidate.removePrefix("v").split('.').map { it.toIntOrNull() ?: 0 }

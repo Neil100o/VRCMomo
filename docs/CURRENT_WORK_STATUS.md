@@ -3,7 +3,7 @@
 最后更新：2026-08-13（历史 UI 批次说明；当前功能状态以 `docs/FEATURE_AUDIT_AND_PATHS.md` 为准）
 工作目录：`F:\vrcmoskavis\VRCMomoLanSync`  
 当前分支：`main`（跟踪 `origin/main`）  
-当前版本：`0.3.20`，Android `versionCode = 32`
+当前版本：`0.3.21`，Android `versionCode = 33`
 
 本文保留此前 UI 批次的历史说明。继续开发时请先读 `docs/FEATURE_AUDIT_AND_PATHS.md`：它已按当前 `main` 回查旧分支、补回的 Boop 兼容修复和精确入口路径。不要仅根据页面效果或旧 APK 判断源码状态。
 

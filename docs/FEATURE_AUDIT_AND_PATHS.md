@@ -2,7 +2,7 @@
 
 最后回查：2026-08-13
 仓库根目录：`F:\vrcmoskavis\VRCMomoLanSync`
-基线：`main` / `origin/main` 的 `6b96c2d4`（`fix-boop-details-from-legacy-feed`）
+功能修复基线：`6b96c2d4`（`fix-boop-details-from-legacy-feed`）；发行热修复版本为 `0.3.21`。
 
 这份文档回答两件事：
 
