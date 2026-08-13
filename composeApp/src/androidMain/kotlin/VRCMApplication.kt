@@ -53,6 +53,9 @@ class VRCMApplication : Application() {
                 settingsDao.lanSyncStatus = LanSyncStatus(
                     lastSuccessAtMillis = Clock.System.now().toEpochMilliseconds(),
                     lastDirection = "automatic",
+                    // A successful exchange supersedes any previous transient
+                    // network error (for example, a VPN-blocked LAN request).
+                    lastError = null,
                 )
             }.onFailure { error ->
                 settingsDao.lanSyncStatus = settingsDao.lanSyncStatus.copy(
