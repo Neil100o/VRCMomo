@@ -1,6 +1,6 @@
 # VRCMomo development map
 
-> 当前尚未提交的工作、测试包边界和继续顺序见 `docs/CURRENT_WORK_STATUS.md`。继续 UI 重构前先读该文件，避免把预览 APK 或半成品误认为已完成状态。
+> 当前 main 的功能回查、遗留分支结论和逐项路径见 `docs/FEATURE_AUDIT_AND_PATHS.md`。继续开发前先读该文件，避免把旧分支、旧 APK 或已经重放的提交误认为待合并内容。
 
 ## Build and release
 - `gradle/libs.versions.toml`: `app-version`, `app-code`
