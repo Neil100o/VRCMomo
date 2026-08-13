@@ -6,6 +6,28 @@ This log records user-visible VRCMomo changes. It covers VRCMomo additions, main
 
 このログは VRCMomo の利用者向け変更を記録します。VRCMomo 自身の追加・保守・修正のみを記載し、上流 VRCM の既存機能を VRCMomo の新機能としては扱いません。
 
+## 0.3.22 - 2026-08-13
+
+### 简体中文
+
+- Android 包名改为独立的 `io.github.neil100o.vrcmomo`，不再与上游 VRCM 的安装身份冲突，可以共存。
+- 继续沿用 VRCMomo 固定发行签名；版本升为 `0.3.22`，Android `versionCode = 34`。
+- 新包名属于独立应用：从 VRCM、0.3.21 或更早 VRCMomo 迁移本地活动记录时，请先使用 LAN Bridge 建立归档，再在新版本拉取。
+- 保留 0.3.21 的 Boop 表情元数据修复。
+
+### English
+
+- Moved to the standalone Android package `io.github.neil100o.vrcmomo`, so VRCMomo no longer conflicts with upstream VRCM and both can coexist.
+- Keeps the permanent VRCMomo signing key; version is now `0.3.22` with Android `versionCode = 34`.
+- The new package is a separate app. To move local activity from VRCM, 0.3.21 or earlier VRCMomo, create an archive through LAN Bridge first and then pull it in the new app.
+- Retains the 0.3.21 Boop emoji metadata fix.
+
+### 日本語
+
+- 独立した Android パッケージ `io.github.neil100o.vrcmomo` に変更し、上流 VRCM と競合せず共存できるようにしました。
+- VRCMomo の固定署名を継続使用し、`0.3.22`、Android `versionCode = 34` に更新しました。
+- 新パッケージは別アプリです。VRCM、0.3.21 以前の VRCMomo からローカル活動記録を移す場合は、先に LAN Bridge でアーカイブを作成してから新アプリで取得してください。
+- 0.3.21 の Boop 絵文字メタデータ修正を維持します。
 ## 0.3.21 - 2026-08-13
 
 ### 简体中文

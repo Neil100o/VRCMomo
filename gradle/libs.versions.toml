@@ -1,7 +1,8 @@
 [versions]
-app-code = "33"
-app-version = "0.3.21"
-app-packageName = "io.github.vrcmteam.vrcm"
+app-code = "34"
+app-version = "0.3.22"
+# VRCMomo must not share VRCM's Android identity: it needs to coexist with the upstream app.
+app-packageName = "io.github.neil100o.vrcmomo"
 agp = "8.6.1"
 kotlin = "2.2.20"
 kotlinx-coroutines = "1.10.1"

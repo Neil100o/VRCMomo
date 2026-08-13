@@ -6,7 +6,7 @@ Most early testers received VRCMomo 0.3.16 from the old automatic update track. 
 - version code: `28`
 - signing SHA-256: `126750fd1f22da40825faf829c2ab691ee2176d82b98f26d73ad6129720b60d3`
 
-The permanent release package is `io.github.vrcmteam.vrcm` and cannot read the old package's
+The permanent release package is `io.github.neil100o.vrcmomo` and cannot read the old package's
 private JSON. Migration must therefore happen before the old app is removed.
 
 ## Safe rollout
@@ -30,7 +30,7 @@ Run from the repository root:
 ```
 
 This option deliberately uses the original Android debug keystore instead of the permanent
-VRCMomo release key. Never use it for the final `io.github.vrcmteam.vrcm` release package.
+VRCMomo release key. Never use it for the final `io.github.neil100o.vrcmomo` release package.
 
 Before publishing, verify all four values: package name, version code, version name, and signer.
 `downloads/testing-channel.json` now points to this migration APK. Before moving an account to the

@@ -2,18 +2,18 @@
 
 最后更新：2026-08-13
 适用仓库：`F:\vrcmoskavis\VRCMomoLanSync`
-当前正式发行：`0.3.21`，Android `versionCode = 33`
+当前正式发行：`0.3.22`，Android `versionCode = 34`
 
 ## 1. 选择正确的安装包
 
 | 你的现状 | 应使用的文件 | 是否可直接覆盖安装 |
 | --- | --- | --- |
-| 从未安装过 VRCMomo | Release 的 `VRCMomo-v0.3.21.apk` | 可以。 |
-| 已安装固定签名的 VRCMomo 0.3.20 | Release 的 `VRCMomo-v0.3.21.apk` | 可以。 |
+| 从未安装过 VRCMomo | Release 的 `VRCMomo-v0.3.22.apk` | 可以。 |
+| 已安装 VRCM 或 0.3.21 及更早的 VRCMomo 正式包 | Release 的 `VRCMomo-v0.3.22.apk` | 可以共存，但旧记录必须先通过桥接器迁移。 |
 | 已安装旧自动更新轨 0.3.16 | `downloads/VRCMomo-v0.3.20-legacy-migration.apk` | 可以，先做记录迁移。 |
-| 已安装旧 0.3.16，且想装正式版 0.3.21 | 不能直接覆盖 | 必须先用桥接器导出旧应用记录；见第 2 节。 |
+| 已安装旧 0.3.16，且想装正式版 0.3.22 | 不能直接覆盖 | 必须先用桥接器导出旧应用记录；见第 2 节。 |
 
-旧 0.3.16 使用 `io.github.vrcmteam.vrcm.debug` 和旧调试签名；正式发行版使用 `io.github.vrcmteam.vrcm` 与固定发行签名。Android 会把它们视为不同安装来源，正式版无法读取旧应用私有目录。
+旧 0.3.16 使用 `io.github.vrcmteam.vrcm.debug` 和旧调试签名；正式发行版使用 `io.github.neil100o.vrcmomo` 与固定发行签名。Android 会把它们视为不同安装来源，正式版无法读取旧应用私有目录。0.3.22 还使用独立包名 `io.github.neil100o.vrcmomo`，可与上游 VRCM 共存；从 0.3.21 或更早 VRCMomo 正式包迁移同样需要通过桥接器导出后再导入。
 
 ## 2. 从旧测试轨迁移活动记录
 
@@ -29,7 +29,7 @@
 2. 在电脑启动 `VRCMomo-LAN-Bridge.exe`。桥接器会显示二维码、地址和令牌。
 3. 在旧应用打开：设置 → 局域网同步；使用“寻找附近电脑”或“扫描配对二维码”。
 4. 连接后执行一次“发送手机记录到电脑”或完整同步。桥接器会在其工作目录的 `vrcmomo-lan-inbox/archive-rebuilt.json` 重建归档。
-5. 确认旧应用的活动日志和桥接器归档均正常后，安装 Release 的 `VRCMomo-v0.3.21.apk`。
+5. 确认旧应用的活动日志和桥接器归档均正常后，安装 Release 的 `VRCMomo-v0.3.22.apk`。
 6. 在正式版重复配对并选择“从电脑同步”，导入同一归档。
 7. 核对活动日志、最后活动、见面次数和共同游玩时长；确认无误后才删除旧应用。
 
@@ -79,12 +79,12 @@
 
 | Current state | File to use | Can install over the existing app? |
 | --- | --- | --- |
-| No VRCMomo is installed | `VRCMomo-v0.3.21.apk` from the current Release | Yes. |
-| Permanent-signature VRCMomo 0.3.20 is installed | `VRCMomo-v0.3.21.apk` from the current Release | Yes. |
+| No VRCMomo is installed | `VRCMomo-v0.3.22.apk` from the current Release | Yes. |
+| VRCM or VRCMomo 0.3.21 or earlier is installed | `VRCMomo-v0.3.22.apk` from the current Release | It can coexist, but migrate old records through the bridge first. |
 | The old 0.3.16 automatic-update app is installed | `downloads/VRCMomo-v0.3.20-legacy-migration.apk` | Yes; migrate history first. |
-| The old 0.3.16 app is installed and you want 0.3.21 | Do not install the release over it first | Back up activity history through the bridge first. |
+| The old 0.3.16 app is installed and you want 0.3.22 | Do not install the release over it first | Back up activity history through the bridge first. |
 
-The old 0.3.16 app uses package `io.github.vrcmteam.vrcm.debug` and its old debug certificate. The permanent release uses `io.github.vrcmteam.vrcm` and a permanent release certificate, so Android does not permit a direct replacement and the new app cannot read the old private app storage.
+The old 0.3.16 app uses package `io.github.vrcmteam.vrcm.debug` and its old debug certificate. The permanent release uses `io.github.neil100o.vrcmomo` and a permanent release certificate, so Android does not permit a direct replacement and the new app cannot read the old private app storage. Version 0.3.22 also uses the standalone package `io.github.neil100o.vrcmomo`, allowing it to coexist with upstream VRCM; move records from 0.3.21 or earlier VRCMomo permanent packages through the bridge as well.
 
 ### Migration from the old testing track
 
@@ -94,7 +94,7 @@ The old 0.3.16 app uses package `io.github.vrcmteam.vrcm.debug` and its old debu
 4. Install `VRCMomo-v0.3.20-legacy-migration.apk` over the old 0.3.16 app.
 5. Start the bridge. In the old app, open Settings → LAN Sync, then use nearby-computer discovery or scan the bridge QR code.
 6. Send phone records to the PC or run a complete sync. The bridge rebuilds `vrcmomo-lan-inbox/archive-rebuilt.json` in its working directory.
-7. Confirm the archive exists, install `VRCMomo-v0.3.21.apk`, pair it with the same bridge and pull the archive.
+7. Confirm the archive exists, install `VRCMomo-v0.3.22.apk`, pair it with the same bridge and pull the archive.
 8. Verify the activity log, last activity, meeting count and shared-play duration before deleting the old app.
 
 Do not delete the old app before step 6. Events are deduplicated by stable fingerprints and cumulative totals are merged by maximum baseline, so repeated syncs are safe.
@@ -111,12 +111,12 @@ If pairing fails: keep the bridge window open, verify both devices are on the sa
 
 | 現在の状態 | 使用するファイル | 既存アプリへ上書き可能か |
 | --- | --- | --- |
-| VRCMomo を未インストール | 現在の Release の `VRCMomo-v0.3.21.apk` | 可能です。 |
-| 固定署名の VRCMomo 0.3.20 を使用中 | 現在の Release の `VRCMomo-v0.3.21.apk` | 可能です。 |
+| VRCMomo を未インストール | 現在の Release の `VRCMomo-v0.3.22.apk` | 可能です。 |
+| VRCM または 0.3.21 以前の VRCMomo 正式版を使用中 | 現在の Release の `VRCMomo-v0.3.22.apk` | 共存可能ですが、先にブリッジで旧記録を移行してください。 |
 | 旧 0.3.16 自動更新版を使用中 | `downloads/VRCMomo-v0.3.20-legacy-migration.apk` | 可能です。先に履歴を移行します。 |
-| 旧 0.3.16 から 0.3.21 に移りたい | 先に正式版を上書きしない | ブリッジで活動履歴を退避します。 |
+| 旧 0.3.16 から 0.3.22 に移りたい | 先に正式版を上書きしない | ブリッジで活動履歴を退避します。 |
 
-旧 0.3.16 は `io.github.vrcmteam.vrcm.debug` と旧デバッグ署名を使用し、正式版は `io.github.vrcmteam.vrcm` と固定署名を使用します。Android は直接の置換を許可せず、正式版は旧アプリの私有保存領域を読めません。
+旧 0.3.16 は `io.github.vrcmteam.vrcm.debug` と旧デバッグ署名を使用し、正式版は `io.github.neil100o.vrcmomo` と固定署名を使用します。Android は直接の置換を許可せず、正式版は旧アプリの私有保存領域を読めません。0.3.22 は独立したパッケージ `io.github.neil100o.vrcmomo` を使用するため上流 VRCM と共存できます。0.3.21 以前の VRCMomo 正式版からも、ブリッジを経由して記録を移行してください。
 
 ### 旧テストトラックからの移行
 
@@ -126,7 +126,7 @@ If pairing fails: keep the bridge window open, verify both devices are on the sa
 4. 旧 0.3.16 に `VRCMomo-v0.3.20-legacy-migration.apk` を上書きします。
 5. ブリッジを起動し、旧アプリの設定 → LAN 同期から近くの PC を探すか、ブリッジの QR コードを読み取ります。
 6. スマートフォン記録を PC へ送信するか、完全同期を実行します。ブリッジは作業フォルダに `vrcmomo-lan-inbox/archive-rebuilt.json` を作成します。
-7. アーカイブを確認してから `VRCMomo-v0.3.21.apk` をインストールし、同じブリッジに接続してアーカイブを取得します。
+7. アーカイブを確認してから `VRCMomo-v0.3.22.apk` をインストールし、同じブリッジに接続してアーカイブを取得します。
 8. 活動ログ、最終活動、遭遇回数、共同プレイ時間を確認してから旧アプリを削除します。
 
 手順 6 より前に旧アプリを削除しないでください。イベントは安定した識別子で重複除去され、累計値は最大基線でマージされるため、繰り返し同期しても安全です。

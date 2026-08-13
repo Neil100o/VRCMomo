@@ -12,15 +12,18 @@
 
 VRCMomo 是基于 [VRCM](https://github.com/vrcm-team/VRCM) 继续维护的 Android 优先 VRChat Companion。它把好友、群组、世界、Gallery 等原有移动端能力，与本地好友活动记录、通知、Boop、VRCX 活动迁移和局域网归档整合在一起。
 
+
+VRCMomo 的 Android 包名为 `io.github.neil100o.vrcmomo`，已与上游 VRCM 完全分开；两者可以在同一台设备上同时安装。
+
 VRCMomo 与 VRChat Inc. 没有关联。它不会上传 VRChat Cookie、密码、令牌、备注或管理数据；局域网桥接器仅在你的电脑和手机之间工作。
 
 ## 下载与更新
 
-当前发行版：**0.3.21**
+当前发行版：**0.3.22**
 
 | 需要什么 | 从哪里下载 | 用途 |
 | --- | --- | --- |
-| Android 安装包 | [Releases](https://github.com/Neil100o/VRCMomo/releases/latest) 的 `VRCMomo-v0.3.21.apk` | 固定签名正式发行版；后续在应用内检查 GitHub Releases 更新。 |
+| Android 安装包 | [Releases](https://github.com/Neil100o/VRCMomo/releases/latest) 的 `VRCMomo-v0.3.22.apk` | 固定签名正式发行版；后续在应用内检查 GitHub Releases 更新。 |
 | Windows 局域网桥接器 | 同一 Release 的 `VRCMomo-LAN-Bridge.exe` | 在装有 VRCX 的电脑上运行，用于导出/汇总活动记录并与手机同步。 |
 | Windows 防火墙辅助脚本 | 同一 Release 的 `Allow-VRCMomoLanBridgeFirewall.bat` | 桥接器能运行但手机找不到或连不上时使用；只放行局域网端口。 |
 | 旧测试轨迁移包 | [downloads/VRCMomo-v0.3.20-legacy-migration.apk](downloads/VRCMomo-v0.3.20-legacy-migration.apk) | **仅**供旧 0.3.16 自动更新轨覆盖安装、导出旧记录使用。 |
@@ -33,7 +36,7 @@ VRCMomo 与 VRChat Inc. 没有关联。它不会上传 VRChat Cookie、密码、
 
 1. 旧应用先更新到 `VRCMomo-v0.3.20-legacy-migration.apk`。
 2. 在电脑运行 `VRCMomo-LAN-Bridge.exe`，在旧应用的设置中完成一次局域网同步。
-3. 在桥接器中确认活动归档已经建立后，安装 0.3.21 正式版。
+3. 在桥接器中确认活动归档已经建立后，安装 0.3.22 正式版。
 4. 在正式版再次连接同一桥接器并拉取归档；核对活动日志和关系统计后，再自行决定是否删除旧应用。
 
 迁移前不要卸载旧应用。桥接归档采用事件去重和最大基线合并，重复同步不会重复累计共同游玩时长或次数。
@@ -53,7 +56,7 @@ VRCMomo 与 VRChat Inc. 没有关联。它不会上传 VRChat Cookie、密码、
 
 - 系统通知总开关、收藏夹/单好友的上下线提醒选择，以及好友请求、好友增删、群组事件和 Boop 通知。
 - Android 前台监测服务、通知权限与耗电设置入口；网页在线不会作为“游戏上线”通知。
-- Boop 表情选择、应用内接收卡片和系统通知。0.3.21 修复了旧通知接口的表情数据在合并时丢失的问题。
+- Boop 表情选择、应用内接收卡片和系统通知。0.3.22 修复了旧通知接口的表情数据在合并时丢失的问题。
 
 ### 手机与电脑记录汇总
 

@@ -12,15 +12,18 @@
 
 VRCMomo is an Android-first VRChat companion continued from [VRCM](https://github.com/vrcm-team/VRCM). It combines the existing mobile experience for friends, groups, worlds and Gallery with local friend activity history, notifications, Boop support, VRCX activity migration and LAN archiving.
 
+
+VRCMomo Android identity: `io.github.neil100o.vrcmomo`. It is intentionally separate from upstream VRCM, so both apps can be installed on the same device.
+
 VRCMomo is not affiliated with VRChat Inc. It does not upload VRChat cookies, passwords, tokens, notes or moderation data. The LAN bridge works only between your own computer and phone.
 
 ## Downloads and updates
 
-Current release: **0.3.21**
+Current release: **0.3.22**
 
 | Need | Download | Purpose |
 | --- | --- | --- |
-| Android APK | `VRCMomo-v0.3.21.apk` in [Releases](https://github.com/Neil100o/VRCMomo/releases/latest) | Permanent-signature release. Future updates are checked through GitHub Releases. |
+| Android APK | `VRCMomo-v0.3.22.apk` in [Releases](https://github.com/Neil100o/VRCMomo/releases/latest) | Permanent-signature release. Future updates are checked through GitHub Releases. |
 | Windows LAN bridge | `VRCMomo-LAN-Bridge.exe` in the same Release | Run beside VRCX to export, archive and synchronize activity history with a phone. |
 | Firewall helper | `Allow-VRCMomoLanBridgeFirewall.bat` in the same Release | Use when the bridge starts but the phone cannot find or reach it; opens LAN-only ports. |
 | Legacy migration APK | [VRCMomo-v0.3.20-legacy-migration.apk](downloads/VRCMomo-v0.3.20-legacy-migration.apk) | Only for the old 0.3.16 automatic-update track. |
@@ -33,7 +36,7 @@ The old testing app and the permanent release use different Android signing cert
 
 1. Update the old app in place with `VRCMomo-v0.3.20-legacy-migration.apk`.
 2. Run `VRCMomo-LAN-Bridge.exe` on a PC and complete one LAN sync from the old app.
-3. Verify that the bridge archive exists, then install the 0.3.21 release.
+3. Verify that the bridge archive exists, then install the 0.3.22 release.
 4. Pair the release app with the same bridge and pull the archive. Check the activity log and relationship totals before removing the old app.
 
 Do not uninstall the old app before step 2. The bridge deduplicates events and merges cumulative totals by maximum baseline, so repeated syncs do not inflate play time or meeting count.
@@ -53,7 +56,7 @@ This list intentionally covers additions, maintenance and improvements made in V
 
 - System notification master switch; favorite-group/per-friend presence selection; friend request, friend add/remove, group event and Boop notifications.
 - Android foreground monitoring service plus notification-permission and battery-setting entry points. Web presence is not treated as game online.
-- Boop selector, in-app receive card and system notification. Version 0.3.21 fixes loss of emoji metadata from the legacy notification feed.
+- Boop selector, in-app receive card and system notification. Version 0.3.22 fixes loss of emoji metadata from the legacy notification feed.
 
 ### Phone and PC activity aggregation
 

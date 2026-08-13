@@ -21,7 +21,7 @@ Other local caches remain account-scoped. New durable records should follow this
 ## Legacy 0.3.16 testing track
 
 The old automatic-testing build uses package `io.github.vrcmteam.vrcm.debug`. Android keeps its
-private JSON separate from the permanent package `io.github.vrcmteam.vrcm`, so installing the
+private JSON separate from the permanent package `io.github.neil100o.vrcmomo`, so installing the
 permanent package cannot read that data directly.
 
 Use the staged migration documented in `LEGACY_TESTING_TRACK_MIGRATION.md`. A VRCMomo sync import
