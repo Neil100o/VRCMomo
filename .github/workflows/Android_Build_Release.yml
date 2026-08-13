@@ -80,7 +80,9 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         with:
-          tag_name: v${{ env.APP_VERSION }}-build-${{ github.run_number }}
+          # The in-app comparator expects a normal semantic version. Do not append a build
+          # number here: `v0.3.21-build-7` would no longer compare as newer than `0.3.20`.
+          tag_name: v${{ env.APP_VERSION }}
           release_name: "VRCMomo v${{ env.APP_VERSION }}"
           draft: false
           prerelease: false
