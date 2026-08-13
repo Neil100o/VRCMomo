@@ -2,11 +2,26 @@ package io.github.vrcmteam.vrcm.service
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.request.header
 import io.ktor.http.*
+
+private const val LAN_SYNC_CONNECT_TIMEOUT_MILLIS = 10_000L
+// The desktop bridge may need to read and export a large VRCX SQLite history
+// before it can begin returning /v1/vrcx-activity. Keep this local-only
+// transfer independent from the short timeout used by ordinary VRChat calls.
+private const val LAN_SYNC_TRANSFER_TIMEOUT_MILLIS = 150_000L
+
+private fun io.ktor.client.request.HttpRequestBuilder.lanSyncTimeout() {
+    timeout {
+        connectTimeoutMillis = LAN_SYNC_CONNECT_TIMEOUT_MILLIS
+        requestTimeoutMillis = LAN_SYNC_TRANSFER_TIMEOUT_MILLIS
+        socketTimeoutMillis = LAN_SYNC_TRANSFER_TIMEOUT_MILLIS
+    }
+}
 
 /** Pairing details for the optional PC-hosted, LAN-only VRCX activity bridge. */
 internal data class LanBridgePairing(
@@ -36,6 +51,7 @@ internal class LanActivityBridgeClient(
 ) {
     suspend fun uploadVrcmomoActivity(pairing: LanBridgePairing, payload: String) {
         val response = client.post("${pairing.baseUrl}/v1/vrcmomo-activity") {
+            lanSyncTimeout()
             header("X-VRCMomo-Bridge-Token", pairing.token)
             header(HttpHeaders.ContentType, ContentType.Application.Json.toString())
             setBody(payload)
@@ -47,6 +63,7 @@ internal class LanActivityBridgeClient(
     /** Reads the bridge-held VRCMomo event archive. It contains no VRChat credentials. */
     suspend fun fetchVrcmomoActivityArchive(pairing: LanBridgePairing): String {
         val response = client.get("${pairing.baseUrl}/v1/vrcmomo-activity") {
+            lanSyncTimeout()
             header("X-VRCMomo-Bridge-Token", pairing.token)
         }
         val text = response.body<String>()
@@ -55,6 +72,7 @@ internal class LanActivityBridgeClient(
     }
     suspend fun fetchVrcxActivity(pairing: LanBridgePairing): String {
         val response = client.get("${pairing.baseUrl}/v1/vrcx-activity") {
+            lanSyncTimeout()
             header("X-VRCMomo-Bridge-Token", pairing.token)
         }
         val text = response.body<String>()
