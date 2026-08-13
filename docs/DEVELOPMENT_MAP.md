@@ -7,6 +7,9 @@
 - `composeApp/src/androidMain/AndroidManifest.xml`: Android identity/icon entry
 - `composeApp/build.gradle.kts`: APK output name and release packaging
 - Debug output: `composeApp/build/outputs/apk/debug/VRCMomo-v<version>.apk`
+- User installation, fixed-signature release and old-test-track migration: `docs/INSTALL_AND_MIGRATION.md`
+- User-visible release history: `CHANGELOG.md`; individual release notes: `docs/RELEASE_NOTES_<version>.md`
+- GitHub Release workflow: `.github/workflows/Android_Build_Release.yml` (requires `contents: write` to create a Release and upload assets)
 
 ## Avatar editing
 - API: `composeApp/src/commonMain/kotlin/network/api/avatars/AvatarsApi.kt`

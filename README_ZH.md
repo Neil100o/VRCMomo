@@ -1,161 +1,100 @@
 <div align="center">
 
-# <img src="image/VRCMomoLogo.png" width="50" height="50"  alt="logo"/> VRCMomo
+# <img src="image/VRCMomoLogo.png" width="50" height="50" alt="VRCMomo logo" /> VRCMomo
 
-<!-- Language Selection -->
-**Languages / 语言 / 言語:**
-[English](README.md) • [中文](README_ZH.md) • [日本語](README_JP.md)
+[English](README.md) | [中文](README_ZH.md) | [日本語](README_JP.md)
 
-
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub release](https://img.shields.io/github/release/Neil100o/VRCMomo.svg)](https://github.com/Neil100o/VRCMomo/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/Neil100o/VRCMomo/total?color=6451f1)](https://github.com/Neil100o/VRCMomo/releases/latest)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.2-blue.svg?logo=kotlin)](https://kotlinlang.org)
-[![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.10.3-blue)](https://www.jetbrains.com/lp/compose-multiplatform/)
-
-## VRCMomo：面向日常社交的 VRChat 移动 Companion
-
-一个基于 VRCM 延续开发的移动端 VRChat Companion，帮助你在手机上管理好友、相册、通知与最近共同游玩记录。
-
-> **当前旧签名迁移包：0.3.20**。请先从 0.3.16 覆盖更新，再通过局域网桥接器同步一次以保存活动记录；之后再迁移到后续固定签名版本。欢迎通过 [Issues](https://github.com/Neil100o/VRCMomo/issues) 反馈问题、设备信息和复现步骤。
-
-## 测试版下载
-
-- **Android 迁移安装包：**[VRCMomo-v0.3.20-legacy-migration.apk](downloads/VRCMomo-v0.3.20-legacy-migration.apk) —— 先覆盖旧版 0.3.16，通过局域网桥接器同步并保留归档，再迁移到后续固定签名版本。
-- **局域网桥接器（Windows）：**[VRCMomo-LAN-Bridge.exe](downloads/VRCMomo-LAN-Bridge.exe) —— 在装有 VRCX 的电脑上直接运行，再由同一局域网中的 VRCMomo 配对同步；已内置 Python 与二维码支持。
-- 隐私边界和测试注意事项见 [downloads/README.md](downloads/README.md)。以上均为测试文件，不是稳定发行版。
-- 固定签名版本会检查 GitHub Releases 获取后续更新；测试通道仅保留给旧版 0.3.16 接收迁移包。
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Neil100o/VRCMomo)](https://github.com/Neil100o/VRCMomo/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Neil100o/VRCMomo/total)](https://github.com/Neil100o/VRCMomo/releases/latest)
 
 </div>
 
-<div align="center">
+VRCMomo 是基于 [VRCM](https://github.com/vrcm-team/VRCM) 继续维护的 Android 优先 VRChat Companion。它把好友、群组、世界、Gallery 等原有移动端能力，与本地好友活动记录、通知、Boop、VRCX 活动迁移和局域网归档整合在一起。
 
-## VRCMomo 差异功能概览
+VRCMomo 与 VRChat Inc. 没有关联。它不会上传 VRChat Cookie、密码、令牌、备注或管理数据；局域网桥接器仅在你的电脑和手机之间工作。
 
-</div>
+## 下载与更新
 
-### 好友活动与关系记录
-- **本地持久化活动档案** - 保存实际观察到的上下线、最后活动、最后见面、见面次数与共同游玩时长；更新应用不会清空既有记录。
-- **可筛选活动时间线** - 记录上下线、位置、社交状态、共同游玩与资料变化；支持分类/多选筛选、按天自动清理或永久保存。
-- **精确变化展示** - BIO 与状态变化以类似 diff 的方式显示：绿色为新增、红色为删除；新产生的位置和状态事件会保留前后值。
-- **最近共同游玩入口** - 首页“用户”页签在搜索框留空时，显示近 24 小时内共同游玩的玩家（最多 20 人，需先积累活动数据）。
+当前发行版：**0.3.21**
 
-### Android 通知与后台监测
-- **可选系统通知** - 可单独关闭系统通知；支持 Boop、收藏好友进入/离开游戏等本地通知。
-- **后台监测提示** - 提供前台服务与电池优化白名单的可选开关和说明，尽量提升后台活动记录与通知的存活率。
-- **应用内活动日志** - 在客户端查看好友活动，并可只清除日志而保留关系统计摘要。
+| 需要什么 | 从哪里下载 | 用途 |
+| --- | --- | --- |
+| Android 安装包 | [Releases](https://github.com/Neil100o/VRCMomo/releases/latest) 的 `VRCMomo-v0.3.21.apk` | 固定签名正式发行版；后续在应用内检查 GitHub Releases 更新。 |
+| Windows 局域网桥接器 | 同一 Release 的 `VRCMomo-LAN-Bridge.exe` | 在装有 VRCX 的电脑上运行，用于导出/汇总活动记录并与手机同步。 |
+| Windows 防火墙辅助脚本 | 同一 Release 的 `Allow-VRCMomoLanBridgeFirewall.bat` | 桥接器能运行但手机找不到或连不上时使用；只放行局域网端口。 |
+| 旧测试轨迁移包 | [downloads/VRCMomo-v0.3.20-legacy-migration.apk](downloads/VRCMomo-v0.3.20-legacy-migration.apk) | **仅**供旧 0.3.16 自动更新轨覆盖安装、导出旧记录使用。 |
 
-### Boop 体验补全
-- **表情 Boop 选择** - 支持 VRChat 默认 Boop 表情常量，而不是只发送空白默认戳。
-- **接收体验** - 收到 Boop 后可显示应用内反应卡片，并支持 Android 系统通知；从通知打开应用后也会尝试恢复未读 Boop。
+完整更新内容见 [功能日志](CHANGELOG.md)。安装、签名差异和旧记录迁移步骤见 [安装与迁移说明](docs/INSTALL_AND_MIGRATION.md)。
 
-### 自制模型与资料管理增强
-- **我的模型分类** - 将当前账户上传的模型单独归类。
-- **模型编辑** - 可编辑自己上传模型的名称、介绍与封面信息。
+## 从旧 0.3.16 测试版迁移
 
-### VRCX 活动数据导入
-- **桌面导出 + 手机导入** - 提供只读导出工具与 Android 导入合并流程，用于迁移自己的 VRCX 好友活动历史。
-- **不迁移敏感登录信息** - 该流程只处理活动记录，不导出 Cookie、密码或账号凭据。
+旧测试版与正式版的 Android 签名不同，因此不能直接覆盖安装；请按顺序操作：
 
-### 移动端主题与稳定性维护
-- **VRCMomo 品牌与版本体系** - 独立名称、图标、0.x 测试版版本号与 APK 文件名。
-- **主题与信息层级调整** - 提供明暗模式和多套配色，并持续针对移动端调整导航、好友信息呈现与稳定性。
+1. 旧应用先更新到 `VRCMomo-v0.3.20-legacy-migration.apk`。
+2. 在电脑运行 `VRCMomo-LAN-Bridge.exe`，在旧应用的设置中完成一次局域网同步。
+3. 在桥接器中确认活动归档已经建立后，安装 0.3.21 正式版。
+4. 在正式版再次连接同一桥接器并拉取归档；核对活动日志和关系统计后，再自行决定是否删除旧应用。
 
-> **归属说明：**本页只列出 VRCMomo 相对上游 VRCM 的新增、改进或维护内容。账户、好友/世界浏览、收藏、基础群组、基础通知、VRChat+ Gallery、关系网和共同好友等基础能力主要来自上游 VRCM，并不在此重复列为 VRCMomo 功能。
+迁移前不要卸载旧应用。桥接归档采用事件去重和最大基线合并，重复同步不会重复累计共同游玩时长或次数。
 
-<div align="center">
+## VRCMomo 相对 VRCM 的改进
 
-## 平台支持
+这里只列出 VRCMomo 的新增、维护和改进；好友/世界浏览、收藏、基础群组、关系网、共同好友、VRChat+ Gallery 等基础能力主要来自上游 VRCM。
 
-</div>
+### 好友活动与记录
 
-- **Android** - 当前主要测试与维护平台
+- 本地、账号范围的好友活动档案：上下线、位置、社交状态、资料变动、共同游玩、最后活动和关系统计。
+- 活动日志支持分类筛选、保留期清理与单人资料页查看；简介与状态可以显示最近一次的差异内容。
+- 空搜索的“用户”页签会优先显示最近 24 小时共同游玩的玩家。
+- 跨应用重启、跨设备同步时，活动事件按稳定指纹去重；累计统计使用最大基线合并，不会相加膨胀。
 
-<div align="center">
+### Android 通知与 Boop
 
-## 开发路线图
+- 系统通知总开关、收藏夹/单好友的上下线提醒选择，以及好友请求、好友增删、群组事件和 Boop 通知。
+- Android 前台监测服务、通知权限与耗电设置入口；网页在线不会作为“游戏上线”通知。
+- Boop 表情选择、应用内接收卡片和系统通知。0.3.21 修复了旧通知接口的表情数据在合并时丢失的问题。
 
-</div>
+### 手机与电脑记录汇总
 
-### 当前重点
-- **移动端稳定性** - 优先修复 Android 实机问题、后台监测与通知可靠性
-- **群友测试** - 根据实际使用反馈完善已有的好友、群组、相册与资料管理功能
+- VRCX SQLite 只读导出：活动、位置、状态、BIO、头像、好友关系和已结束共同游玩记录。
+- Windows LAN Bridge：二维码/局域网发现、手机上传与下载、电脑端归档重建。
+- 桥接器不会写入 VRCX 原始数据库，也不会导出登录凭据。
 
-<div align="center">
+### 移动端体验与资料管理
 
-## 技术架构
+- VRCMomo 独立名称、图标、版本和固定签名发行通道。
+- 明暗模式、多套配色、手机与宽屏自适应的世界、模型、好友卡片布局。
+- 自己上传模型的独立分类与名称、介绍、封面编辑；自己资料页支持简介和社交链接编辑。
 
-</div>
+## 文档入口
 
-### 核心技术栈
-- **[Kotlin Multiplatform](https://kotlinlang.org/multiplatform/)** - 跨平台开发框架
-- **[Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/)** - 现代化UI框架
-- **[Ktor](https://ktor.io/)** - 网络请求和API通信
-- **[kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization)** - JSON数据序列化
+| 文档 | 内容 |
+| --- | --- |
+| [CHANGELOG.md](CHANGELOG.md) | 各发行版的功能日志与修复记录。 |
+| [docs/INSTALL_AND_MIGRATION.md](docs/INSTALL_AND_MIGRATION.md) | 正式版安装、旧签名迁移、桥接器使用和排错。 |
+| [docs/FEATURE_AUDIT_AND_PATHS.md](docs/FEATURE_AUDIT_AND_PATHS.md) | 当前 main 的功能回查、遗留分支结论、精确源码路径。 |
+| [docs/LAN_SYNC_DESIGN.md](docs/LAN_SYNC_DESIGN.md) | 手机、桥接器、VRCX 导出之间的数据边界与合并规则。 |
+| [docs/STORAGE_COMPATIBILITY.md](docs/STORAGE_COMPATIBILITY.md) | 存档兼容与迁移约束。 |
+| [docs/CODE_STANDARDS.md](docs/CODE_STANDARDS.md) | Kotlin/KMP/Compose 修改与验证要求。 |
 
-### 架构组件
-- **[Koin](https://github.com/InsertKoinIO/koin)** - 依赖注入框架
-- **[Voyager](https://github.com/adrielcafe/voyager)** - 导航和状态管理
-- **[Multiplatform-Settings](https://github.com/russhwolf/multiplatform-settings)** - 跨平台配置存储
-- **[Coil](https://github.com/coil-kt/coil)** - 高性能图片加载
+## 项目来源与贡献归属
 
-### 开发环境
-- **Kotlin API**: 2.1
-- **Android SDK Target**: 35
-- **Java SDK**: 21
-- **Compose**: 1.8.2
+VRCMomo 是 [VRCM](https://github.com/vrcm-team/VRCM) 的 fork 和独立延续项目。Kotlin Multiplatform / Compose 工程、认证、VRChat API 网络层、好友与世界基础功能、收藏、群组、基础通知、Gallery、关系网等主要来自 VRCM Team 及上游贡献者。
 
-<div align="center">
+VRCMomo 在此基础上维护自己的品牌、移动端 UI、活动记录、通知与后台支持、Boop、VRCX/LAN 迁移、资料编辑、发行签名和稳定性修复。请勿将上游能力描述为 VRCMomo 从零实现。
 
-## 项目来源与致谢
+## 开发
 
-</div>
+开发入口和精确路径见 [AGENTS.md](AGENTS.md)。Android 验证通常从仓库根目录执行：
 
-VRCMomo 是基于 [VRCM](https://github.com/vrcm-team/VRCM) 开发的 fork 和独立延续项目。VRCM 最初由 VRCM Team 及其贡献者开发。
+```powershell
+.\gradlew.bat :composeApp:testDebugUnitTest
+.\gradlew.bat :composeApp:assembleRelease
+```
 
-关于后续参考 VRCX 与 VRCX-jirai 的功能审查、来源归属和隐私边界，请参阅 [VRCX-jirai 功能审查与移植计划](docs/VRCX_JIRAI_FEATURE_REVIEW.md)。其中会区分 VRCM 上游、VRCX 原版、VRCX-jirai 特有思路与 VRCMomo 自行实现，并把敏感的自动化追踪功能留在实验分支之外。
-
-
-下列基础工作主要来源于上游 VRCM：Kotlin Multiplatform 与 Compose Multiplatform 基础工程、Android / iOS 项目结构、登录认证与账户管理、VRChat API 和网络层、好友与世界管理、收藏、群组、通知、已有 UI 组件、VRChat+ Gallery、好友关系网与共同好友页面。
-
-VRCMomo 在此基础上加入并维护了新的品牌、主题与导航调整、Boop 与通知改进、Gallery 修复与展示调整、iOS 品牌适配、发行打包等更改。上游已有功能可能会在此继续适配和维护，但这些不应被视为 VRCMomo 从零开始实现的功能。
-
-感谢 VRCM Team 以及所有上游贡献者的原始工作。完整历史和贡献归属，请以[上游仓库](https://github.com/vrcm-team/VRCM)为准。
-
-<div align="center">
-
-## 免责声明
-
-</div>
-
-- VRCMomo 与 VRChat Inc 无关联，不代表 VRChat Inc 的观点或意见
-- VRCMomo 不会在您的设备之外存储或收集任何数据
-- 应用作者不对此应用造成的任何损害负责
-- VRCMomo 不修改或篡改游戏，不违反 [VRChat 服务条款](https://hello.vrchat.com/legal)
-- 请合理使用此应用，遵守相关法律法规和平台规定
-
-<div align="center">
+发行测试包必须使用固定签名 release 构建；详细规则见 [docs/RELEASE_SIGNING.md](docs/RELEASE_SIGNING.md)。
 
 ## 许可证
 
-</div>
-
-本项目基于 [MIT 许可证](LICENSE) 开源。
-
-<div align="center">
-
-## 贡献
-
-</div>
-
-欢迎贡献代码、报告问题或提出功能建议！请查看我们的贡献指南了解更多信息。
-
----
-
-<div align="center">
-
-**如果这个项目对您有帮助，请给我们一个 ⭐**
-
-[下载最新版本](https://github.com/Neil100o/VRCMomo/releases/latest) • [反馈问题](https://github.com/Neil100o/VRCMomo/issues) • [功能建议](https://github.com/Neil100o/VRCMomo/discussions)
-
-</div>
+本项目使用 [MIT License](LICENSE)。欢迎通过 [Issues](https://github.com/Neil100o/VRCMomo/issues) 提交可复现的问题、设备信息和日志。

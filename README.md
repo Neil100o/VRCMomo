@@ -1,159 +1,99 @@
 <div align="center">
 
-# <img src="image/VRCMomoLogo.png" width="50" height="50"  alt="logo"/> VRCMomo
+# <img src="image/VRCMomoLogo.png" width="50" height="50" alt="VRCMomo logo" /> VRCMomo
 
-<!-- Language Selection -->
-**Languages / 语言 / 言語:**
-[English](README.md) • [中文](README_ZH.md) • [日本語](README_JP.md)
+[English](README.md) | [中文](README_ZH.md) | [日本語](README_JP.md)
 
-
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub release](https://img.shields.io/github/release/Neil100o/VRCMomo.svg)](https://github.com/Neil100o/VRCMomo/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/Neil100o/VRCMomo/total?color=6451f1)](https://github.com/Neil100o/VRCMomo/releases/latest)
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.2-blue.svg?logo=kotlin)](https://kotlinlang.org)
-[![Compose Multiplatform](https://img.shields.io/badge/Compose%20Multiplatform-1.10.3-blue)](https://www.jetbrains.com/lp/compose-multiplatform/)
-
-## Mobile VRChat Companion
-
-A mobile-first VRChat companion, continued from VRCM, for managing friends, Gallery, notifications, and recent shared play.
-
-> **Current old-signature migration build: 0.3.20.** Update from 0.3.16, sync once with the LAN bridge to preserve activity history, then move to the future permanent-signature build. Please report reproducible issues with device, Android version, steps and logs through [Issues](https://github.com/Neil100o/VRCMomo/issues).
-
-## Test downloads
-
-- **Android migration APK:** [VRCMomo-v0.3.20-legacy-migration.apk](downloads/VRCMomo-v0.3.20-legacy-migration.apk) — update the old 0.3.16 testing app in place, sync through the LAN bridge, then retain the bridge archive for the permanent-signature migration.
-- **LAN bridge (Windows):** [VRCMomo-LAN-Bridge.exe](downloads/VRCMomo-LAN-Bridge.exe) — run it on the computer with VRCX, then pair it from VRCMomo on the same network. Python and QR support are included.
-- See [downloads/README.md](downloads/README.md) for privacy boundaries and testing notes. These are test files, not a stable release.
-- Fixed-signature builds check GitHub Releases for updates. The temporary testing channel is retained only so old 0.3.16 installs can receive the migration APK.
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Neil100o/VRCMomo)](https://github.com/Neil100o/VRCMomo/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/Neil100o/VRCMomo/total)](https://github.com/Neil100o/VRCMomo/releases/latest)
 
 </div>
 
-<div align="center">
+VRCMomo is an Android-first VRChat companion continued from [VRCM](https://github.com/vrcm-team/VRCM). It combines the existing mobile experience for friends, groups, worlds and Gallery with local friend activity history, notifications, Boop support, VRCX activity migration and LAN archiving.
 
-## VRCMomo changes over upstream VRCM
+VRCMomo is not affiliated with VRChat Inc. It does not upload VRChat cookies, passwords, tokens, notes or moderation data. The LAN bridge works only between your own computer and phone.
 
-</div>
+## Downloads and updates
 
-### Friend activity and relationship history
-- Durable, account-scoped activity records: observed online/offline state, last activity, last meeting, meeting count and shared-play duration survive app upgrades.
-- A filterable local timeline for presence, location, social status, shared play and profile changes; BIO/status changes show before/after values and line diffs.
-- The empty Users search tab shows up to 20 players met in the last 24 hours after local activity data has been collected.
+Current release: **0.3.21**
 
-### Android notifications and monitoring
-- Optional native notifications for Boops and favorited friends entering/leaving VRChat.
-- Optional foreground monitoring and battery-optimization guidance to improve background recording reliability.
-- In-app activity log retention/cleanup controls that preserve relationship totals.
+| Need | Download | Purpose |
+| --- | --- | --- |
+| Android APK | `VRCMomo-v0.3.21.apk` in [Releases](https://github.com/Neil100o/VRCMomo/releases/latest) | Permanent-signature release. Future updates are checked through GitHub Releases. |
+| Windows LAN bridge | `VRCMomo-LAN-Bridge.exe` in the same Release | Run beside VRCX to export, archive and synchronize activity history with a phone. |
+| Firewall helper | `Allow-VRCMomoLanBridgeFirewall.bat` in the same Release | Use when the bridge starts but the phone cannot find or reach it; opens LAN-only ports. |
+| Legacy migration APK | [VRCMomo-v0.3.20-legacy-migration.apk](downloads/VRCMomo-v0.3.20-legacy-migration.apk) | Only for the old 0.3.16 automatic-update track. |
 
-### Boop, avatar and data migration additions
-- Default-emoji Boop selection, received-Boop in-app reaction card, and notification recovery after opening the app.
-- Separate owned-avatar section with editing for a creator's avatar name, description and cover information.
-- Read-only VRCX activity exporter plus Android merge import for personal presence, location, status, BIO, avatar, friendship and completed shared-session history. Credentials and cookies are excluded.
+Read the [feature log](CHANGELOG.md) for release changes and [installation and migration guide](docs/INSTALL_AND_MIGRATION.md) for signing and migration steps.
 
-### Product identity and mobile UI maintenance
-- Independent VRCMomo name, icon, 0.x version line and APK naming.
-- Dark/light themes, multiple color schemes, and ongoing mobile navigation, presentation and stability maintenance.
+## Migrating from the old 0.3.16 testing track
 
-> **Attribution:** This section intentionally lists only VRCMomo additions or maintenance. Accounts, friend/world browsing, favorites, baseline groups/notifications, VRChat+ Gallery, relationship graph and mutual-friend features are primarily upstream VRCM work.
+The old testing app and the permanent release use different Android signing certificates, so they cannot replace one another directly.
 
-<div align="center">
+1. Update the old app in place with `VRCMomo-v0.3.20-legacy-migration.apk`.
+2. Run `VRCMomo-LAN-Bridge.exe` on a PC and complete one LAN sync from the old app.
+3. Verify that the bridge archive exists, then install the 0.3.21 release.
+4. Pair the release app with the same bridge and pull the archive. Check the activity log and relationship totals before removing the old app.
 
-## Platform Support
+Do not uninstall the old app before step 2. The bridge deduplicates events and merges cumulative totals by maximum baseline, so repeated syncs do not inflate play time or meeting count.
 
-</div>
+## VRCMomo additions over upstream VRCM
 
-- **Android** - Current primary testing and maintenance platform
+This list intentionally covers additions, maintenance and improvements made in VRCMomo. Core account, friend/world browsing, favorites, baseline groups, relationship graph, mutual friends and VRChat+ Gallery features are primarily upstream VRCM work.
 
-<div align="center">
+### Friend activity and history
 
-## Development Roadmap
+- Local, account-scoped history for presence, location, social status, profile changes, shared play, last activity and relationship statistics.
+- Filterable activity log, retention cleanup and per-friend profile history; bio/status changes can show their latest diff.
+- Empty Users search prioritizes people met during the past 24 hours.
+- Stable event fingerprints and maximum-baseline merging prevent duplicate history and cumulative-total inflation across restarts and devices.
 
-</div>
+### Android notifications and Boop
 
-### Current Focus
-- **Mobile Stability** - Prioritize Android device fixes, background monitoring, and notification reliability
-- **Community Testing** - Improve the existing friend, group, Gallery, and profile features from real-world feedback
+- System notification master switch; favorite-group/per-friend presence selection; friend request, friend add/remove, group event and Boop notifications.
+- Android foreground monitoring service plus notification-permission and battery-setting entry points. Web presence is not treated as game online.
+- Boop selector, in-app receive card and system notification. Version 0.3.21 fixes loss of emoji metadata from the legacy notification feed.
 
-<div align="center">
+### Phone and PC activity aggregation
 
-## Technical Architecture
+- Read-only VRCX SQLite export for presence, location, status, bio, avatar, friendship and completed shared-session history.
+- Windows LAN Bridge with QR/LAN discovery, mobile upload/download and archive rebuild.
+- The bridge never writes VRCX native tables or exports login credentials.
 
-</div>
+### Mobile experience and profile editing
 
-### Core Technology Stack
-- **[Kotlin Multiplatform](https://kotlinlang.org/multiplatform/)** - Cross-platform development framework
-- **[Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/)** - Modern UI framework
-- **[Ktor](https://ktor.io/)** - Network requests and API communication
-- **[kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization)** - JSON data serialization
+- Independent VRCMomo identity, icon, version line and permanent-signature release channel.
+- Light/dark themes, multiple color schemes, and responsive world, avatar and friend cards for phones and wider screens.
+- Separate owned-avatar section with name, description and cover editing; self-profile bio and social-link editing.
 
-### Architecture Components
-- **[Koin](https://github.com/InsertKoinIO/koin)** - Dependency injection framework
-- **[Voyager](https://github.com/adrielcafe/voyager)** - Navigation and state management
-- **[Multiplatform-Settings](https://github.com/russhwolf/multiplatform-settings)** - Cross-platform configuration storage
-- **[Coil](https://github.com/coil-kt/coil)** - High-performance image loading
+## Documentation
 
-### Development Environment
-- **Kotlin API**: 2.1
-- **Android SDK Target**: 35
-- **Java SDK**: 21
-- **Compose**: 1.8.2
+| Document | Purpose |
+| --- | --- |
+| [CHANGELOG.md](CHANGELOG.md) | Release feature log and fixes. |
+| [docs/INSTALL_AND_MIGRATION.md](docs/INSTALL_AND_MIGRATION.md) | Installation, signing, migration, LAN Bridge usage and troubleshooting. |
+| [docs/FEATURE_AUDIT_AND_PATHS.md](docs/FEATURE_AUDIT_AND_PATHS.md) | Main-branch feature audit, branch reconciliation and exact source paths. |
+| [docs/LAN_SYNC_DESIGN.md](docs/LAN_SYNC_DESIGN.md) | Data boundaries and merge rules for the phone, bridge and VRCX export. |
+| [docs/STORAGE_COMPATIBILITY.md](docs/STORAGE_COMPATIBILITY.md) | Storage compatibility and migration rules. |
 
-<div align="center">
+## Attribution
 
-## Disclaimer
+VRCMomo is a fork and independent continuation of [VRCM](https://github.com/vrcm-team/VRCM). The Kotlin Multiplatform/Compose foundation, authentication, VRChat API/network layer, core friend/world functionality, favorites, groups, baseline notifications, Gallery and relationship features are primarily VRCM Team and upstream contributor work.
 
-</div>
+VRCMomo maintains its own branding, mobile UI, activity history, notification/background work, Boop support, VRCX/LAN migration, profile editing, release signing and stability fixes. Upstream features adapted here must not be presented as VRCMomo work from scratch.
 
-- VRCMomo is not affiliated with VRChat Inc and does not represent the views or opinions of VRChat Inc
-- VRCMomo does not store or collect any data outside of your device
-- The application author is not responsible for any damage caused by this application
-- VRCMomo does not modify or tamper with the game and does not violate [VRChat Terms of Service](https://hello.vrchat.com/legal)
-- Please use this application responsibly and comply with relevant laws, regulations, and platform rules
+## Development
 
-<div align="center">
+Read [AGENTS.md](AGENTS.md) and [docs/FEATURE_AUDIT_AND_PATHS.md](docs/FEATURE_AUDIT_AND_PATHS.md) before editing. Typical Android verification from the repository root:
 
-## Attribution and Project Origin
+```powershell
+.\gradlew.bat :composeApp:testDebugUnitTest
+.\gradlew.bat :composeApp:assembleRelease
+```
 
-</div>
-
-VRCMomo is a fork and independent continuation of [VRCM](https://github.com/vrcm-team/VRCM), originally developed by the VRCM Team and its contributors.
-
-The following parts of this project are primarily derived from the upstream VRCM project:
-
-- The Kotlin Multiplatform and Compose Multiplatform application foundation
-- Android and iOS project structure, authentication, and account management
-- The foundational VRChat API/networking layer
-- Friend lists, friend status/location, user profiles, and world/user search
-- Favorites, groups, notifications, and related existing UI components
-- The VRChat+ Gallery and friend relationship / mutual-friend pages
-
-VRCMomo's own work is focused on the new branding and app identity, theme and navigation changes, Boop support and related notification improvements, Gallery fixes and presentation changes, iOS branding, release packaging, and other changes documented in this repository's commit history. Existing upstream features may also be adapted or maintained here; they should not be interpreted as being reimplemented from scratch by VRCMomo.
-
-We are grateful to the VRCM Team and all upstream contributors. Please refer to the [upstream repository](https://github.com/vrcm-team/VRCM) for the original project history and contribution attribution.
-
-For the planned review of VRCX and VRCX-jirai-inspired features, see [VRCX-jirai feature review](docs/VRCX_JIRAI_FEATURE_REVIEW.md). The review separates upstream VRCX ideas, VRCX-jirai-specific work, VRCM contributions, and VRCMomo-only work, and keeps privacy-sensitive automation out of the stable line.
-
-<div align="center">
+Tester packages must use the permanent release signature; see [docs/RELEASE_SIGNING.md](docs/RELEASE_SIGNING.md).
 
 ## License
 
-</div>
-
-This project is open source under the [MIT License](LICENSE).
-
-<div align="center">
-
-## Contributing
-
-</div>
-
-Contributions of code, bug reports, or feature suggestions are welcome! Please check our contribution guidelines for more information.
-
----
-
-<div align="center">
-
-**If this project is helpful to you, please give us a ⭐**
-
-[Download Latest Release](https://github.com/Neil100o/VRCMomo/releases/latest) • [Report Issues](https://github.com/Neil100o/VRCMomo/issues) • [Feature Requests](https://github.com/Neil100o/VRCMomo/discussions)
-
-</div>
+VRCMomo is licensed under the [MIT License](LICENSE). Reproducible reports with device details and logs are welcome through [Issues](https://github.com/Neil100o/VRCMomo/issues).

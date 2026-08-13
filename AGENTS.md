@@ -16,6 +16,7 @@ This is the short entry point for future maintenance. Read this file first, then
 | Task | Start here | Usually also inspect |
 | --- | --- | --- |
 | Version / APK name | `gradle/libs.versions.toml` | `composeApp/build.gradle.kts` |
+| Release assets / migration guide | `docs/INSTALL_AND_MIGRATION.md` | `CHANGELOG.md`, `docs/RELEASE_NOTES_<version>.md`, `.github/workflows/Android_Build_Release.yml` |
 | Test update channel | `downloads/testing-channel.json` | `core/shared/AppConst.kt`, `service/VersionService.kt` |
 | Android build / tests | `gradlew.bat` | `docs/DEVELOPMENT_MAP.md` |
 | UI screen / navigation | `presentation/screens/` | `presentation/components/`, `presentation/settings/locale/` |
