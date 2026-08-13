@@ -10,16 +10,21 @@ import io.ktor.client.request.header
 import io.ktor.http.*
 
 private const val LAN_SYNC_CONNECT_TIMEOUT_MILLIS = 10_000L
+private const val LAN_SYNC_IDLE_TIMEOUT_MILLIS = 120_000L
 // The desktop bridge may need to read and export a large VRCX SQLite history
 // before it can begin returning /v1/vrcx-activity. Keep this local-only
 // transfer independent from the short timeout used by ordinary VRChat calls.
-private const val LAN_SYNC_TRANSFER_TIMEOUT_MILLIS = 150_000L
 
 private fun io.ktor.client.request.HttpRequestBuilder.lanSyncTimeout() {
     timeout {
         connectTimeoutMillis = LAN_SYNC_CONNECT_TIMEOUT_MILLIS
-        requestTimeoutMillis = LAN_SYNC_TRANSFER_TIMEOUT_MILLIS
-        socketTimeoutMillis = LAN_SYNC_TRANSFER_TIMEOUT_MILLIS
+        // Zero disables Ktor's whole-request deadline. A large archive is
+        // allowed to keep streaming for as long as it makes progress.
+        requestTimeoutMillis = 0
+        // The bridge exporter itself can spend up to 90 seconds preparing the
+        // first response. Afterwards this is an idle timeout: actual incoming
+        // bytes reset it, while a dead/stalled bridge still surfaces an error.
+        socketTimeoutMillis = LAN_SYNC_IDLE_TIMEOUT_MILLIS
     }
 }
 
