@@ -1,4 +1,4 @@
-# VRCMomo 安装、更新与旧记录迁移
+# VRCMomo 安装、更新与旧记录迁移 / Installation, Updates and Legacy Migration / インストール・更新・旧記録移行
 
 最后更新：2026-08-13
 适用仓库：`F:\vrcmoskavis\VRCMomoLanSync`
@@ -72,3 +72,67 @@
 - 发行签名：`composeApp/build.gradle.kts`、`docs/RELEASE_SIGNING.md`
 
 更完整的功能与源码入口索引见 [FEATURE_AUDIT_AND_PATHS.md](FEATURE_AUDIT_AND_PATHS.md)。
+
+## English
+
+### Which package should I install?
+
+| Current state | File to use | Can install over the existing app? |
+| --- | --- | --- |
+| No VRCMomo is installed | `VRCMomo-v0.3.21.apk` from the current Release | Yes. |
+| Permanent-signature VRCMomo 0.3.20 is installed | `VRCMomo-v0.3.21.apk` from the current Release | Yes. |
+| The old 0.3.16 automatic-update app is installed | `downloads/VRCMomo-v0.3.20-legacy-migration.apk` | Yes; migrate history first. |
+| The old 0.3.16 app is installed and you want 0.3.21 | Do not install the release over it first | Back up activity history through the bridge first. |
+
+The old 0.3.16 app uses package `io.github.vrcmteam.vrcm.debug` and its old debug certificate. The permanent release uses `io.github.vrcmteam.vrcm` and a permanent release certificate, so Android does not permit a direct replacement and the new app cannot read the old private app storage.
+
+### Migration from the old testing track
+
+1. Download `VRCMomo-LAN-Bridge.exe` from [Releases](https://github.com/Neil100o/VRCMomo/releases/latest) on a Windows PC.
+2. If the bridge starts but the phone cannot find or reach it, run `Allow-VRCMomoLanBridgeFirewall.bat` from the same Release. It opens LAN-only TCP `38671` and UDP `38672` rules.
+3. Put the phone and PC on the same reachable LAN. Disable VPNs that change local routing; guest Wi-Fi, AP isolation and different VLANs often block discovery.
+4. Install `VRCMomo-v0.3.20-legacy-migration.apk` over the old 0.3.16 app.
+5. Start the bridge. In the old app, open Settings → LAN Sync, then use nearby-computer discovery or scan the bridge QR code.
+6. Send phone records to the PC or run a complete sync. The bridge rebuilds `vrcmomo-lan-inbox/archive-rebuilt.json` in its working directory.
+7. Confirm the archive exists, install `VRCMomo-v0.3.21.apk`, pair it with the same bridge and pull the archive.
+8. Verify the activity log, last activity, meeting count and shared-play duration before deleting the old app.
+
+Do not delete the old app before step 6. Events are deduplicated by stable fingerprints and cumulative totals are merged by maximum baseline, so repeated syncs are safe.
+
+### Daily LAN Bridge use and troubleshooting
+
+The bridge reads VRCX SQLite activity data only; it does not modify VRCX tables, copy credentials, or use a cloud service. It serves a temporary local endpoint, QR code and UDP discovery. The phone can download the rebuilt archive and upload its own new events.
+
+If pairing fails: keep the bridge window open, verify both devices are on the same routable LAN, disable VPNs, run the firewall helper, restart the bridge, and then scan the QR code. Large first-time archives may take time; the client uses an idle timeout rather than cancelling an active transfer by total duration.
+
+## 日本語
+
+### どの APK をインストールしますか？
+
+| 現在の状態 | 使用するファイル | 既存アプリへ上書き可能か |
+| --- | --- | --- |
+| VRCMomo を未インストール | 現在の Release の `VRCMomo-v0.3.21.apk` | 可能です。 |
+| 固定署名の VRCMomo 0.3.20 を使用中 | 現在の Release の `VRCMomo-v0.3.21.apk` | 可能です。 |
+| 旧 0.3.16 自動更新版を使用中 | `downloads/VRCMomo-v0.3.20-legacy-migration.apk` | 可能です。先に履歴を移行します。 |
+| 旧 0.3.16 から 0.3.21 に移りたい | 先に正式版を上書きしない | ブリッジで活動履歴を退避します。 |
+
+旧 0.3.16 は `io.github.vrcmteam.vrcm.debug` と旧デバッグ署名を使用し、正式版は `io.github.vrcmteam.vrcm` と固定署名を使用します。Android は直接の置換を許可せず、正式版は旧アプリの私有保存領域を読めません。
+
+### 旧テストトラックからの移行
+
+1. Windows PC で [Releases](https://github.com/Neil100o/VRCMomo/releases/latest) から `VRCMomo-LAN-Bridge.exe` をダウンロードします。
+2. ブリッジが起動してもスマートフォンから見つからない/接続できない場合は、同じ Release の `Allow-VRCMomoLanBridgeFirewall.bat` を実行します。LAN 用 TCP `38671` と UDP `38672` の規則を追加します。
+3. PC とスマートフォンを相互到達できる同じ LAN に接続します。ローカル経路を変える VPN は無効にしてください。ゲスト Wi-Fi、AP 分離、異なる VLAN では検出できない場合があります。
+4. 旧 0.3.16 に `VRCMomo-v0.3.20-legacy-migration.apk` を上書きします。
+5. ブリッジを起動し、旧アプリの設定 → LAN 同期から近くの PC を探すか、ブリッジの QR コードを読み取ります。
+6. スマートフォン記録を PC へ送信するか、完全同期を実行します。ブリッジは作業フォルダに `vrcmomo-lan-inbox/archive-rebuilt.json` を作成します。
+7. アーカイブを確認してから `VRCMomo-v0.3.21.apk` をインストールし、同じブリッジに接続してアーカイブを取得します。
+8. 活動ログ、最終活動、遭遇回数、共同プレイ時間を確認してから旧アプリを削除します。
+
+手順 6 より前に旧アプリを削除しないでください。イベントは安定した識別子で重複除去され、累計値は最大基線でマージされるため、繰り返し同期しても安全です。
+
+### 日常の LAN Bridge 利用とトラブルシューティング
+
+ブリッジは VRCX SQLite の活動データを読み取り専用で扱います。VRCX の表を書き換えず、認証情報をコピーせず、クラウドサービスも使用しません。一時的なローカル接続、QR コード、UDP 検出を提供し、スマートフォンは再構築済みアーカイブを取得して新しいイベントを送信できます。
+
+ペアリングに失敗する場合は、ブリッジのウィンドウを開いたままにし、同じ到達可能な LAN を確認し、VPN を無効にし、ファイアウォール補助を実行してブリッジを再起動し、QR コードを読み取ってください。初回の大きなアーカイブには時間がかかる場合がありますが、クライアントは転送全体の時間ではなくアイドル時間で中断を判断します。

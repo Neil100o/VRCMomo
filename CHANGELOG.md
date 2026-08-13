@@ -1,46 +1,76 @@
-# VRCMomo 功能日志
+# VRCMomo Feature Log / 功能日志 / 機能ログ
 
-本日志记录 VRCMomo 发行版的用户可见改动。它只描述 VRCMomo 自己的新增、维护和修复；上游 VRCM 已有能力不会被重复归为 VRCMomo 新功能。
+This log records user-visible VRCMomo changes. It covers VRCMomo additions, maintenance and fixes only; pre-existing upstream VRCM functionality is not relisted as VRCMomo work.
+
+本日志记录 VRCMomo 面向用户的改动，只描述 VRCMomo 自己的新增、维护和修复；上游 VRCM 已有能力不会被重复归为 VRCMomo 新功能。
+
+このログは VRCMomo の利用者向け変更を記録します。VRCMomo 自身の追加・保守・修正のみを記載し、上流 VRCM の既存機能を VRCMomo の新機能としては扱いません。
 
 ## 0.3.21 - 2026-08-13
 
-### 热修复
+### 简体中文
 
 - 修复旧通知接口中的 Boop 表情元数据在旧/V2 通知合并时被空字段覆盖的问题。
 - 前台通知列表、应用内 Boop 卡片和后台通知轮询现在共用同一份表情数据保留逻辑。
 - 旧接口确实提供了 `details.emojiId` 时，会优先显示对应表情；服务端没有发送表情的普通 Boop 仍显示默认“戳一下”。
+- 固定签名发行版升为 `0.3.21`，Android `versionCode = 33`；Release 标签改为标准 `v0.3.21`，应用内可正常比较后续正式版更新。
+- Release 同时提供 Android APK、Windows LAN Bridge、LAN 防火墙辅助脚本和本功能日志。
 
-### 发行与更新
+### English
 
-- 固定签名发行版的版本升为 `0.3.21`，Android `versionCode` 为 `33`。
-- 修正 GitHub Release 标签为标准 `v0.3.21`，应用内版本比较可以正常识别后续正式版更新。
-- 保留 `0.3.20` 旧签名迁移通道：旧 0.3.16 用户先备份活动记录，再迁移到固定签名正式版。
-- Release 同时提供 Android APK、Windows LAN Bridge 与 LAN 防火墙辅助脚本。
+- Fixed a legacy notification merge that could overwrite Boop emoji metadata with empty V2 fields.
+- The foreground notification list, in-app Boop card and background notification polling now preserve the same emoji data.
+- If the legacy feed provides `details.emojiId`, VRCMomo uses it first. Plain Boops without server emoji data still use the default label.
+- The permanent-signature release is now `0.3.21` with Android `versionCode = 33`. Release tags use normal semantic versions so later release updates compare correctly in-app.
+- This Release includes the Android APK, Windows LAN Bridge, LAN firewall helper and this feature log.
+
+### 日本語
+
+- 旧通知フィードと V2 通知を結合するとき、Boop 絵文字情報が空の V2 フィールドで上書きされる問題を修正しました。
+- 前景の通知一覧、アプリ内 Boop カード、バックグラウンド通知ポーリングで同じ絵文字保持処理を使用します。
+- 旧フィードに `details.emojiId` がある場合はそれを優先します。サーバーから絵文字が来ない通常の Boop は既定表示になります。
+- 固定署名版は `0.3.21`、Android `versionCode = 33` です。Release タグを通常のセマンティックバージョンに修正し、アプリ内の更新比較を正常化しました。
+- この Release には Android APK、Windows LAN Bridge、LAN ファイアウォール補助、機能ログを含みます。
 
 ## 0.3.20 - 2026-08-12
 
-### 局域网同步与旧记录迁移
+### 简体中文
 
 - 为旧自动更新轨提供兼容旧签名的迁移包，避免旧应用私有活动记录直接丢失。
 - LAN Bridge 支持 VRCX SQLite 只读导出、二维码/局域网发现、活动归档重建与手机上传下载。
 - 大归档使用连接超时加空闲超时，而不是总传输时限；传输持续有数据时不会因总时间过长中断。
 - 桥接器兼容缺少 `pronouns` 字段的旧好友快照，并在同步预览中区分新增和已存在的 VRCX 记录。
 - 多设备归档以稳定事件指纹去重，统计采用最大基线合并，避免重复同步累加共同游玩时长和次数。
-
-### 好友活动与通知
-
-- 好友活动历史以 JSON 持久化并镜像到 SQLite，支持恢复、导入和长期筛选查看。
-- 修复应用重启重复写入上下线/地点变动的问题；社交状态、位置与大小写比较会先标准化。
+- 好友活动历史以 JSON 持久化并镜像到 SQLite，支持恢复、导入、筛选、资料 Diff、活动时间图和关系统计。
 - Android 通知支持 Boop、选择的好友上下线、好友请求、好友增删、群组事件和 VRChat 服务异常。
-- 好友上下线通知可跟随收藏夹，也可在单个好友资料页单独覆盖设置。
+- 更新世界、模型、好友列表为响应式卡片，支持官方 VRChat 链接解析与剪贴板一次性询问。
 
-### 移动端体验
+### English
 
-- 更新世界、模型、好友列表为响应式圆角卡片，适配手机和宽屏设备。
-- 增加最近共同游玩的玩家默认入口、活动总览、好友资料页活动区、简介 Diff、活动时间图与关系统计。
-- 支持官方 VRChat 链接解析、剪贴板一次性询问和应用内打开。
-- 自己资料可编辑社交链接；自己上传的模型可单独分类并编辑名称、介绍和封面。
+- Added a legacy-signed migration build so old automatic-update installs can preserve private activity records.
+- The LAN Bridge supports read-only VRCX SQLite export, QR/LAN discovery, archive rebuilding and phone upload/download.
+- Large archives use connection plus idle timeouts rather than a total transfer deadline.
+- The bridge accepts old friend snapshots without `pronouns` and the preview distinguishes new versus already-imported VRCX records.
+- Event fingerprints and maximum-baseline merging make repeated multi-device sync idempotent.
+- Friend activity is persisted as JSON and mirrored to SQLite, with recovery, filtering, profile diffs, activity time charts and relationship statistics.
+- Android notifications cover Boop, selected friend presence, friend requests, friend add/remove, group events and VRChat service errors.
+- World, avatar and friend lists use responsive cards; official VRChat links can be detected from the clipboard and opened in-app.
 
-## 迁移说明
+### 日本語
 
-0.3.16 自动更新轨与 0.3.20/0.3.21 正式发行版签名不同。请务必阅读 [安装与迁移说明](docs/INSTALL_AND_MIGRATION.md)，先用桥接器同步旧记录，再删除旧应用。
+- 旧自動更新トラック向けに、活動履歴を保持する旧署名互換の移行 APK を追加しました。
+- LAN Bridge は VRCX SQLite の読み取り専用エクスポート、QR/LAN 検出、アーカイブ再構築、スマートフォンとの送受信に対応します。
+- 大きなアーカイブは総転送時間ではなく接続とアイドル時間で判定します。
+- `pronouns` のない旧フレンドスナップショットに対応し、同期プレビューで新規/既存の VRCX 記録を区別します。
+- イベント識別子と最大基線マージにより、複数端末で繰り返し同期しても統計を水増ししません。
+- フレンド活動は JSON と SQLite に保存され、復元、絞り込み、プロフィール差分、活動時間図、関係統計に対応します。
+- Android 通知は Boop、選択フレンドのオンライン状態、フレンド申請、フレンド増減、グループイベント、VRChat サービスエラーを扱います。
+- ワールド、アバター、フレンド一覧をレスポンシブカード化し、公式 VRChat リンクをクリップボードから検出してアプリ内で開けます。
+
+## Migration / 迁移 / 移行
+
+Old 0.3.16 automatic-update installs and permanent releases use different Android signatures. Read [the installation and migration guide](docs/INSTALL_AND_MIGRATION.md), synchronize the old records through the bridge, and only then remove the old app.
+
+旧 0.3.16 自动更新轨与 0.3.20/0.3.21 正式发行版签名不同。请先阅读 [安装与迁移说明](docs/INSTALL_AND_MIGRATION.md)，用桥接器同步旧记录后再删除旧应用。
+
+旧 0.3.16 自動更新版と 0.3.20/0.3.21 正式版は Android 署名が異なります。[インストールと移行ガイド](docs/INSTALL_AND_MIGRATION.md) を読み、ブリッジで旧記録を同期してから旧アプリを削除してください。
