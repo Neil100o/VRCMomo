@@ -3,7 +3,9 @@
 > 当前 main 的功能回查、遗留分支结论和逐项路径见 `docs/FEATURE_AUDIT_AND_PATHS.md`。继续开发前先读该文件，避免把旧分支、旧 APK 或已经重放的提交误认为待合并内容。
 
 ## Build and release
-- `gradle/libs.versions.toml`: `app-version`, `app-code`
+- **Version source of truth:** `gradle/libs.versions.toml`: raise both `app-version` and monotonic `app-code`.
+- **In-app version / updater comparison:** `composeApp/src/commonMain/kotlin/core/shared/AppConst.kt`: set `APP_VERSION` to exactly the same value as `app-version`. This is what Settings and the GitHub Release comparison use.
+- **Before a tester package:** verify the built APK with `aapt dump badging`; its `versionName`, `versionCode` and application ID must match the two files above. Do not create a GitHub Release unless the maintainer explicitly asks to publish one.
 - `composeApp/src/androidMain/AndroidManifest.xml`: Android identity/icon entry
 - `composeApp/build.gradle.kts`: APK output name and release packaging
 - Debug output: `composeApp/build/outputs/apk/debug/VRCMomo-v<version>.apk`

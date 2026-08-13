@@ -15,7 +15,7 @@ This is the short entry point for future maintenance. Read this file first, then
 
 | Task | Start here | Usually also inspect |
 | --- | --- | --- |
-| Version / APK name | `gradle/libs.versions.toml` | `composeApp/build.gradle.kts` |
+| Version / APK name | `gradle/libs.versions.toml` | `core/shared/AppConst.kt`, `composeApp/build.gradle.kts` |
 | Release assets / migration guide | `docs/INSTALL_AND_MIGRATION.md` | `CHANGELOG.md`, `docs/RELEASE_NOTES_<version>.md`, `.github/workflows/Android_Build_Release.yml` |
 | Test update channel | `downloads/testing-channel.json` | `core/shared/AppConst.kt`, `service/VersionService.kt` |
 | Android build / tests | `gradlew.bat` | `docs/DEVELOPMENT_MAP.md` |
@@ -43,6 +43,7 @@ This is the short entry point for future maintenance. Read this file first, then
 6. **API resilience:** validate external values, use nullable/default-compatible DTO fields for historical data, and expose user-friendly errors instead of raw stack traces.
 7. **Locale coverage:** new user-visible strings go through `LocaleStrings`; Chinese Simplified must be updated in the same change.
 8. **Tests:** add or update `commonTest` for pure shared logic. Run the smallest relevant test first, then build Android before release.
+9. **Version bump:** change `app-version` and increasing `app-code` in `gradle/libs.versions.toml`, then set `AppConst.APP_VERSION` to the exact same version. Verify the resulting APK via `aapt dump badging`. Never publish a GitHub Release unless the user explicitly requests it.
 
 ## Verification commands
 
