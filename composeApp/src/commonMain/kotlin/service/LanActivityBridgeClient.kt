@@ -2,6 +2,7 @@ package io.github.vrcmteam.vrcm.service
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.HttpTimeoutConfig
 import io.ktor.client.plugins.timeout
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -20,7 +21,7 @@ private fun io.ktor.client.request.HttpRequestBuilder.lanSyncTimeout() {
         connectTimeoutMillis = LAN_SYNC_CONNECT_TIMEOUT_MILLIS
         // Zero disables Ktor's whole-request deadline. A large archive is
         // allowed to keep streaming for as long as it makes progress.
-        requestTimeoutMillis = 0
+        requestTimeoutMillis = HttpTimeoutConfig.INFINITE_TIMEOUT_MS
         // The bridge exporter itself can spend up to 90 seconds preparing the
         // first response. Afterwards this is an idle timeout: actual incoming
         // bytes reset it, while a dead/stalled bridge still surfaces an error.

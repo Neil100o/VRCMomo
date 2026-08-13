@@ -102,8 +102,7 @@ class SocialNotificationService(
             SystemNotification(
                 id = "boop-${notification.id}",
                 title = "$senderName 戳了你一下$reactionText",
-                message = emojiLabel?.let { "使用了 $it 表情。打开 VRCMomo 查看并回戳。" }
-                    ?: "打开 VRCMomo 查看并回戳。",
+                message = "打开 VRCMomo 查看并回戳。",
             ),
         )
     }

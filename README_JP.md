@@ -19,11 +19,11 @@ VRCMomo は VRChat Inc. とは無関係です。VRChat の Cookie、パスワー
 
 ## ダウンロードと更新
 
-現在のリリース：**0.3.22**
+現在のリリース：**0.3.23**
 
 | 必要なもの | ダウンロード先 | 用途 |
 | --- | --- | --- |
-| Android APK | [Releases](https://github.com/Neil100o/VRCMomo/releases/latest) の `VRCMomo-v0.3.22.apk` | 固定署名の正式版。以後の更新は GitHub Releases から確認します。 |
+| Android APK | [Releases](https://github.com/Neil100o/VRCMomo/releases/latest) の `VRCMomo-v0.3.23.apk` | 固定署名の正式版。以後の更新は GitHub Releases から確認します。 |
 | Windows LAN ブリッジ | 同じ Release の `VRCMomo-LAN-Bridge.exe` | VRCX のある PC で起動し、活動履歴をスマートフォンと同期します。 |
 | ファイアウォール補助 | 同じ Release の `Allow-VRCMomoLanBridgeFirewall.bat` | ブリッジは起動するがスマートフォンから見つからない/接続できない場合に使用します。 |
 | 旧テスト版の移行 APK | [VRCMomo-v0.3.20-legacy-migration.apk](downloads/VRCMomo-v0.3.20-legacy-migration.apk) | 旧 0.3.16 自動更新トラック専用です。 |
@@ -36,7 +36,7 @@ VRCMomo は VRChat Inc. とは無関係です。VRChat の Cookie、パスワー
 
 1. 旧アプリを `VRCMomo-v0.3.20-legacy-migration.apk` で上書き更新します。
 2. PC で `VRCMomo-LAN-Bridge.exe` を起動し、旧アプリから一度 LAN 同期します。
-3. ブリッジにアーカイブが作られたことを確認してから、0.3.22 正式版をインストールします。
+3. ブリッジにアーカイブが作られたことを確認してから、0.3.23 正式版をインストールします。
 4. 正式版を同じブリッジに接続してアーカイブを取得します。活動ログと関係統計を確認してから旧アプリを削除してください。
 
 手順 2 の前に旧アプリを削除しないでください。イベントの重複除去と最大基線マージにより、同じアーカイブを複数回同期しても回数や時間は水増しされません。
@@ -56,7 +56,7 @@ VRCMomo は VRChat Inc. とは無関係です。VRChat の Cookie、パスワー
 
 - システム通知の総合スイッチ、お気に入りグループ/個別フレンドのオンライン通知、フレンド申請、フレンド増減、グループイベント、Boop 通知。
 - Android 前景監視、通知権限、バッテリー設定への入口。Web 上のオンライン状態はゲーム内オンライン通知にしません。
-- Boop 選択、アプリ内の受信カード、システム通知。0.3.22 では旧通知フィードの絵文字情報が失われる問題を修正しました。
+- Boop 選択、アプリ内の受信カード、システム通知。0.3.23 では旧通知フィードの絵文字情報が失われる問題を修正しました。
 
 ### スマートフォンと PC の活動履歴統合
 

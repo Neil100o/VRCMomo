@@ -6,6 +6,25 @@ This log records user-visible VRCMomo changes. It covers VRCMomo additions, main
 
 このログは VRCMomo の利用者向け変更を記録します。VRCMomo 自身の追加・保守・修正のみを記載し、上流 VRCM の既存機能を VRCMomo の新機能としては扱いません。
 
+## 0.3.23 - 2026-08-13
+
+### 简体中文
+
+- 修复 LAN Bridge 同步的 Ktor 3 超时配置错误；大归档可持续传输，断开连接仍会在 120 秒无数据后报错。
+- Boop 系统通知仅在标题标出表情，去掉重复的表情说明行。
+- 固定签名 Release 启用 R8 代码压缩和 Android 资源压缩，通用 APK 从约 17.9 MB 缩小到约 3.7 MB。
+
+### English
+
+- Fixed the Ktor 3 timeout configuration in LAN Bridge sync. Large archives can continue transferring, while dead connections still fail after 120 seconds without data.
+- Boop system notifications now show the emoji only in the title and remove the duplicate message line.
+- Enabled R8 code shrinking and Android resource shrinking for signed Releases, reducing the universal APK from about 17.9 MB to about 3.7 MB.
+
+### 日本語
+
+- LAN Bridge 同期の Ktor 3 タイムアウト設定を修正しました。大きなアーカイブは継続転送でき、データが 120 秒来ない接続は失敗として扱います。
+- Boop システム通知はタイトルだけに絵文字を表示し、重複していた説明行を削除しました。
+- 固定署名 Release で R8 コード縮小と Android リソース縮小を有効にし、ユニバーサル APK を約 17.9 MB から約 3.7 MB に縮小しました。
 ## 0.3.22 - 2026-08-13
 
 ### 简体中文

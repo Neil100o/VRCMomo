@@ -206,7 +206,12 @@ android {
 
     buildTypes {
         getByName("release") {
-            this.isMinifyEnabled = false
+            // Match upstream VRCM's release pipeline: R8 removes unused code and
+            // Android resource shrinking removes unreachable packaged assets.
+            // Keep this release-only; Lab/debug builds stay readable for diagnosis.
+            this.isMinifyEnabled = true
+            this.isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
             if (storeFile != null) {
                 this.signingConfig = signingConfigs.getByName("release")
             }

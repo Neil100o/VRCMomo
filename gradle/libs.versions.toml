@@ -1,6 +1,6 @@
 [versions]
-app-code = "34"
-app-version = "0.3.22"
+app-code = "35"
+app-version = "0.3.23"
 # VRCMomo must not share VRCM's Android identity: it needs to coexist with the upstream app.
 app-packageName = "io.github.neil100o.vrcmomo"
 agp = "8.6.1"
