@@ -4,6 +4,11 @@ name: Android Build Release
 on:
   workflow_dispatch:
 
+# The workflow publishes the APK as a GitHub Release asset, so the default read-only
+# workflow token is insufficient on repositories that enforce restricted permissions.
+permissions:
+  contents: write
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest   # 在最新的 Ubuntu 环境下运行
