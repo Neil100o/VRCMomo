@@ -338,7 +338,7 @@ internal object LocaleStringsZhHans : LocaleStrings() {
     override val vrcxLanSyncing = "同步中…"
     override val vrcxLanSyncFailed = "无法连接已配对的电脑桥接服务。"
     override val vrcxLanSyncConfirmTitle = "合并同步记录？"
-    override val vrcxLanSyncConfirmMessage = "统一归档有 %d 条新事件、%d 条已存在事件；VRCX 将补充 %d 条上下线事件和 %d 次已结束共同游玩。"
+    override val vrcxLanSyncConfirmMessage = "统一归档：%d 条新增、%d 条已存在。VRCX：%d 条新增、%d 条已导入（%d 条上下线、%d 次已结束共同游玩）。"
     override val vrcxLanSyncSuccess = "同步完成。"
     override val vrcxLanSyncNever = "尚无成功的局域网同步"
     override val vrcxLanSyncLastSuccess = "上次同步：%s · %s"

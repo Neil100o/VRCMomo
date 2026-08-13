@@ -28,6 +28,7 @@ class VrcxActivityImportTest {
         )
 
         val stats = preview.result.updates.getValue(userId)
+        assertEquals(3, preview.newEvents)
         assertEquals(2, preview.presenceEvents)
         assertEquals(1, preview.completedMeetings)
         assertEquals(1, stats.meetingCount)
@@ -43,6 +44,7 @@ class VrcxActivityImportTest {
         val repeat = VrcxActivityImporter.preview(raw, first.result.acceptedEventKeys)
 
         assertEquals(1, repeat.alreadyImportedEvents)
+        assertEquals(0, repeat.newEvents)
         assertTrue(repeat.result.updates.isEmpty())
     }
 

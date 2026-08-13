@@ -352,7 +352,7 @@ sealed class LocaleStrings {
     open val vrcxLanSyncing: String = "Syncing…"
     open val vrcxLanSyncFailed: String = "Could not reach the paired PC bridge."
     open val vrcxLanSyncConfirmTitle: String = "Merge synchronized activity?"
-    open val vrcxLanSyncConfirmMessage: String = "The shared archive has %d new events and %d known events. VRCX adds %d presence events and %d completed meetings."
+    open val vrcxLanSyncConfirmMessage: String = "Shared archive: %d new, %d known. VRCX: %d new, %d already imported (%d presence events, %d completed meetings)."
     open val vrcxLanSyncSuccess: String = "Sync complete."
     open val vrcxLanSyncNever: String = "No successful LAN sync yet"
     open val vrcxLanSyncLastSuccess: String = "Last sync: %s · %s"

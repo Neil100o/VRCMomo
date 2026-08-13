@@ -101,6 +101,8 @@ internal data class VrcxJoinLeaveEvent(
 )
 
 internal data class VrcxActivityImportPreview(
+    /** All new VRCX timeline entries, not only presence/meeting subsets shown in the UI. */
+    val newEvents: Int,
     val presenceEvents: Int,
     val completedMeetings: Int,
     val involvedFriends: Int,
@@ -257,6 +259,7 @@ internal object VrcxActivityImporter {
         }
 
         return VrcxActivityImportPreview(
+            newEvents = importedEvents.size,
             presenceEvents = presenceCount,
             completedMeetings = meetingCount,
             involvedFriends = updates.size,

@@ -584,6 +584,8 @@ private fun VrcxLanSyncBlock() {
                     localeStrings.vrcxLanSyncConfirmMessage.formatCountPlaceholders(
                         importPreview.archive.acceptedEvents,
                         importPreview.archive.alreadyKnownEvents,
+                        importPreview.vrcx.newEvents,
+                        importPreview.vrcx.alreadyImportedEvents,
                         importPreview.vrcx.presenceEvents,
                         importPreview.vrcx.completedMeetings,
                     ),
