@@ -15,13 +15,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          
+
       - name: Restore permanent release signing key
         env:
           KEYSTORE_BASE64: ${{ secrets.VRCMOMO_RELEASE_KEYSTORE_BASE64 }}
@@ -54,16 +54,13 @@ jobs:
           echo "#Android" >> gradle.properties
           echo "android.nonTransitiveRClass=true" >> gradle.properties
           echo "android.useAndroidX=true" >> gradle.properties
-          
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-        
+
       - name: Build Release APK with Gradle
         run: ./gradlew assembleRelease --info
-        
-      - name: List APK files (for debugging)
-        run: find . -name "*.apk"
-        
+
       - name: Extract App Version
         id: extract_version
         run: |
@@ -75,31 +72,23 @@ jobs:
           echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
           echo "::notice::提取到的版本号: $APP_VERSION"
 
-      - name: Move Release APK
+      - name: Stage the exact release APK
         run: |
           mkdir -p artifact
           APK_NAME="VRCMomo-v${APP_VERSION}.apk"
-          find . -name "*.apk" -exec cp {} artifact/${APK_NAME} \;
-          
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        with:
-          # The in-app comparator expects a normal semantic version. Do not append a build
-          # number here: `v0.3.21-build-7` would no longer compare as newer than `0.3.20`.
-          tag_name: v${{ env.APP_VERSION }}
-          release_name: "VRCMomo v${{ env.APP_VERSION }}"
-          draft: false
-          prerelease: false
+          APK_PATH="composeApp/build/outputs/apk/release/${APK_NAME}"
+          test -f "$APK_PATH"
+          cp "$APK_PATH" "artifact/${APK_NAME}"
+          echo "APK_PATH=artifact/${APK_NAME}" >> $GITHUB_ENV
+          echo "::notice::Publishing $APK_PATH"
+
+      - name: Create or update Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Upload APK to Release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: artifact/VRCMomo-v${{ env.APP_VERSION }}.apk
-          asset_name: VRCMomo-v${{ env.APP_VERSION }}.apk
-          asset_content_type: application/vnd.android.package-archive
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          TAG: v${{ env.APP_VERSION }}
+        run: |
+          if gh release view "$TAG"; then
+            gh release upload "$TAG" "$APK_PATH" --clobber
+          else
+            gh release create "$TAG" "$APK_PATH" --title "VRCMomo v${APP_VERSION}"
+          fi
