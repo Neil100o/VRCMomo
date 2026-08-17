@@ -23,6 +23,7 @@ This is the short entry point for future maintenance. Read this file first, then
 | Theme / Ark-style colors | `presentation/settings/theme/` | `presentation/settings/` |
 | VRChat API endpoint | `network/api/<area>/` | matching `data/` and ScreenModel |
 | Friend activity / timeline | `service/FriendActivityService.kt` | `FriendActivityTracker.kt`, `storage/FriendActivityCacheDao.kt` |
+| Friend network / PNG export | `presentation/screens/user/FriendNetworkScreen.kt` | `core/algorithms/ForceLayout.kt`, `src/androidMain/kotlin/core/extensions/AppPlatformImageExtensions.android.kt` |
 | Activity log UI | `presentation/screens/home/sheet/SettingsBottomSheet.kt` | locale strings |
 | Android notifications / background work | `src/androidMain/kotlin/presentation/notifications/` | `service/`, settings UI |
 | Boop | `network/api/users/UsersApi.kt` | `presentation/components/BoopSelector.kt` |

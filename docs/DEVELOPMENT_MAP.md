@@ -32,6 +32,13 @@
 - Search integration: `presentation/screens/home/pager/SearchListPagerModel.kt`
 - VRCX bridge: `tools/export_vrcx_activity.py` (read-only SQLite export) and `service/VrcxActivityImport.kt` (Android merge). Bridge v2 carries presence, locations, social status, BIO diffs, avatar changes, friendship history and completed shared sessions. Credentials, cookies, notes and moderation data are excluded.
 
+## Friend network and PNG export
+
+- Screen, current graph state and export action: `presentation/screens/user/FriendNetworkScreen.kt`
+- Graph layout: `core/algorithms/ForceLayout.kt` and `core/algorithms/EgoLayout.kt`
+- Android Pictures save implementation: `src/androidMain/kotlin/core/extensions/AppPlatformImageExtensions.android.kt`
+- Export safety rule: keep the full currently selected graph, but rasterize at no more than **2048 px on either side** and **4,000,000 pixels** total. This avoids allocation crashes for large friend networks. The scale helper is `friendNetworkExportScale`; its shared tests are `commonTest/kotlin/presentation/screens/user/FriendNetworkExportScaleTest.kt`.
+
 ## LAN timeline aggregation baseline
 
 - **Protocol / event fingerprints:** `composeApp/src/commonMain/kotlin/service/VrcmomoActivitySync.kt`

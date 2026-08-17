@@ -63,6 +63,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.CanvasDrawScope
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
@@ -305,6 +306,12 @@ object FriendNetworkScreen : Screen {
                                 )
                                 isExporting = false
                             },
+                            onExportFailure = {
+                                // 导出图的布局尺寸可能远大于手机可安全分配的位图。
+                                // 这里必须吞掉绘制阶段的异常，否则 LaunchedEffect 会直接带崩页面。
+                                SharedFlowCentre.toastText.emit(ToastText.Error(localeStrings.imageSaveFailed))
+                                isExporting = false
+                            },
                         )
                     }
                     if ((state.isLoading || state.isPreparing) && state.nodes.isEmpty()) {
@@ -528,6 +535,20 @@ private class HullPathData(
     val path: Path,
 )
 
+private const val FRIEND_NETWORK_EXPORT_MAX_SIDE_PX = 2_048f
+private const val FRIEND_NETWORK_EXPORT_MAX_PIXELS = 4_000_000f
+
+/**
+ * Returns a uniform scale for a PNG export that remains safe on ordinary Android heaps.
+ * The network keeps its complete current layout; only the raster resolution is reduced.
+ */
+internal fun friendNetworkExportScale(widthPx: Float, heightPx: Float): Float {
+    if (widthPx <= 0f || heightPx <= 0f) return 1f
+    val sideScale = FRIEND_NETWORK_EXPORT_MAX_SIDE_PX / maxOf(widthPx, heightPx)
+    val pixelScale = sqrt(FRIEND_NETWORK_EXPORT_MAX_PIXELS / (widthPx * heightPx))
+    return minOf(1f, sideScale, pixelScale)
+}
+
 @Composable
 private fun FriendNetworkGraph(
     nodes: List<MutualFriendData>,
@@ -547,6 +568,7 @@ private fun FriendNetworkGraph(
     onBackgroundTap: () -> Unit,
     exportRequest: Int,
     onExportBitmap: suspend (ImageBitmap) -> Unit,
+    onExportFailure: suspend () -> Unit,
 ) {
     // clipToBounds：画布经 graphicsLayer 平移/缩放后不得越界画到上方的图例和头部信息上
     BoxWithConstraints(modifier = Modifier.fillMaxSize().clipToBounds()) {
@@ -750,19 +772,25 @@ private fun FriendNetworkGraph(
 
         LaunchedEffect(exportRequest) {
             if (exportRequest > 0) {
-                val width = layoutWidthPx.roundToInt().coerceAtLeast(1)
-                val height = layoutHeightPx.roundToInt().coerceAtLeast(1)
-                val bitmap = ImageBitmap(width, height)
-                val canvas = ImageCanvas(bitmap)
-                val currentHighlightIds = highlightIdsState.value
-                val selectedCommunity = selectedCommunityState.value
-                CanvasDrawScope().draw(
+                val bitmap = try {
+                    // 原先直接按完整力导向布局创建 Bitmap。好友多时该尺寸可以轻易超过
+                    // Android 的单张位图/堆内存上限，点击导出便会 OOM 闪退。
+                    // 保留当前视图的完整图结构，但将导出图限制在安全像素预算内。
+                    val exportScale = friendNetworkExportScale(layoutWidthPx, layoutHeightPx)
+                    val width = (layoutWidthPx * exportScale).roundToInt().coerceAtLeast(1)
+                    val height = (layoutHeightPx * exportScale).roundToInt().coerceAtLeast(1)
+                    val bitmap = ImageBitmap(width, height)
+                    val canvas = ImageCanvas(bitmap)
+                    val currentHighlightIds = highlightIdsState.value
+                    val selectedCommunity = selectedCommunityState.value
+                    CanvasDrawScope().draw(
                     density = density,
                     layoutDirection = layoutDirection,
                     canvas = canvas,
                     size = Size(width.toFloat(), height.toFloat()),
                 ) {
                     drawRect(exportBackground)
+                    withTransform({ scale(exportScale, exportScale) }) {
                     edgePaths.forEach { edge ->
                         val highlighted = when {
                             selectedCommunity != null -> edge.communityId == selectedCommunity
@@ -810,6 +838,12 @@ private fun FriendNetworkGraph(
                             alpha = if (visible) 1f else 0.2f,
                         )
                     }
+                    }
+                }
+                    bitmap
+                } catch (_: Throwable) {
+                    onExportFailure()
+                    return@LaunchedEffect
                 }
                 onExportBitmap(bitmap)
             }
