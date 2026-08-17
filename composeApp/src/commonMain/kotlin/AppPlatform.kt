@@ -50,6 +50,12 @@ interface AppPlatform: KoinComponent {
 
     /** Starts an audio-only call to the selected VRChat contact identity. */
     suspend fun callMomoUser(userId: String): MomoCallActionResult = MomoCallActionResult.Unsupported
+
+    suspend fun acceptMomoCall(): MomoCallActionResult = MomoCallActionResult.Unsupported
+
+    suspend fun rejectMomoCall(): MomoCallActionResult = MomoCallActionResult.Unsupported
+
+    suspend fun hangUpMomoCall(): MomoCallActionResult = MomoCallActionResult.Unsupported
 }
 
 sealed interface MomoCallState {

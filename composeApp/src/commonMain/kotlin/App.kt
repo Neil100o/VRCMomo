@@ -18,6 +18,7 @@ import io.github.vrcmteam.vrcm.presentation.animations.AuthAnimeToHomeTransition
 import io.github.vrcmteam.vrcm.presentation.animations.HomeToAuthAnimeTransition
 import io.github.vrcmteam.vrcm.presentation.animations.slideScreenTransition
 import io.github.vrcmteam.vrcm.presentation.compoments.OfficialLinkPrompt
+import io.github.vrcmteam.vrcm.presentation.compoments.MomoCallIncomingOverlay
 import io.github.vrcmteam.vrcm.presentation.compoments.SharedTransitionDialog
 import io.github.vrcmteam.vrcm.presentation.compoments.SharedTransitionScreen
 import io.github.vrcmteam.vrcm.presentation.compoments.SnackBarToastBox
@@ -58,6 +59,7 @@ fun App(
                     ) {
                         VersionDialog()
                         OfficialLinkPrompt(it, activeOfficialLinkInbox)
+                        MomoCallIncomingOverlay()
                         SharedTransitionScreen(
                             navigator = it,
                             modifier = Modifier.slideBack(

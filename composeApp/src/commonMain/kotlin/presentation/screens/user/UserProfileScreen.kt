@@ -123,6 +123,7 @@ data class UserProfileScreen(
         // Control showing favorite group management for Friend type
         var showFriendFavoriteSheet by remember { mutableStateOf(false) }
         var showBoopSelector by remember { mutableStateOf(false) }
+        var showMomoCallSetup by remember { mutableStateOf(false) }
         var showPresenceNotificationSelector by remember { mutableStateOf(false) }
         var currentSettings by LocalSettingsState.current
 
@@ -197,6 +198,7 @@ data class UserProfileScreen(
                 onManageFriendFavorite = { showFriendFavoriteSheet = true },
                 openEditNoteDialog = { openEditNoteDialog = true },
                 openBoopSelector = { showBoopSelector = true },
+                openMomoCallSetup = { showMomoCallSetup = true },
                 openPresenceNotificationSelector = { showPresenceNotificationSelector = true },
             )
         }
@@ -278,6 +280,12 @@ data class UserProfileScreen(
                 },
             )
         }
+        if (showMomoCallSetup) {
+            MomoCallSetupDialog(
+                targetUserId = currentUser.id,
+                onDismissRequest = { showMomoCallSetup = false },
+            )
+        }
     }
 
 }
@@ -293,6 +301,7 @@ private fun ColumnScope.SheetItems(
     onManageFriendFavorite: () -> Unit,
     openEditNoteDialog: () -> Unit,
     openBoopSelector: () -> Unit,
+    openMomoCallSetup: () -> Unit,
     openPresenceNotificationSelector: () -> Unit,
 ) {
     val navigator = LocalNavigator.currentOrThrow
@@ -352,6 +361,14 @@ private fun ColumnScope.SheetItems(
                     openBoopSelector()
                 }
             })
+            if (getAppPlatform().supportsMomoCall) {
+                SheetButtonItem(text = "MomoCall", onClick = {
+                    scope.launch { hideSheet() }.invokeOnCompletion {
+                        onHideCompletion()
+                        openMomoCallSetup()
+                    }
+                })
+            }
             SheetButtonItem(text = localeStrings.profileInviteToMyInstance, onClick = {
                 scope.launch { hideSheet() }.invokeOnCompletion {
                     onHideCompletion()

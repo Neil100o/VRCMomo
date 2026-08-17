@@ -101,4 +101,19 @@ class AndroidAppPlatform(
             MomoCallActionResult.Started
         }.getOrElse { MomoCallActionResult.Failed }
     }
+
+    override suspend fun acceptMomoCall(): MomoCallActionResult = runCatching {
+        momoCallCoordinator.acceptIncoming()
+        MomoCallActionResult.Started
+    }.getOrElse { MomoCallActionResult.Failed }
+
+    override suspend fun rejectMomoCall(): MomoCallActionResult = runCatching {
+        momoCallCoordinator.rejectIncoming()
+        MomoCallActionResult.Started
+    }.getOrElse { MomoCallActionResult.Failed }
+
+    override suspend fun hangUpMomoCall(): MomoCallActionResult = runCatching {
+        momoCallCoordinator.hangUp()
+        MomoCallActionResult.Started
+    }.getOrElse { MomoCallActionResult.Failed }
 }
