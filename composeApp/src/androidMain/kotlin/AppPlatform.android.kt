@@ -9,8 +9,13 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import io.github.vrcmteam.vrcm.service.FriendActivityForegroundService
+import io.github.vrcmteam.vrcm.service.AndroidMomoCallCoordinator
+import kotlinx.coroutines.flow.StateFlow
 
-class AndroidAppPlatform(val context: Context) : AppPlatform {
+class AndroidAppPlatform(
+    val context: Context,
+    private val momoCallCoordinator: AndroidMomoCallCoordinator,
+) : AppPlatform {
     override val name: String = "Android"
     override val version: String = Build.VERSION.SDK_INT.toString()
     override val type: AppPlatformType = AppPlatformType.Android
@@ -68,5 +73,32 @@ class AndroidAppPlatform(val context: Context) : AppPlatform {
         }.getOrElse {
             BackgroundFriendMonitoringResult.Unsupported
         }
+    }
+
+    override val supportsMomoCall: Boolean = true
+
+    override val momoCallState: StateFlow<MomoCallState>
+        get() = momoCallCoordinator.state
+
+    override suspend fun connectMomoCall(): MomoCallActionResult {
+        if (context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            MainActivity.requestMicrophonePermissionFromCurrentActivity()
+            return MomoCallActionResult.PermissionRequired
+        }
+        return runCatching {
+            momoCallCoordinator.connect()
+            MomoCallActionResult.Started
+        }.getOrElse { MomoCallActionResult.Failed }
+    }
+
+    override suspend fun callMomoUser(userId: String): MomoCallActionResult {
+        if (context.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            MainActivity.requestMicrophonePermissionFromCurrentActivity()
+            return MomoCallActionResult.PermissionRequired
+        }
+        return runCatching {
+            momoCallCoordinator.placeCall(userId)
+            MomoCallActionResult.Started
+        }.getOrElse { MomoCallActionResult.Failed }
     }
 }

@@ -29,6 +29,7 @@ zxing = "4.3.0"
 room = "2.8.4"
 sqlite = "2.6.2"
 ksp = "2.2.20-2.0.4"
+webrtc = "144.7559.08"
 
 [libraries]
 # kotlinx
@@ -92,6 +93,7 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 
 # chrisbanes-haze
 chrisbanes-haze = { module = "dev.chrisbanes.haze:haze", version.ref = "chrisbanes-haze" }
+webrtc-android = { module = "io.github.webrtc-sdk:android", version.ref = "webrtc" }
 
 
 [plugins]

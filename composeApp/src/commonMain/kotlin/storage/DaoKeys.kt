@@ -81,6 +81,9 @@ object DaoKeys{
         const val LAST_OFFICIAL_CLIPBOARD_TARGET_KEY = "${PREFIX}.lastOfficialClipboardTarget"
         const val NOTIFIED_SOCIAL_NOTIFICATION_IDS_KEY = "${PREFIX}.notifiedSocialNotificationIds"
         const val LAST_VRCHAT_STATUS_INDICATOR_KEY = "${PREFIX}.lastVrchatStatusIndicator"
+        const val MOMO_CALL_SIGNALING_URL_KEY = "${PREFIX}.momoCallSignalingUrl"
+        const val MOMO_CALL_SHARED_SECRET_KEY = "${PREFIX}.momoCallSharedSecret"
+        const val MOMO_CALL_DEVICE_ID_KEY = "${PREFIX}.momoCallDeviceId"
 
     }
 

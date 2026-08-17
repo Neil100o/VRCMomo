@@ -60,13 +60,24 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    private fun requestMicrophonePermission() {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), REQUEST_MICROPHONE)
+        }
+    }
+
     companion object {
         private const val REQUEST_NOTIFICATIONS = 1
+        private const val REQUEST_MICROPHONE = 2
         private const val PENDING_OFFICIAL_LINK_KEY = "pending-official-link"
         private var currentActivity: MainActivity? = null
 
         fun requestNotificationPermissionFromCurrentActivity() {
             currentActivity?.requestNotificationPermission()
+        }
+
+        fun requestMicrophonePermissionFromCurrentActivity() {
+            currentActivity?.requestMicrophonePermission()
         }
     }
 }

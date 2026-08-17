@@ -1,6 +1,8 @@
 package io.github.vrcmteam.vrcm
 
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.koin.compose.getKoin
 import org.koin.core.component.KoinComponent
 
@@ -35,7 +37,38 @@ interface AppPlatform: KoinComponent {
 
     /** Open the platform battery optimization page after an explicit user action. */
     fun openBatteryOptimizationSettings() = Unit
+
+    /** MomoCall is deliberately Android-first in the experimental phase. */
+    val supportsMomoCall: Boolean
+        get() = false
+
+    val momoCallState: StateFlow<MomoCallState>
+        get() = unsupportedMomoCallState
+
+    /** Starts the separate MomoCall relay connection; it never uses the VRChat session cookie. */
+    suspend fun connectMomoCall(): MomoCallActionResult = MomoCallActionResult.Unsupported
+
+    /** Starts an audio-only call to the selected VRChat contact identity. */
+    suspend fun callMomoUser(userId: String): MomoCallActionResult = MomoCallActionResult.Unsupported
 }
+
+sealed interface MomoCallState {
+    data object Idle : MomoCallState
+    data class Connecting(val targetUserId: String) : MomoCallState
+    data class Incoming(val callId: String, val fromUserId: String) : MomoCallState
+    data class InCall(val peerUserId: String) : MomoCallState
+    data class Failed(val message: String) : MomoCallState
+    data object Unsupported : MomoCallState
+}
+
+enum class MomoCallActionResult {
+    Started,
+    PermissionRequired,
+    Failed,
+    Unsupported,
+}
+
+private val unsupportedMomoCallState = MutableStateFlow<MomoCallState>(MomoCallState.Unsupported)
 
 enum class BackgroundFriendMonitoringResult {
     Started,

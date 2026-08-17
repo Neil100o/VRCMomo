@@ -46,6 +46,7 @@ kotlin {
             implementation(libs.koin.androidx.compose)
 
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.webrtc.android)
         }
 
         androidUnitTest.dependencies {

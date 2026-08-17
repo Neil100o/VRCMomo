@@ -113,6 +113,27 @@ class SettingsDao(
             settingsSettings.putString(DaoKeys.Settings.LAN_BRIDGE_TOKEN_KEY, it)
         } ?: settingsSettings.remove(DaoKeys.Settings.LAN_BRIDGE_TOKEN_KEY)
 
+    /** MomoCall uses its own relay address and never reuses VRChat API credentials. */
+    var momoCallSignalingUrl: String?
+        get() = settingsSettings.getStringOrNull(DaoKeys.Settings.MOMO_CALL_SIGNALING_URL_KEY)
+        set(value) = value?.trim().takeUnless { it.isNullOrEmpty() }?.let {
+            settingsSettings.putString(DaoKeys.Settings.MOMO_CALL_SIGNALING_URL_KEY, it)
+        } ?: settingsSettings.remove(DaoKeys.Settings.MOMO_CALL_SIGNALING_URL_KEY)
+
+    /** Development-only relay secret. Production will replace this with a per-device MomoCall token. */
+    var momoCallSharedSecret: String?
+        get() = settingsSettings.getStringOrNull(DaoKeys.Settings.MOMO_CALL_SHARED_SECRET_KEY)
+        set(value) = value?.trim().takeUnless { it.isNullOrEmpty() }?.let {
+            settingsSettings.putString(DaoKeys.Settings.MOMO_CALL_SHARED_SECRET_KEY, it)
+        } ?: settingsSettings.remove(DaoKeys.Settings.MOMO_CALL_SHARED_SECRET_KEY)
+
+    /** Stable installation identifier used by MomoCall, separate from the LAN archive bridge. */
+    val momoCallDeviceId: String
+        get() = settingsSettings.getStringOrNull(DaoKeys.Settings.MOMO_CALL_DEVICE_ID_KEY)
+            ?: "momocall-${kotlin.random.Random.nextLong().toString(36)}-${kotlin.random.Random.nextLong().toString(36)}".also {
+                settingsSettings.putString(DaoKeys.Settings.MOMO_CALL_DEVICE_ID_KEY, it)
+            }
+
     /** Stable installation identity for LAN archive dedupe. It contains no VRChat credential. */
     val lanSyncDeviceId: String
         get() = settingsSettings.getStringOrNull(DaoKeys.Settings.LAN_SYNC_DEVICE_ID_KEY)
