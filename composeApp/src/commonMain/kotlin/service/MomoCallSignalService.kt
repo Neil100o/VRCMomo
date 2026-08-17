@@ -17,9 +17,11 @@ import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withTimeout
 import org.koin.core.logger.Logger
 import kotlin.random.Random
 import kotlinx.serialization.json.Json
@@ -58,14 +60,15 @@ class MomoCallSignalService(
     private val _signals = MutableStateFlow<MomoCallSignal?>(null)
     val signals: StateFlow<MomoCallSignal?> = _signals.asStateFlow()
 
-    suspend fun connect(userId: String) = mutex.withLock {
-        require(userId.isNotBlank()) { "MomoCall requires a VRChat user ID." }
-        val signalingUrl = settingsDao.momoCallSignalingUrl
-            ?: error("MomoCall signalling URL has not been configured.")
-        connectionJob?.cancelAndJoin()
-        _connectionState.value = MomoCallConnectionState.Connecting
-        currentUserId = userId
-        connectionJob = scope.launch {
+    suspend fun connect(userId: String) {
+        mutex.withLock {
+            require(userId.isNotBlank()) { "MomoCall requires a VRChat user ID." }
+            val signalingUrl = settingsDao.momoCallSignalingUrl
+                ?: error("MomoCall signalling URL has not been configured.")
+            connectionJob?.cancelAndJoin()
+            _connectionState.value = MomoCallConnectionState.Connecting
+            currentUserId = userId
+            connectionJob = scope.launch {
             try {
                 val opened = client.webSocketSession(urlString = signalingUrl)
                 session = opened
@@ -94,6 +97,14 @@ class MomoCallSignalService(
             } finally {
                 session = null
             }
+            }
+        }
+        when (val result = withTimeout(CONNECTION_TIMEOUT_MILLIS) {
+            connectionState.first { it is MomoCallConnectionState.Connected || it is MomoCallConnectionState.Failed }
+        }) {
+            is MomoCallConnectionState.Connected -> Unit
+            is MomoCallConnectionState.Failed -> error(result.message)
+            else -> error("MomoCall connection did not settle.")
         }
     }
 
@@ -137,5 +148,9 @@ class MomoCallSignalService(
         session = null
         currentUserId = null
         _connectionState.value = MomoCallConnectionState.Idle
+    }
+
+    private companion object {
+        const val CONNECTION_TIMEOUT_MILLIS = 10_000L
     }
 }
